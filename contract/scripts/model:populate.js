@@ -36,7 +36,7 @@ async function main() {
             multiple: false,
             input: "select",
             specs: "[BLOG,NEWS,RANDOM]"
-        },
+        }
     ]
 
     for (let k in types) {

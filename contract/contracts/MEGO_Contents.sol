@@ -18,7 +18,8 @@ contract MEGO_Contents is ERC721, Ownable {
     mapping(uint256 => string) public token_metadata;
     mapping(string => bool) public activated_models;
     mapping(uint256 => string) public token_models;
-    uint8 total_models;
+    string[] public content_models;
+
     event PermanentURI(string _value, uint256 indexed _id);
 
     constructor(string memory _name, string memory _ticker)
@@ -43,7 +44,7 @@ contract MEGO_Contents is ERC721, Ownable {
         return string(abi.encodePacked(contract_base_uri, _tknMetadata));
     }
 
-    function tokensOfOwner(address _owner)
+    function tokensOfModel(address _owner, string memory _model)
         external
         view
         returns (uint256[] memory ownerTokens)
@@ -59,7 +60,11 @@ contract MEGO_Contents is ERC721, Ownable {
             uint256 tnkId;
 
             for (tnkId = 1; tnkId <= totalTkns; tnkId++) {
-                if (ownerOf(tnkId) == _owner) {
+                if (
+                    ownerOf(tnkId) == _owner &&
+                    keccak256(abi.encodePacked(token_models[tnkId])) ==
+                    keccak256(abi.encodePacked(_model))
+                ) {
                     result[resultIndex] = tnkId;
                     resultIndex++;
                 }
@@ -76,13 +81,14 @@ contract MEGO_Contents is ERC721, Ownable {
     function addType(string memory _model) external onlyOwner {
         require(!activated_models[_model], "Model active");
         activated_models[_model] = true;
-        total_models++;
+        content_models.push(_model);
     }
 
-    function removeType(string memory _model) external onlyOwner {
+    function removeType(string memory _model, uint _index) external onlyOwner {
         require(activated_models[_model], "Model not active");
+        require(keccak256(abi.encodePacked(_model)) == keccak256(abi.encodePacked(content_models[_index])), "Model is different from index");
         activated_models[_model] = false;
-        total_models--;
+        delete content_models[_index];
     }
 
     function dropContent(string memory _metadata, string memory _model)

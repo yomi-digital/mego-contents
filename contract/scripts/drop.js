@@ -10,7 +10,8 @@ async function main() {
     
     console.log('Minting NFT..')
     const metadata = 'IPFS_HASH'
-    const result = await contract.dropContent(metadata)
+    const model = "blog"
+    const result = await contract.dropContent(metadata, model)
     const receipt = await result.wait()
     console.log(receipt)
     console.log("💸 Gas used:", receipt.gasUsed.toString())

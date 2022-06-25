@@ -1,6 +1,5 @@
 const { ethers, utils } = require("ethers");
 const fs = require('fs');
-const { generate, derive } = require('../libs/address_generator')
 
 async function main() {
     const configs = JSON.parse(fs.readFileSync(process.env.CONFIG).toString())
@@ -8,14 +7,16 @@ async function main() {
     const provider = new ethers.providers.JsonRpcProvider(configs.provider);
     let wallet = new ethers.Wallet(configs.owner_key).connect(provider)
     const contract = new ethers.Contract(configs.contents_address, ABI.abi, wallet)
-    // Scanning al console
-    const totalSupply = await contract.totalSupply()
-    console.log('TOTAL SUPPLY IS: ' + totalSupply)
+
     const model = "blog"
-    const tokensOfModel = await contract.tokensOfModel(wallet.address, model)
-    for (let k in tokensOfModel) {
-        const metadata = await contract.tokenURI(tokensOfModel[k])
-        console.log("Token with id:", tokensOfModel[k].toString(), "is:", metadata)
+    const index = 0
+    const activated = await contract.activated_models(model)
+    console.log("Is model activated?", activated)
+    if (activated) {
+        const result = await contract.removeType(model, index)
+        const receipt = await result.wait()
+        console.log(receipt)
+        console.log("💸 Gas used:", receipt.gasUsed.toString())
     }
 }
 

@@ -3,3 +3,5 @@ yarn task status hardhat
 yarn task model:create hardhat
 yarn task model:populate hardhat
 yarn task deploy:contents hardhat
+yarn task types:add hardhat
+yarn task drop hardhat
