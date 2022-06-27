@@ -8,10 +8,10 @@ async function main() {
     const provider = new ethers.providers.JsonRpcProvider(configs.provider);
     let wallet = new ethers.Wallet(configs.owner_key).connect(provider)
     const contract = new ethers.Contract(configs.contents_address, ABI.abi, wallet)
-    // Scanning al console
-    const totalSupply = await contract.totalSupply()
-    console.log('TOTAL SUPPLY IS: ' + totalSupply)
+    
     const model = "blog"
+    const totalSupply = await contract.minted_tokens(model)
+    console.log('TOTAL SUPPLY IS: ' + totalSupply)
     const tokensOfModel = await contract.tokensOfModel(wallet.address, model)
     for (let k in tokensOfModel) {
         const metadata = await contract.tokenURI(tokensOfModel[k])

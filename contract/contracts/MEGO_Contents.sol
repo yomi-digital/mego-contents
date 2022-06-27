@@ -18,6 +18,7 @@ contract MEGO_Contents is ERC721, Ownable {
     mapping(uint256 => string) public token_metadata;
     mapping(string => bool) public activated_models;
     mapping(uint256 => string) public token_models;
+    mapping(string => uint256) public minted_tokens;
     string[] public content_models;
 
     event PermanentURI(string _value, uint256 indexed _id);
@@ -49,7 +50,9 @@ contract MEGO_Contents is ERC721, Ownable {
         view
         returns (uint256[] memory ownerTokens)
     {
-        uint256 tokenCount = balanceOf(_owner);
+        // Owner can be used to give another filter
+        // Use address(0) to get all
+        uint256 tokenCount = minted_tokens[_model];
         if (tokenCount == 0) {
             // Return an empty array
             return new uint256[](0);
@@ -61,7 +64,7 @@ contract MEGO_Contents is ERC721, Ownable {
 
             for (tnkId = 1; tnkId <= totalTkns; tnkId++) {
                 if (
-                    ownerOf(tnkId) == _owner &&
+                    (ownerOf(tnkId) == _owner || _owner == address(0)) &&
                     keccak256(abi.encodePacked(token_models[tnkId])) ==
                     keccak256(abi.encodePacked(_model))
                 ) {
@@ -84,9 +87,16 @@ contract MEGO_Contents is ERC721, Ownable {
         content_models.push(_model);
     }
 
-    function removeType(string memory _model, uint _index) external onlyOwner {
+    function removeType(string memory _model, uint256 _index)
+        external
+        onlyOwner
+    {
         require(activated_models[_model], "Model not active");
-        require(keccak256(abi.encodePacked(_model)) == keccak256(abi.encodePacked(content_models[_index])), "Model is different from index");
+        require(
+            keccak256(abi.encodePacked(_model)) ==
+                keccak256(abi.encodePacked(content_models[_index])),
+            "Model is different from index"
+        );
         activated_models[_model] = false;
         delete content_models[_index];
     }
@@ -101,6 +111,7 @@ contract MEGO_Contents is ERC721, Ownable {
         uint256 newTokenId = token_id_counter.current();
         token_metadata[newTokenId] = _metadata;
         token_models[newTokenId] = _model;
+        minted_tokens[_model]++;
         _mint(msg.sender, newTokenId);
     }
 
