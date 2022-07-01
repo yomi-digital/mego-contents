@@ -1,0 +1,258 @@
+[
+  {
+    "inputs": [],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
+    "anonymous": false,
+    "inputs": [
+      {
+        "indexed": false,
+        "internalType": "address",
+        "name": "_contents",
+        "type": "address"
+      }
+    ],
+    "name": "NewContentsCreated",
+    "type": "event"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "_identitifer",
+        "type": "string"
+      }
+    ],
+    "name": "createModel",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "name": "created",
+    "outputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "_identitifer",
+        "type": "string"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_order",
+        "type": "uint256"
+      },
+      {
+        "internalType": "bool",
+        "name": "_active",
+        "type": "bool"
+      },
+      {
+        "internalType": "string",
+        "name": "_name",
+        "type": "string"
+      },
+      {
+        "internalType": "bool",
+        "name": "_print",
+        "type": "bool"
+      },
+      {
+        "internalType": "bool",
+        "name": "_required",
+        "type": "bool"
+      },
+      {
+        "internalType": "bool",
+        "name": "_multiple",
+        "type": "bool"
+      },
+      {
+        "internalType": "string",
+        "name": "_input",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_specs",
+        "type": "string"
+      }
+    ],
+    "name": "editDatatypeInModel",
+    "outputs": [],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "name": "instances",
+    "outputs": [
+      {
+        "internalType": "contract MEGO_Contents",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "",
+        "type": "string"
+      }
+    ],
+    "name": "models",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "active",
+        "type": "bool"
+      },
+      {
+        "internalType": "address",
+        "name": "creator",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "_address",
+        "type": "address"
+      }
+    ],
+    "name": "returnContentsInstance",
+    "outputs": [
+      {
+        "internalType": "contract MEGO_Contents",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "_identitifer",
+        "type": "string"
+      },
+      {
+        "internalType": "uint256",
+        "name": "_index",
+        "type": "uint256"
+      }
+    ],
+    "name": "returnModelType",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "_active",
+        "type": "bool"
+      },
+      {
+        "internalType": "string",
+        "name": "_name",
+        "type": "string"
+      },
+      {
+        "internalType": "bool",
+        "name": "_print",
+        "type": "bool"
+      },
+      {
+        "internalType": "bool",
+        "name": "_required",
+        "type": "bool"
+      },
+      {
+        "internalType": "bool",
+        "name": "_multiple",
+        "type": "bool"
+      },
+      {
+        "internalType": "string",
+        "name": "_input",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_specs",
+        "type": "string"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "returnTypesInstance",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [
+      {
+        "internalType": "string",
+        "name": "_name",
+        "type": "string"
+      },
+      {
+        "internalType": "string",
+        "name": "_ticker",
+        "type": "string"
+      }
+    ],
+    "name": "startNewContents",
+    "outputs": [
+      {
+        "internalType": "address",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+]

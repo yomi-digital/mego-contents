@@ -1,56 +1,28 @@
 <template>
   <div class="home">
-    <b-field label="Title">
-      <b-input v-model="title"></b-input>
-    </b-field>
-    <b-field label="Summary">
-      <b-input
-        v-model="summary"
-        placeholder="Write the summary for the content, max 150 characters."
-      ></b-input>
-    </b-field>
-    <b-field label="Category">
-      <b-select v-model="category" expanded placeholder="Select a category">
-        <option
-          v-for="category in categories"
-          :value="category"
-          :key="category"
-        >
-          {{ category }}
-        </option>
-      </b-select>
-    </b-field>
-    <b-field label="Content">
-      <VueEditor v-model="content" />
-    </b-field>
-    <b-field label="Image">
-      <b-upload v-model="image" expanded drag-drop>
-        <section class="section">
-          <div class="content has-text-centered">
-            <p v-if="!image.name">
-              Drop your file here or click to upload.<br />Supported files: jpg,
-              png, gif.
-            </p>
-            <p v-if="image.name">
-              Chosen image is <b>{{ image.name }}</b
-              >.<br />Click or drop another file to change it.
-            </p>
-          </div>
-        </section>
-      </b-upload>
-    </b-field>
-    <b-button v-if="!isWorking && !ipfsNft" expanded @click="prepare"
-      >PREPARE METADATA</b-button
-    >
-    <div v-if="ipfsNft" style="text-align: center; padding: 20px 0 20px 0">
-      Metadata are generated, please double check them before mint at<br />
-      <a
-        target="_blank"
-        :href="'https://ipfs.yomi.digital/ipfs/' + ipfsNft"
-        >{{ ipfsNft }}</a
-      ><br /><br />
-      <b-button v-if="!isWorking" expanded @click="mint">MINT NFT</b-button>
+    <div v-if="!loading">
+      <h1 class="title is-3">Manage your instance</h1>
+      <h3 class="title is-5">
+        Deployed at: <span style="font-weight: normal">{{ instance }}</span>
+      </h3>
+      <div v-if="Object.keys(datatypes).length > 0">
+        {{ datatypes }}
+      </div>
+      <div v-if="Object.keys(datatypes).length === 0 && !isWorking">
+        You don't have any datatype in contract, please add or create a new
+        one.<br />
+        <hr />
+        <h3 class="title is-5">Available types:</h3>
+        <div v-for="(datatype, index) in available" v-bind:key="index">
+          <b>{{ index }}</b
+          ><br />
+          {{ datatype }}
+          <br /><br />
+          <b-button @click="addType(index)">ADD DATAYPE TO CONTRACT</b-button>
+        </div>
+      </div>
     </div>
+    <div v-if="loading">Syncing state with blockchain, please wait..</div>
     <div v-if="isWorking" style="padding: 20px 0; text-align: center">
       {{ workingMessage }}
     </div>
@@ -69,35 +41,28 @@ import Web3 from "web3";
 import axios from "axios";
 import Web3Modal from "web3modal";
 import WalletConnectProvider from "@walletconnect/web3-provider";
-import { VueEditor } from "vue2-editor";
-const abi = require("../abi.json");
-const FormData = require("form-data");
+const abi_factory = require("../abis/factory.json");
+const abi_contents = require("../abis/contents.json");
 
 export default {
   name: "Home",
-  components: {
-    VueEditor,
-  },
   data() {
     return {
       infuraId: process.env.VUE_APP_INFURA_ID,
       umiUrl: process.env.VUE_APP_UMI_API,
       axios: axios,
-      abi: abi,
-      contract: process.env.VUE_APP_UMI_CONTRACT,
+      abi_factory: abi_factory,
+      abi_contents: abi_contents,
+      contract: process.env.VUE_APP_FACTORY_CONTRACT,
       network: parseInt(process.env.VUE_APP_CHAIN_ID),
       web3: {},
       account: "",
-      content: "",
-      title: "",
-      image: {},
-      ipfsFile: "",
-      summary: "",
-      category: "blog",
-      categories: ["blog", "ama"],
       isWorking: false,
+      loading: true,
       workingMessage: "",
-      ipfsNft: "",
+      instance: "",
+      datatypes: {},
+      available: {},
     };
   },
   mounted() {
@@ -127,6 +92,15 @@ export default {
           const accounts = await web3.eth.getAccounts();
           if (accounts.length > 0) {
             app.account = accounts[0];
+            const factoryContract = new web3.eth.Contract(
+              app.abi_factory,
+              app.contract
+            );
+            app.instance = await factoryContract.methods
+              .instances(accounts[0])
+              .call();
+            app.fetchModels();
+            app.fetchDatatypes();
           } else {
             alert("No accounts allowed, please retry!");
           }
@@ -146,142 +120,127 @@ export default {
         pauseOnHover: true,
       });
     },
-    readFile(file) {
-      return new Promise((response) => {
-        var reader = new FileReader();
-        reader.onload = function (event) {
-          var readed = event.target.result;
-          response(readed);
-        };
-        reader.readAsArrayBuffer(file);
-      });
-    },
-    async prepare() {
+    async fetchModels() {
       const app = this;
-      if (
-        app.title.length > 0 &&
-        app.summary.length > 0 &&
-        app.summary.length <= 150 &&
-        app.category.length > 0 &&
-        app.content.length > 0 &&
-        app.image.name.length > 0 &&
-        !app.isWorking
-      ) {
-        app.isWorking = true;
-        app.workingMessage = "Validating input data..";
-        const ext =
-          app.image.name.split(".")[app.image.name.split(".").length - 1];
-        console.log("Extension file is:", ext);
-        const supported = ["gif", "png", "jpg", "jpeg"];
-        if (supported.indexOf(ext) !== -1) {
-          app.log("success", "File is valid, uploading on IPFS..");
-          const formData = new FormData();
-          formData.append("file", app.image);
-          formData.append("name", app.image.name);
-          try {
-            let ipfsImageUpload = await axios({
-              method: "post",
-              url: app.umiUrl + "/ipfs/upload",
-              data: formData,
-              headers: {
-                "Content-Type": "multipart/form-data",
-              },
-            });
-            if (
-              ipfsImageUpload.data.error !== undefined &&
-              ipfsImageUpload.data.error === false
-            ) {
-              app.ipfsFile = ipfsImageUpload.data.ipfs_hash;
-              app.workingMessage = "Creating final NFT metadata..";
-              let ipfNftUpload = await axios({
-                method: "post",
-                url: app.umiUrl + "/ipfs/nft",
-                data: {
-                  provider: "pinata",
-                  nft: {
-                    name: app.title,
-                    description:
-                      "MEGO decentralized content, created by " +
-                      app.account +
-                      ".",
-                    image: "ipfs://" + app.ipfsFile,
-                    html: app.content,
-                    category: app.category,
-                    summary: app.summary,
-                    author: app.account,
-                    timestamp: new Date().getTime(),
-                  },
-                },
-              });
-              if (
-                ipfNftUpload.data.error !== undefined &&
-                ipfNftUpload.data.error === false
-              ) {
-                app.ipfsNft = ipfNftUpload.data.ipfs_hash;
-                app.isWorking = false;
-              } else {
-                app.isWorking = false;
-                app.log("danger", "Upload on IPFS failed, please retry.");
+      const contentsContract = new app.web3.eth.Contract(
+        app.abi_contents,
+        app.instance
+      );
+      const factoryContract = new app.web3.eth.Contract(
+        app.abi_factory,
+        app.contract
+      );
+      let exists = true;
+      let i = 0;
+      while (exists) {
+        try {
+          const result = await contentsContract.methods
+            .content_models(i)
+            .call();
+          if (result.length > 0) {
+            app.datatypes[result] = [];
+            let datatypes = [];
+            console.log("Model found:", result);
+            let finished = false;
+            let t = 0;
+            while (!finished) {
+              const datatype = await factoryContract.methods
+                .returnModelType(result, t)
+                .call();
+              if (datatype._active) {
+                datatypes.push({
+                  name: datatype._name,
+                  print: datatype._print,
+                  required: datatype._required,
+                  multiple: datatype._multiple,
+                  input: datatype._input,
+                  specs: datatype._specs,
+                });
               }
-            } else {
-              app.isWorking = false;
-              app.log("danger", "Upload on IPFS failed, please retry.");
+              t++;
+              if (datatype._name.length === 0) {
+                finished = true;
+              }
             }
-          } catch (e) {
-            app.isWorking = false;
-            app.log("danger", "Upload on IPFS failed, please retry.");
+            app.datatypes[result] = datatypes;
           }
-        } else {
-          app.log(
-            "danger",
-            "Extension is not allowed, please retry with a different file."
-          );
-          app.isWorking = false;
+          i++;
+        } catch (e) {
+          console.log("Model parse finished.");
+          exists = false;
         }
-      } else {
-        app.log("danger", "Please fill all required fields.");
-        app.isWorking = false;
       }
     },
-    async mint() {
+    async fetchDatatypes() {
       const app = this;
-      if (!app.isWorking) {
-        app.isWorking = true;
-        app.workingMessage = "Minting NFT, please continue with your wallet..";
-        const network = await app.web3.eth.net.getId();
-        console.log("Found network:", network);
-        if (network === app.network) {
-          try {
-            const nftContract = new app.web3.eth.Contract(
-              app.abi,
-              app.contract
-            );
-            await nftContract.methods
-              .mintNFT(app.account, app.ipfsNft)
-              .send({ from: app.account, gas: 300000 })
-              .on("transactionHash", (tx) => {
-                app.workingMessage = "Found pending transaction at: " + tx;
-              });
-            app.log(
-              "success",
-              "Minting was successful, redirecting to draft page.."
-            );
-            app.isWorking = false;
-            setTimeout(function () {
-              window.location.href = "/#/drafts";
-            }, 2000);
-          } catch (e) {
-            console.log("MINTING FAILED:", e);
-            app.log("danger", "Minting failed, please retry..");
-            app.isWorking = false;
+      const factoryContract = new app.web3.eth.Contract(
+        app.abi_factory,
+        app.contract
+      );
+      let exists = true;
+      let i = 0;
+      while (exists) {
+        try {
+          const result = await factoryContract.methods.created(i).call();
+          if (result.length > 0) {
+            app.available[result] = [];
+            let datatypes = [];
+            console.log("Datatype found:", result);
+            let finished = false;
+            let t = 0;
+            while (!finished) {
+              const datatype = await factoryContract.methods
+                .returnModelType(result, t)
+                .call();
+              if (datatype._active) {
+                datatypes.push({
+                  name: datatype._name,
+                  print: datatype._print,
+                  required: datatype._required,
+                  multiple: datatype._multiple,
+                  input: datatype._input,
+                  specs: datatype._specs,
+                });
+              }
+              t++;
+              if (datatype._name.length === 0) {
+                finished = true;
+              }
+            }
+            app.available[result] = datatypes;
           }
-        } else {
-          alert(
-            "Wrong network, please connect to correct one (" +
-              app.network +
-              ")!"
-          );
+          i++;
+        } catch (e) {
+          console.log("Datatype parse finished.");
+          exists = false;
         }
+      }
+      app.loading = false;
+    },
+    async addType(type) {
+      const app = this;
+      const contentsContract = new app.web3.eth.Contract(
+        app.abi_contents,
+        app.instance
+      );
+      app.isWorking = true;
+      try {
+        console.log("Adding type:", type);
+        app.workingMessage = "Please confirm transaction in your wallet.";
+        const receipt = await contentsContract.methods
+          .addType(type)
+          .send({ from: app.account })
+          .on("transactionHash", (tx) => {
+            app.workingMessage =
+              "Adding type, waiting for confirmations at " + tx;
+          });
+        console.log("ADD_TYPE_RECEIPT", receipt);
+        app.fetchModels();
+        app.fetchDatatypes();
+        app.isWorking = false;
+      } catch (e) {
+        alert(e.message);
+        app.isWorking = false;
       }
     },
   },

@@ -41,7 +41,7 @@ import Web3 from "web3";
 import axios from "axios";
 import Web3Modal from "web3modal";
 import WalletConnectProvider from "@walletconnect/web3-provider";
-const abi = require("../abi.json");
+const abi = require("../abis/factory.json");
 
 export default {
   name: "Drafts",

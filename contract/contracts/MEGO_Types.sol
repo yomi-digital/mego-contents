@@ -23,11 +23,13 @@ contract MEGO_Types {
     }
 
     mapping(string => Models) public models;
+    string[] public created;
 
-    function createModel(string memory _name) public {
-        require(!models[_name].active, "Model exists yet");
-        models[_name].active = true;
-        models[_name].creator = msg.sender;
+    function createModel(string memory _identitifer) public {
+        require(!models[_identitifer].active, "Model exists yet");
+        created.push(_identitifer);
+        models[_identitifer].active = true;
+        models[_identitifer].creator = msg.sender;
     }
 
     function editDatatypeInModel(

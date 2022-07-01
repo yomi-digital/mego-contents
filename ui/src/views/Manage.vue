@@ -119,7 +119,7 @@ import axios from "axios";
 import Web3Modal from "web3modal";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import { VueEditor } from "vue2-editor";
-const abi = require("../abi.json");
+const abi = require("../abis/factory.json");
 const FormData = require("form-data");
 
 export default {
