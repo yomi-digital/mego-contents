@@ -41,7 +41,8 @@ import Web3 from "web3";
 import axios from "axios";
 import Web3Modal from "web3modal";
 import WalletConnectProvider from "@walletconnect/web3-provider";
-const abi = require("../abis/factory.json");
+const abi_factory = require("../abis/factory.json");
+const abi_contents = require("../abis/contents.json");
 
 export default {
   name: "Drafts",
@@ -50,12 +51,15 @@ export default {
       infuraId: process.env.VUE_APP_INFURA_ID,
       umiUrl: process.env.VUE_APP_UMI_API,
       axios: axios,
-      abi: abi,
-      contract: process.env.VUE_APP_UMI_CONTRACT,
+      abi_factory: abi_factory,
+      abi_contents: abi_contents,
+      contract: process.env.VUE_APP_FACTORY_CONTRACT,
+      instance: "",
       network: parseInt(process.env.VUE_APP_CHAIN_ID),
       web3: {},
       account: "",
       drafts: [],
+      datatypes: [],
       loading: true,
     };
   },
@@ -86,24 +90,39 @@ export default {
           const accounts = await web3.eth.getAccounts();
           if (accounts.length > 0) {
             app.account = accounts[0];
-            const nftContract = new web3.eth.Contract(app.abi, app.contract);
-            const owned = await nftContract.methods
-              .tokensOfOwner(app.account)
+            const factoryContract = new app.web3.eth.Contract(
+              app.abi_factory,
+              app.contract
+            );
+            const instanceAddress = await factoryContract.methods
+              .instances(accounts[0])
               .call();
-            console.log("Owned nfts?", owned);
+            app.instance = instanceAddress;
+            app.fetchModels();
+            const contentsContract = new web3.eth.Contract(
+              app.abi_contents,
+              app.instance
+            );
+            const owned = await contentsContract.methods
+              .tokensOfModel(app.account, "blog")
+              .call();
+            console.log("Nft of model?", owned);
             for (let k in owned) {
-              let tokenURI = await nftContract.methods
+              let tokenURI = await contentsContract.methods
                 .tokenURI(owned[k])
                 .call();
-              console.log("TOKEN URI FOR #" + owned[k] + ":", tokenURI);
-              const content = await app.axios.get(
-                tokenURI.replace(
-                  "ipfs://",
-                  "https://ipfs.yomi.digital/ipfs/"
-                )
-              );
-              content.data.tokenId = owned[k];
-              app.drafts.push(content.data);
+              const freezed = await contentsContract.methods
+                .metadata_freezed(tokenURI.replace("ipfs://", ""))
+                .call();
+              console.log("Metadata is freezed?", freezed);
+              if (!freezed) {
+                console.log("TOKEN URI FOR #" + owned[k] + ":", tokenURI);
+                const content = await app.axios.get(
+                  tokenURI.replace("ipfs://", "https://ipfs.yomi.digital/ipfs/")
+                );
+                content.data.tokenId = owned[k];
+                app.drafts.push(content.data);
+              }
             }
             app.loading = false;
           } else {
@@ -117,6 +136,66 @@ export default {
           "Wrong network, please connect to correct one (" + app.network + ")!"
         );
       }
+    },
+    async fetchModels() {
+      const app = this;
+      const contentsContract = new app.web3.eth.Contract(
+        app.abi_contents,
+        app.instance
+      );
+      const factoryContract = new app.web3.eth.Contract(
+        app.abi_factory,
+        app.contract
+      );
+      let exists = true;
+      let i = 0;
+      while (exists) {
+        try {
+          const result = await contentsContract.methods
+            .content_models(i)
+            .call();
+          if (result.length > 0) {
+            app.datatypes[result] = [];
+            if (app.category.length === 0) {
+              app.category = result;
+            }
+            let datatypes = [];
+            console.log("Model found:", result);
+            let finished = false;
+            let t = 0;
+            while (!finished) {
+              const datatype = await factoryContract.methods
+                .returnModelType(result, t)
+                .call();
+              if (datatype._active) {
+                if (datatype._input !== "file") {
+                  app.content[datatype._name] = "";
+                } else {
+                  app.content[datatype._name] = {};
+                }
+                datatypes.push({
+                  name: datatype._name,
+                  print: datatype._print,
+                  required: datatype._required,
+                  multiple: datatype._multiple,
+                  input: datatype._input,
+                  specs: datatype._specs,
+                });
+              }
+              t++;
+              if (datatype._name.length === 0) {
+                finished = true;
+              }
+            }
+            app.datatypes[result] = datatypes;
+          }
+          i++;
+        } catch (e) {
+          console.log("Model parse finished.");
+          exists = false;
+        }
+      }
+      app.loading = false;
     },
     log(type, content) {
       this.$buefy.snackbar.open({

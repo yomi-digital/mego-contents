@@ -3,7 +3,6 @@ import VueRouter from 'vue-router'
 import Home from '../views/Home.vue'
 import Drafts from '../views/Drafts.vue'
 import Manage from '../views/Manage.vue'
-import Validate from '../views/Validate.vue'
 import Public from '../views/Public.vue'
 import New from '../views/New.vue'
 
@@ -29,11 +28,6 @@ const routes = [
     path: '/manage/:tokenId',
     name: 'Manage',
     component: Manage
-  },
-  {
-    path: '/validate',
-    name: 'Validate',
-    component: Validate
   },
   {
     path: '/public',

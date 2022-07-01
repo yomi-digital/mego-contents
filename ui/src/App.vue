@@ -2,10 +2,9 @@
   <div id="app">
     <div v-if="account && !checking && instance.length > 0">
       <div class="bar">
-        <a href="#">MEGO</a> |
-        <a href="/">NEW</a>
+        <a href="/">MEGO</a> |
+        <a href="/#/new">NEW</a>
         <a href="/#/drafts">DRAFTS</a>
-        <a href="/#/validate">VALIDATE</a>
         <a href="/#/public">PUBLIC</a>
         <a href="#" style="float: right; margin-top: 2px"
           >{{ account.substr(0, 5) }}...{{ account.substr(-5) }}</a
@@ -115,8 +114,8 @@ export default {
           const accounts = await web3.eth.getAccounts();
           if (accounts.length > 0) {
             app.checking = true;
-            const nftContract = new web3.eth.Contract(app.abi, app.contract);
-            const instanceAddress = await nftContract.methods
+            const factoryContract = new web3.eth.Contract(app.abi, app.contract);
+            const instanceAddress = await factoryContract.methods
               .instances(accounts[0])
               .call();
             console.log("Instance exists?", instanceAddress);

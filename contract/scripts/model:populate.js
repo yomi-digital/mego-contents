@@ -12,7 +12,7 @@ async function main() {
     const types = [
         {
             active: true,
-            name: "title",
+            name: "name",
             print: true,
             required: true,
             multiple: false,
@@ -36,6 +36,24 @@ async function main() {
             multiple: false,
             input: "select",
             specs: "[BLOG,NEWS,RANDOM]"
+        },
+        {
+            active: true,
+            name: "tag",
+            print: true,
+            required: false,
+            multiple: false,
+            input: "text",
+            specs: ""
+        },
+        {
+            active: true,
+            name: "image",
+            print: true,
+            required: false,
+            multiple: false,
+            input: "file",
+            specs: ""
         }
     ]
 
