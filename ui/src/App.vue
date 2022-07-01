@@ -165,7 +165,7 @@ export default {
           app.isWorking = true;
           const nftContract = new web3.eth.Contract(app.abi, app.contract);
           const newInstance = await nftContract.methods
-            .startNewContents("MEGO", "MEGO")
+            .startNewContents("MEGO CONTENTS", "MEGO")
             .send({ from: app.account })
             .on("transactionHash", (tx) => {
               app.workingMessage = "Found pending transaction at: " + tx;
