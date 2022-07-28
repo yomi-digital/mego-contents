@@ -3,8 +3,9 @@
     <div v-if="!loading">
       <h1 class="title is-3">Manage your instances</h1>
       <div v-for="instance in instances" v-bind:key="instance">
-        <h3 class="title is-5">
-          Deployed at: <span style="font-weight: normal">{{ instance }}</span>
+        <h3 class="title is-4">
+          {{ names[instance] }}<br>
+          <span style="font-size:15px">Deployed at: <span style="font-weight: normal">{{ instance }}</span></span>
           <b-button
             style="float: right"
             v-if="selected !== instance"
@@ -45,6 +46,8 @@
         <hr />
       </div>
       Deploy a new instance<br /><br />
+      <input v-model="newInstanceName" placeholder="New instance name" />
+      <input v-model="newInstanceTicker" placeholder="New instance ticker" />
       <b-button v-if="!isWorking" @click="deploy">DEPLOY CONTRACT</b-button>
     </div>
     <div v-if="loading">Syncing state with blockchain, please wait..</div>
@@ -87,9 +90,12 @@ export default {
       checking: false,
       loading: true,
       workingMessage: "",
+      newInstanceName: "",
+      newInstanceTicker: "",
       instances: [],
       datatypes: {},
       available: {},
+      names: {},
     };
   },
   mounted() {
@@ -129,11 +135,21 @@ export default {
               .call();
             console.log("Deployed instances:", app.instances);
             if (app.instances.length > 0) {
-              if (localStorage.getItem("instance") === null) {
+              if (
+                localStorage.getItem("instance") === null ||
+                localStorage.getItem("instance") === undefined
+              ) {
                 localStorage.setItem("instance", app.instances[0]);
               }
               app.selected = localStorage.getItem("instance");
               for (let k in app.instances) {
+                const contentsContract = new app.web3.eth.Contract(
+                  app.abi_contents,
+                  app.instances[k]
+                );
+                const name = await contentsContract.methods.name().call();
+                console.log("Instance name:", name);
+                app.names[app.instances[k]] = name;
                 await app.fetchModels(app.instances[k]);
               }
             }
@@ -310,9 +326,12 @@ export default {
             app.abi_factory,
             app.contract
           );
+          const deployment_price = await nftContract.methods
+            .deployment_price()
+            .call();
           const newInstance = await nftContract.methods
-            .startNewInstance("MEGO CONTENTS", "MEGO")
-            .send({ from: app.account })
+            .startNewInstance(app.newInstanceName, app.newInstanceTicker)
+            .send({ from: app.account, value: deployment_price })
             .on("transactionHash", (tx) => {
               app.workingMessage = "Found pending transaction at: " + tx;
             });
@@ -323,6 +342,9 @@ export default {
           console.log("Instance exists?", instanceAddress);
           app.isWorking = false;
           app.instance = instanceAddress;
+          app.newInstanceName = "";
+          app.newInstanceTicker = "";
+          window.location.reload();
         } else {
           alert(
             "Wrong network, please connect to correct one (" +

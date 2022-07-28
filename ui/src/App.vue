@@ -23,6 +23,8 @@
         contents will be stored.<br />Deploy is completely free, you just need
         to pay for gas fees.
       </h2>
+      <input v-model="newInstanceName" placeholder="New instance name" />
+      <input v-model="newInstanceTicker" placeholder="New instance ticker" />
       <b-button v-if="!isWorking" @click="deploy">DEPLOY CONTRACT</b-button>
       <br /><br />
       <div v-if="isWorking">{{ workingMessage }}</div>
@@ -87,6 +89,8 @@ export default {
       checking: false,
       isWorking: false,
       workingMessage: "",
+      newInstanceName: "",
+      newInstanceTicker: "",
     };
   },
   mounted() {
@@ -115,8 +119,11 @@ export default {
           const accounts = await web3.eth.getAccounts();
           if (accounts.length > 0) {
             app.checking = true;
-            const factoryContract = new web3.eth.Contract(app.abi, app.contract);
-            
+            const factoryContract = new web3.eth.Contract(
+              app.abi,
+              app.contract
+            );
+
             const instances = await factoryContract.methods
               .instancesOfOwner(accounts[0])
               .call();
@@ -124,9 +131,7 @@ export default {
             const instanceAddress = instances[0];
             console.log("Instance exists?", instanceAddress);
             app.account = accounts[0];
-            if (
-              instanceAddress !== undefined
-            ) {
+            if (instanceAddress !== undefined) {
               app.checking = false;
               app.instance = instanceAddress;
             } else {
@@ -168,9 +173,12 @@ export default {
         if (network === app.network) {
           app.isWorking = true;
           const nftContract = new web3.eth.Contract(app.abi, app.contract);
+          const deployment_price = await nftContract.methods
+            .deployment_price()
+            .call();
           const newInstance = await nftContract.methods
-            .startNewInstance("MEGO CONTENTS", "MEGO")
-            .send({ from: app.account })
+            .startNewInstance(app.newInstanceName, app.newInstanceTicker)
+            .send({ from: app.account, value: deployment_price })
             .on("transactionHash", (tx) => {
               app.workingMessage = "Found pending transaction at: " + tx;
             });

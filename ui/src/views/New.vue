@@ -1,73 +1,75 @@
 <template>
   <div class="home">
     <div v-if="!loading">
-      <b-field label="MODEL">
-        <b-select v-model="category" expanded placeholder="Select a category">
-          <option
-            v-for="category in Object.keys(datatypes)"
-            :value="category"
-            :key="category"
-          >
-            {{ category.toUpperCase() }}
-          </option>
-        </b-select>
-      </b-field>
-      <div v-for="input in datatypes[category]" v-bind:key="input.name">
-        <b-field
-          v-if="input.input === 'text'"
-          :label="input.name.toUpperCase()"
-        >
-          <b-input v-model="content[input.name]"></b-input>
-        </b-field>
-        <b-field
-          v-if="input.input === 'textarea'"
-          :label="input.name.toUpperCase()"
-        >
-          <VueEditor v-model="content[input.name]" />
-        </b-field>
-        <b-field
-          v-if="input.input === 'select'"
-          v-bind:key="input.name"
-          :label="input.name.toUpperCase()"
-        >
-          <b-select v-model="content[input.name]" expanded>
+      <div v-if="!ipfsNft">
+        <b-field label="MODEL">
+          <b-select v-model="category" expanded placeholder="Select a category">
             <option
-              v-for="category in input.specs
-                .replace('[', '')
-                .replace(']', '')
-                .split(',')"
+              v-for="category in Object.keys(datatypes)"
               :value="category"
               :key="category"
             >
-              {{ category }}
+              {{ category.toUpperCase() }}
             </option>
           </b-select>
         </b-field>
-        <b-field
-          v-if="input.input === 'file'"
-          v-bind:key="input.name"
-          :label="input.name.toUpperCase()"
+        <div v-for="input in datatypes[category]" v-bind:key="input.name">
+          <b-field
+            v-if="input.input === 'text'"
+            :label="input.name.toUpperCase()"
+          >
+            <b-input v-model="content[input.name]"></b-input>
+          </b-field>
+          <b-field
+            v-if="input.input === 'textarea'"
+            :label="input.name.toUpperCase()"
+          >
+            <VueEditor v-model="content[input.name]" />
+          </b-field>
+          <b-field
+            v-if="input.input === 'select'"
+            v-bind:key="input.name"
+            :label="input.name.toUpperCase()"
+          >
+            <b-select v-model="content[input.name]" expanded>
+              <option
+                v-for="category in input.specs
+                  .replace('[', '')
+                  .replace(']', '')
+                  .split(',')"
+                :value="category"
+                :key="category"
+              >
+                {{ category }}
+              </option>
+            </b-select>
+          </b-field>
+          <b-field
+            v-if="input.input === 'file'"
+            v-bind:key="input.name"
+            :label="input.name.toUpperCase()"
+          >
+            <b-upload v-model="content[input.name]" expanded drag-drop>
+              <section class="section">
+                <div class="content has-text-centered">
+                  <p v-if="content[input.name].name === undefined">
+                    Drop your file here or click to upload.<br />Supported
+                    files: jpg, png, gif.
+                  </p>
+                  <p v-if="content[input.name].name !== undefined">
+                    Chosen image is <b>{{ content[input.name].name }}</b
+                    >.<br />Click or drop another file to change it.
+                  </p>
+                </div>
+              </section>
+            </b-upload>
+          </b-field>
+          <br />
+        </div>
+        <b-button v-if="!isWorking && !ipfsNft" expanded @click="prepare"
+          >PREPARE METADATA</b-button
         >
-          <b-upload v-model="content[input.name]" expanded drag-drop>
-            <section class="section">
-              <div class="content has-text-centered">
-                <p v-if="content[input.name].name === undefined">
-                  Drop your file here or click to upload.<br />Supported files:
-                  jpg, png, gif.
-                </p>
-                <p v-if="content[input.name].name !== undefined">
-                  Chosen image is <b>{{ content[input.name].name }}</b
-                  >.<br />Click or drop another file to change it.
-                </p>
-              </div>
-            </section>
-          </b-upload>
-        </b-field>
-        <br />
       </div>
-      <b-button v-if="!isWorking && !ipfsNft" expanded @click="prepare"
-        >PREPARE METADATA</b-button
-      >
       <div v-if="ipfsNft" style="text-align: center; padding: 20px 0 20px 0">
         Metadata are generated, please double check them before mint at<br />
         <a
@@ -75,7 +77,7 @@
           :href="'https://ipfs.yomi.digital/ipfs/' + ipfsNft"
           >{{ ipfsNft }}</a
         ><br /><br />
-        <b-button v-if="!isWorking" expanded @click="mint">MINT NFT</b-button>
+        <b-button v-if="!isWorking" expanded @click="mint">MINT CONTENT</b-button>
       </div>
     </div>
     <div v-if="loading">Syncing state with blockchain, please wait..</div>
