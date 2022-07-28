@@ -5,6 +5,7 @@ import Drafts from '../views/Drafts.vue'
 import Manage from '../views/Manage.vue'
 import Public from '../views/Public.vue'
 import New from '../views/New.vue'
+import Api from '../views/Api.vue'
 
 Vue.use(VueRouter)
 
@@ -33,6 +34,11 @@ const routes = [
     path: '/public',
     name: 'Public',
     component: Public
+  },
+  {
+    path: '/api',
+    name: 'Api',
+    component: Api
   }
 ]
 

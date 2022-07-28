@@ -6,6 +6,7 @@
         <a href="/#/new">NEW</a>
         <a href="/#/drafts">DRAFTS</a>
         <a href="/#/public">PUBLIC</a>
+        <a href="/#/api">API</a>
         <a href="#" style="float: right; margin-top: 2px"
           >{{ account.substr(0, 5) }}...{{ account.substr(-5) }}</a
         >
