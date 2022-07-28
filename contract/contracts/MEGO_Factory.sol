@@ -7,12 +7,8 @@ import "./MEGO_Types.sol";
 contract MEGO_Factory is MEGO_Types {
     MEGO_Types types;
     uint256 public instances_counter;
-    struct Instance {
-        address instance_address;
-        MEGO_Contents instance;
-    }
     mapping(address => uint256) public owned_instances;
-    mapping(uint256 => Instance) public instances;
+    mapping(uint256 => address) public instances;
 
     event InstanceCreated(address _contents);
     event ContentCreated(
@@ -44,10 +40,8 @@ contract MEGO_Factory is MEGO_Types {
         newInstance.transferOwnership(msg.sender);
         // Increment the number of instances owned by the sender
         owned_instances[msg.sender]++;
-        // Store the instance
-        instances[instances_counter].instance = newInstance;
         // Store the instance address
-        instances[instances_counter].instance_address = address(newInstance);
+        instances[instances_counter] = address(newInstance);
         // Finally emit creation event
         emit InstanceCreated(address(newInstance));
         return address(newInstance);
@@ -73,11 +67,10 @@ contract MEGO_Factory is MEGO_Types {
                 instanceIndex++
             ) {
                 MEGO_Contents instance = MEGO_Contents(
-                    instances[instanceIndex].instance_address
+                    instances[instanceIndex]
                 );
                 if (instance.owner() == _owner) {
-                    result[resultIndex] = instances[instanceIndex]
-                        .instance_address;
+                    result[resultIndex] = instances[instanceIndex];
                     resultIndex++;
                 }
             }

@@ -13,8 +13,8 @@ async function main() {
     console.log("Deployed instances:", instances)
     const instance = instances[0]
 
-    const metadata = 'IPFS_HASH_FIXED'
-    const tokenId = 1
+    const metadata = 'bafkreiex3numrx6e54p74cqlrwz55y242li3fge2mwsrwzvedgfajbmg7u'
+    const tokenId = 2
     const result = await contract.fixContent(instance, tokenId, metadata)
     const receipt = await result.wait()
     console.log(receipt)

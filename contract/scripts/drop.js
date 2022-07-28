@@ -13,7 +13,7 @@ async function main() {
     console.log("Deployed instances:", instances)
     const instance = instances[0]
     console.log('Minting NFT..')
-    const metadata = 'IPFS_HASH'
+    const metadata = 'bafkreiex3numrx6e54p74cqlrwz55y242li3fge2mwsrwzvedgfajbmg7u'
     const model = "blog"
     const result = await contract.dropContent(instance, metadata, model)
     const receipt = await result.wait()
