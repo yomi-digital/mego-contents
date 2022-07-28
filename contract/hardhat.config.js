@@ -16,7 +16,15 @@ let hardhatConfigs = {
       url: provider
     }
   },
-  solidity: "0.8.6",
+  solidity: {
+    version: "0.8.6",
+    settings: {
+      optimizer: {
+        enabled: true,
+        runs: 1000,
+      },
+    },
+  }
 }
 
 if (process.env.ACCOUNTS !== undefined) {

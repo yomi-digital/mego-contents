@@ -20,12 +20,15 @@ contract MEGO_Contents is ERC721, Ownable {
     mapping(uint256 => string) public token_models;
     mapping(string => uint256) public minted_tokens;
     string[] public content_models;
+    address internal factory_address;
 
     event PermanentURI(string _value, uint256 indexed _id);
 
-    constructor(string memory _name, string memory _ticker)
+    constructor(string memory _name, string memory _ticker, address _factory)
         ERC721(_name, _ticker)
-    {}
+    {
+        factory_address = _factory;
+    }
 
     function _baseURI() internal view override returns (string memory) {
         return contract_base_uri;
@@ -102,9 +105,10 @@ contract MEGO_Contents is ERC721, Ownable {
     }
 
     function dropContent(string memory _metadata, string memory _model)
-        external
-        onlyOwner
+        public
+        returns (uint256)
     {
+        require(msg.sender == factory_address, "Caller is not the factory");
         require(!metadata_freezed[_metadata], "This NFT exists");
         require(activated_models[_model], "Model not activated");
         token_id_counter.increment();
@@ -113,24 +117,26 @@ contract MEGO_Contents is ERC721, Ownable {
         token_models[newTokenId] = _model;
         minted_tokens[_model]++;
         _mint(msg.sender, newTokenId);
+        return newTokenId;
     }
 
     /*
         This method will fix a token metadata if not freezed
     */
     function fixContent(uint256 _token, string memory _metadata)
-        external
-        onlyOwner
+        public
     {
         require(!token_freezed[_token], "Token is freezed");
+        require(msg.sender == factory_address, "Caller is not the factory");
         token_metadata[_token] = _metadata;
     }
 
     /*
         This method will fix a token metadata if not freezed
     */
-    function freezeContent(uint256 _token) external onlyOwner {
+    function freezeContent(uint256 _token) public {
         require(!token_freezed[_token], "Token is freezed");
+        require(msg.sender == factory_address, "Caller is not the factory");
         token_freezed[_token] = true;
         metadata_freezed[token_metadata[_token]] = true;
         emit PermanentURI(token_metadata[_token], _token);

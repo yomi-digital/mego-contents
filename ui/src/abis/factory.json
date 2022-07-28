@@ -244,7 +244,7 @@
         "type": "string"
       }
     ],
-    "name": "startNewContents",
+    "name": "startNewInstance",
     "outputs": [
       {
         "internalType": "address",

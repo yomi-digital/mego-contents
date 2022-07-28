@@ -9,14 +9,15 @@ async function main() {
   const contract = new ethers.Contract(configs.contract_address, ABI.abi, wallet)
   const name = 'CONTENTS_NAME'
   const ticker = 'CONTENTS_TICKER'
-  const result = await contract.startNewContents(name, ticker)
+  const result = await contract.startNewInstance(name, ticker)
   const receipt = await result.wait()
   console.log("New contents contract created at:", receipt.events[2].args._contents)
   console.log("💸 Gas used:", receipt.gasUsed.toString())
   configs.contents_address = receipt.events[2].args._contents
   fs.writeFileSync(process.env.CONFIG, JSON.stringify(configs, null, 4))
-  const instance = await contract.returnContentsInstance(wallet.address)
-  if (instance === receipt.events[2].args._contents) {
+  const instances = await contract.instancesOfOwner(wallet.address)
+  console.log("Deployed instances:", instances)
+  if (instances.indexOf(receipt.events[2].args._contents) !== -1) {
     console.log("Confirming instance connected to:", wallet.address)
   }
 }
