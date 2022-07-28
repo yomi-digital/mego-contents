@@ -22,7 +22,7 @@
         contents will be stored.<br />Deploy is completely free, you just need
         to pay for gas fees.
       </h2>
-      <b-button v-if="!checking" @click="deploy">DEPLOY CONTRACT</b-button>
+      <b-button v-if="!isWorking" @click="deploy">DEPLOY CONTRACT</b-button>
       <br /><br />
       <div v-if="isWorking">{{ workingMessage }}</div>
     </div>

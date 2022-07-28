@@ -189,18 +189,8 @@ export default {
           const accounts = await web3.eth.getAccounts();
           if (accounts.length > 0) {
             app.account = accounts[0];
-            const factoryContract = new web3.eth.Contract(
-              app.abi_factory,
-              app.contract
-            );
-            const instances = await factoryContract.methods
-              .instancesOfOwner(app.account)
-              .call();
-            console.log("Deployed instances:", instances);
-            if (instances.length > 0) {
-              app.instance = instances[0];
-              app.fetchModels();
-            }
+            app.instance = localStorage.getItem("instance");
+            app.fetchModels();
           } else {
             alert("No accounts allowed, please retry!");
           }
