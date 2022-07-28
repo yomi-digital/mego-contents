@@ -3,12 +3,14 @@ pragma solidity ^0.8.6;
 
 import "./MEGO_Contents.sol";
 import "./MEGO_Types.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 
-contract MEGO_Factory is MEGO_Types {
+contract MEGO_Factory is MEGO_Types, Ownable {
     MEGO_Types types;
     uint256 public instances_counter;
     mapping(address => uint256) public owned_instances;
     mapping(uint256 => address) public instances;
+    uint256 public deployment_price = 0.1 ether;
 
     event InstanceCreated(address _contents);
     event ContentCreated(
@@ -26,8 +28,10 @@ contract MEGO_Factory is MEGO_Types {
 
     function startNewInstance(string memory _name, string memory _ticker)
         public
+        payable
         returns (address)
     {
+        require(msg.value == deployment_price, "Must send exact amount needed to deploy the instance.");
         // Increase instances counter
         instances_counter++;
         // Create new instance of contract
@@ -113,5 +117,9 @@ contract MEGO_Factory is MEGO_Types {
 
     function returnTypesInstance() public view returns (address) {
         return address(types);
+    }
+
+    function fixDeploymentPrice(uint256 _newPrice) public onlyOwner {
+        deployment_price = _newPrice;
     }
 }
