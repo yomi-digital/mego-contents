@@ -94,10 +94,11 @@ export default {
               app.abi_factory,
               app.contract
             );
-            const instanceAddress = await factoryContract.methods
-              .instances(accounts[0])
+            const instances = await factoryContract.methods
+              .instancesOfOwner(accounts[0])
               .call();
-            app.instance = instanceAddress;
+            console.log("Deployed instances:", instances);
+            app.instance = instances[0];
             app.fetchModels();
             const contentsContract = new web3.eth.Contract(
               app.abi_contents,

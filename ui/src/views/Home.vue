@@ -96,11 +96,15 @@ export default {
               app.abi_factory,
               app.contract
             );
-            app.instance = await factoryContract.methods
-              .instances(accounts[0])
+            const instances = await factoryContract.methods
+              .instancesOfOwner(app.account)
               .call();
-            app.fetchModels();
-            app.fetchDatatypes();
+            console.log("Deployed instances:", instances);
+            if (instances.length > 0) {
+              app.instance = instances[0];
+              app.fetchModels();
+              app.fetchDatatypes();
+            }
           } else {
             alert("No accounts allowed, please retry!");
           }
@@ -182,6 +186,7 @@ export default {
       while (exists) {
         try {
           const result = await factoryContract.methods.created(i).call();
+          console.log(result)
           if (result.length > 0) {
             app.available[result] = [];
             let datatypes = [];

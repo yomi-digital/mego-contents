@@ -94,10 +94,11 @@ export default {
               app.abi_factory,
               app.contract
             );
-            const instanceAddress = await factoryContract.methods
-              .instances(accounts[0])
+            const instances = await factoryContract.methods
+              .instancesOfOwner(app.account)
               .call();
-            app.instance = instanceAddress;
+            console.log("Deployed instances:", instances);
+            app.instance = instances[0];
             app.fetchModels();
             const contentsContract = new web3.eth.Contract(
               app.abi_contents,
@@ -107,6 +108,7 @@ export default {
               .tokensOfModel(app.account, "blog")
               .call();
             console.log("Nft of model?", owned);
+            console.log(owned);
             for (let k in owned) {
               let tokenURI = await contentsContract.methods
                 .tokenURI(owned[k])
@@ -117,11 +119,18 @@ export default {
               console.log("Metadata is freezed?", freezed);
               if (!freezed) {
                 console.log("TOKEN URI FOR #" + owned[k] + ":", tokenURI);
-                const content = await app.axios.get(
-                  tokenURI.replace("ipfs://", "https://ipfs.yomi.digital/ipfs/")
-                );
-                content.data.tokenId = owned[k];
-                app.drafts.push(content.data);
+                try {
+                  const content = await app.axios.get(
+                    tokenURI.replace(
+                      "ipfs://",
+                      "https://ipfs.yomi.digital/ipfs/"
+                    )
+                  );
+                  content.data.tokenId = owned[k];
+                  app.drafts.push(content.data);
+                } catch (e) {
+                  console.log("Can't download from IPFS..");
+                }
               }
             }
             app.loading = false;

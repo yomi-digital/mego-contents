@@ -115,13 +115,16 @@ export default {
           if (accounts.length > 0) {
             app.checking = true;
             const factoryContract = new web3.eth.Contract(app.abi, app.contract);
-            const instanceAddress = await factoryContract.methods
-              .instances(accounts[0])
+            
+            const instances = await factoryContract.methods
+              .instancesOfOwner(accounts[0])
               .call();
+            console.log("Deployed instances:", instances);
+            const instanceAddress = instances[0];
             console.log("Instance exists?", instanceAddress);
             app.account = accounts[0];
             if (
-              instanceAddress !== "0x0000000000000000000000000000000000000000"
+              instanceAddress !== undefined
             ) {
               app.checking = false;
               app.instance = instanceAddress;

@@ -116,7 +116,7 @@ contract MEGO_Contents is ERC721, Ownable {
         token_metadata[newTokenId] = _metadata;
         token_models[newTokenId] = _model;
         minted_tokens[_model]++;
-        _mint(msg.sender, newTokenId);
+        _mint(owner(), newTokenId);
         return newTokenId;
     }
 

@@ -193,11 +193,14 @@ export default {
               app.abi_factory,
               app.contract
             );
-            const instanceAddress = await factoryContract.methods
-              .instances(accounts[0])
+            const instances = await factoryContract.methods
+              .instancesOfOwner(app.account)
               .call();
-            app.instance = instanceAddress;
-            app.fetchModels();
+            console.log("Deployed instances:", instances);
+            if (instances.length > 0) {
+              app.instance = instances[0];
+              app.fetchModels();
+            }
           } else {
             alert("No accounts allowed, please retry!");
           }
@@ -315,46 +318,50 @@ export default {
           if (datatype.input !== "file") {
             metadata[datatype.name] = app.content[datatype.name];
           } else {
-            const ext =
-              app.content[datatype.name].name.split(".")[
-                app.content[datatype.name].name.split(".").length - 1
-              ];
-            console.log("Extension file is:", ext);
-            const supported = ["gif", "png", "jpg", "jpeg"];
-            if (supported.indexOf(ext) !== -1) {
-              app.log("success", "File is valid, uploading on IPFS..");
-              const formData = new FormData();
-              formData.append("file", app.content[datatype.name]);
-              formData.append("name", app.content[datatype.name].name);
-              try {
-                let ipfsImageUpload = await axios({
-                  method: "post",
-                  url: app.umiUrl + "/ipfs/upload",
-                  data: formData,
-                  headers: {
-                    "Content-Type": "multipart/form-data",
-                  },
-                });
-                if (
-                  ipfsImageUpload.data.error !== undefined &&
-                  ipfsImageUpload.data.error === false
-                ) {
-                  metadata[datatype.name] =
-                    "ipfs://" + ipfsImageUpload.data.ipfs_hash;
-                } else {
+            if (app.content[datatype.name].name !== undefined) {
+              const ext =
+                app.content[datatype.name].name.split(".")[
+                  app.content[datatype.name].name.split(".").length - 1
+                ];
+              console.log("Extension file is:", ext);
+              const supported = ["gif", "png", "jpg", "jpeg"];
+              if (supported.indexOf(ext) !== -1) {
+                app.log("success", "File is valid, uploading on IPFS..");
+                const formData = new FormData();
+                formData.append("file", app.content[datatype.name]);
+                formData.append("name", app.content[datatype.name].name);
+                try {
+                  let ipfsImageUpload = await axios({
+                    method: "post",
+                    url: app.umiUrl + "/ipfs/upload",
+                    data: formData,
+                    headers: {
+                      "Content-Type": "multipart/form-data",
+                    },
+                  });
+                  if (
+                    ipfsImageUpload.data.error !== undefined &&
+                    ipfsImageUpload.data.error === false
+                  ) {
+                    metadata[datatype.name] =
+                      "ipfs://" + ipfsImageUpload.data.ipfs_hash;
+                  } else {
+                    app.isWorking = false;
+                    app.log("danger", "Upload on IPFS failed, please retry.");
+                  }
+                } catch (e) {
                   app.isWorking = false;
                   app.log("danger", "Upload on IPFS failed, please retry.");
                 }
-              } catch (e) {
+              } else {
+                app.log(
+                  "danger",
+                  "Extension is not allowed, please retry with a different file."
+                );
                 app.isWorking = false;
-                app.log("danger", "Upload on IPFS failed, please retry.");
               }
             } else {
-              app.log(
-                "danger",
-                "Extension is not allowed, please retry with a different file."
-              );
-              app.isWorking = false;
+              metadata[datatype.name] = app.stored[datatype.name];
             }
           }
         }
@@ -396,12 +403,12 @@ export default {
         console.log("Found network:", network);
         if (network === app.network) {
           try {
-            const contentsContract = new app.web3.eth.Contract(
-              app.abi_contents,
-              app.instance
+            const factoryContract = new app.web3.eth.Contract(
+              app.abi_factory,
+              app.contract
             );
-            await contentsContract.methods
-              .fixContent(app.tokenId, app.ipfsNft)
+            await factoryContract.methods
+              .fixContent(app.instance, app.tokenId, app.ipfsNft)
               .send({ from: app.account, gas: 300000 })
               .on("transactionHash", (tx) => {
                 app.workingMessage = "Found pending transaction at: " + tx;
@@ -437,12 +444,12 @@ export default {
         console.log("Found network:", network);
         if (network === app.network) {
           try {
-            const contentsContract = new app.web3.eth.Contract(
-              app.abi_contents,
-              app.instance
+            const factoryContract = new app.web3.eth.Contract(
+              app.abi_factory,
+              app.contract
             );
-            await contentsContract.methods
-              .freezeContent(app.tokenId)
+            await factoryContract.methods
+              .freezeContent(app.instance, app.tokenId)
               .send({ from: app.account, gas: 300000 })
               .on("transactionHash", (tx) => {
                 app.workingMessage = "Found pending transaction at: " + tx;

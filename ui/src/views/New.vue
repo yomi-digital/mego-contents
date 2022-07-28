@@ -164,10 +164,11 @@ export default {
               app.abi_factory,
               app.contract
             );
-            const instanceAddress = await factoryContract.methods
-              .instances(accounts[0])
+            const instances = await factoryContract.methods
+              .instancesOfOwner(accounts[0])
               .call();
-            app.instance = instanceAddress;
+            console.log("Deployed instances:", instances);
+            app.instance = instances[0];
             app.fetchModels();
           } else {
             alert("No accounts allowed, please retry!");
@@ -348,12 +349,12 @@ export default {
         console.log("Found network:", network);
         if (network === app.network) {
           try {
-            const contentsContract = new app.web3.eth.Contract(
-              app.abi_contents,
-              app.instance
+            const factoryContract = new app.web3.eth.Contract(
+              app.abi_factory,
+              app.contract
             );
-            await contentsContract.methods
-              .dropContent(app.ipfsNft, app.category)
+            await factoryContract.methods
+              .dropContent(app.instance, app.ipfsNft, app.category)
               .send({ from: app.account, gas: 300000 })
               .on("transactionHash", (tx) => {
                 app.workingMessage = "Found pending transaction at: " + tx;

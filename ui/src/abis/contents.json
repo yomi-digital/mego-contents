@@ -10,6 +10,11 @@
         "internalType": "string",
         "name": "_ticker",
         "type": "string"
+      },
+      {
+        "internalType": "address",
+        "name": "_factory",
+        "type": "address"
       }
     ],
     "stateMutability": "nonpayable",
@@ -243,7 +248,13 @@
       }
     ],
     "name": "dropContent",
-    "outputs": [],
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
     "stateMutability": "nonpayable",
     "type": "function"
   },
