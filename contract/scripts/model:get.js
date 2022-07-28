@@ -8,9 +8,9 @@ async function main() {
     let wallet = new ethers.Wallet(configs.owner_key).connect(provider)
     const contract = new ethers.Contract(configs.contract_address, ABI.abi, wallet)
 
-    const model = "blog"
+    const model = "nft"
     const state = await contract.models(model)
-    console.log("Checking state for " + blog + ":", state)
+    console.log("Checking state for " + model + ":", state)
     let datatypes = []
     let finished = false
     let i = 0
