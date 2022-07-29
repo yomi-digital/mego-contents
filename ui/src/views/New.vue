@@ -21,10 +21,16 @@
             <b-input v-model="content[input.name]"></b-input>
           </b-field>
           <b-field
-            v-if="input.input === 'textarea'"
+            v-if="input.input === 'textarea' && input.specs !== 'plain'"
             :label="input.name.toUpperCase()"
           >
             <VueEditor v-model="content[input.name]" />
+          </b-field>
+          <b-field
+            v-if="input.input === 'textarea' && input.specs === 'plain'"
+            :label="input.name.toUpperCase()"
+          >
+            <b-input v-model="content[input.name]" type="textarea"></b-input>
           </b-field>
           <b-field
             v-if="input.input === 'select'"
@@ -70,14 +76,16 @@
           >PREPARE METADATA</b-button
         >
       </div>
-      <div v-if="ipfsNft" style="text-align: center; padding: 20px 0 20px 0">
+      <div v-if="ipfsNft" style="text-align: center; padding: 30vh 0">
         Metadata are generated, please double check them before mint at<br />
         <a
           target="_blank"
           :href="'https://ipfs.yomi.digital/ipfs/' + ipfsNft"
           >{{ ipfsNft }}</a
         ><br /><br />
-        <b-button v-if="!isWorking" expanded @click="mint">MINT CONTENT</b-button>
+        <b-button v-if="!isWorking" expanded @click="mint"
+          >MINT CONTENT</b-button
+        >
       </div>
     </div>
     <div v-if="loading">Syncing state with blockchain, please wait..</div>

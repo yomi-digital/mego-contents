@@ -6,7 +6,6 @@
         <a href="/#/new">NEW</a>
         <a href="/#/drafts">DRAFTS</a>
         <a href="/#/public">PUBLIC</a>
-        <a href="/#/api">API</a>
         <a href="#" style="float: right; margin-top: 2px"
           >{{ account.substr(0, 5) }}...{{ account.substr(-5) }}</a
         >
@@ -15,17 +14,22 @@
     </div>
     <div
       v-if="account && !checking && instance.length === 0"
-      style="padding: 35vh 0; text-align: center"
+      style="padding: 30vh 30%; text-align: center"
     >
-      <h1 class="title is-2">Deploy your instance</h1>
-      <h2 class="title is-3">
-        In order to create contents you must create an NFT contract where your
-        contents will be stored.<br />Deploy is completely free, you just need
-        to pay for gas fees.
-      </h2>
-      <input v-model="newInstanceName" placeholder="New instance name" />
-      <input v-model="newInstanceTicker" placeholder="New instance ticker" />
-      <b-button v-if="!isWorking" @click="deploy">DEPLOY CONTRACT</b-button>
+      <h1 class="title is-2">MEGO Contents</h1>
+      In order to create contents you must create an new contract where your
+      contents will be stored. This contract will be owned by you of course and you'll be able to see it on OpenSea.<br />Each
+      new deploy costs 0.1 ETH, in any deploy you can mint an unlimited amount
+      of contents for free.<br /><br />
+      <b-input
+        v-model="newInstanceName"
+        placeholder="New instance name"
+      /><br />
+      <b-input
+        v-model="newInstanceTicker"
+        placeholder="New instance ticker"
+      /><br />
+      <b-button expanded v-if="!isWorking" @click="deploy">DEPLOY FIRST CONTRACT</b-button>
       <br /><br />
       <div v-if="isWorking">{{ workingMessage }}</div>
     </div>
@@ -172,6 +176,7 @@ export default {
         console.log("Found network:", network);
         if (network === app.network) {
           app.isWorking = true;
+          app.workingMessage = 'Please confirm operation in your wallet..';
           const nftContract = new web3.eth.Contract(app.abi, app.contract);
           const deployment_price = await nftContract.methods
             .deployment_price()
@@ -197,7 +202,7 @@ export default {
           );
         }
       } catch (e) {
-        app.checking = false;
+        app.isWorking = false;
         alert(e.message);
       }
     },

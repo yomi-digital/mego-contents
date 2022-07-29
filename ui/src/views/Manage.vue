@@ -1,10 +1,24 @@
 <template>
   <div class="home">
     <div v-if="!loading" style="position: relative">
+      <a
+        :href="
+          'https://testnets.opensea.io/assets/rinkeby/' +
+          instance +
+          '/' +
+          tokenId
+        "
+        target="_blank"
+      >
+        <b-button
+          style="position: absolute; top: -15px; right: 0; font-size: 12px"
+          >SEE ON OPENSEA -></b-button
+        >
+      </a>
       <b-button
         v-if="!freezed"
         @click="freeze()"
-        style="position: absolute; top: -15px; right: 0; font-size: 12px"
+        style="position: absolute; top: -15px; right: 160px; font-size: 12px"
         >SEND LIVE -></b-button
       >
       <b-field label="MODEL">
@@ -31,10 +45,16 @@
           <b-input v-model="content[input.name]"></b-input>
         </b-field>
         <b-field
-          v-if="input.input === 'textarea'"
+          v-if="input.input === 'textarea' && input.specs !== 'plain'"
           :label="input.name.toUpperCase()"
         >
           <VueEditor v-model="content[input.name]" />
+        </b-field>
+        <b-field
+          v-if="input.input === 'textarea' && input.specs === 'plain'"
+          :label="input.name.toUpperCase()"
+        >
+          <b-input v-model="content[input.name]" type="textarea"></b-input>
         </b-field>
         <b-field
           v-if="input.input === 'select'"
