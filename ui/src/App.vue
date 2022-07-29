@@ -18,9 +18,14 @@
     >
       <h1 class="title is-2">MEGO Contents</h1>
       In order to create contents you must create an new contract where your
-      contents will be stored. This contract will be owned by you of course and you'll be able to see it on OpenSea.<br />Each
-      new deploy costs 0.1 ETH, in any deploy you can mint an unlimited amount
-      of contents for free.<br /><br />
+      contents will be stored. This contract will be owned by you of course and
+      you'll be able to see it on OpenSea.<br />Each new deploy costs 0.05 rETH,
+      in any instance you can mint an unlimited amount of contents for free,
+      you'll pay only for gas fees.<br /><br />
+      <span style="color: #f00"
+        >Please note we're in Rinkeby network, data are not stored
+        permanently.</span
+      ><br /><br />
       <b-input
         v-model="newInstanceName"
         placeholder="New instance name"
@@ -29,7 +34,9 @@
         v-model="newInstanceTicker"
         placeholder="New instance ticker"
       /><br />
-      <b-button expanded v-if="!isWorking" @click="deploy">DEPLOY FIRST CONTRACT</b-button>
+      <b-button expanded v-if="!isWorking" @click="deploy"
+        >DEPLOY FIRST CONTRACT</b-button
+      >
       <br /><br />
       <div v-if="isWorking">{{ workingMessage }}</div>
     </div>
@@ -176,7 +183,7 @@ export default {
         console.log("Found network:", network);
         if (network === app.network) {
           app.isWorking = true;
-          app.workingMessage = 'Please confirm operation in your wallet..';
+          app.workingMessage = "Please confirm operation in your wallet..";
           const nftContract = new web3.eth.Contract(app.abi, app.contract);
           const deployment_price = await nftContract.methods
             .deployment_price()
