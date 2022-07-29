@@ -10,7 +10,8 @@ contract MEGO_Factory is MEGO_Types, Ownable {
     uint256 public instances_counter;
     mapping(address => uint256) public owned_instances;
     mapping(uint256 => address) public instances;
-    uint256 public deployment_price = 0.1 ether;
+    uint256 public deployment_price = 0.05 ether;
+    address public vault_address;
 
     event InstanceCreated(address _contents);
     event ContentCreated(
@@ -24,6 +25,7 @@ contract MEGO_Factory is MEGO_Types, Ownable {
 
     constructor() {
         types = new MEGO_Types();
+        vault_address = msg.sender;
     }
 
     function startNewInstance(string memory _name, string memory _ticker)
@@ -119,7 +121,21 @@ contract MEGO_Factory is MEGO_Types, Ownable {
         return address(types);
     }
 
+    // Admin functions
     function fixDeploymentPrice(uint256 _newPrice) public onlyOwner {
         deployment_price = _newPrice;
+    }
+
+    function fixVault(address newAddress) public onlyOwner {
+        require(newAddress != address(0), "Can't use black hole");
+        vault_address = newAddress;
+    }
+
+    function withdrawEther() external onlyOwner {
+        uint256 balance = address(this).balance;
+        require(vault_address != address(0) && balance > 0, "Can't withdraw");
+        bool success;
+        (success, ) = vault_address.call{value: balance}("");
+        require(success, "Withdraw to vault failed");
     }
 }
