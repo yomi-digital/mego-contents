@@ -49,6 +49,7 @@
                 :data="
                   Object.keys(datatypes[instance]).map((el) => {
                     return {
+                      index: datatypes[instance][el].index,
                       datatype_name: el,
                       fields: datatypes[instance][el].length,
                     };
@@ -83,6 +84,20 @@
                   v-slot="props"
                 >
                   {{ props.row.fields }}
+                </b-table-column>
+
+                <b-table-column
+                  field="fields"
+                  label="Remove type"
+                  sortable
+                  width="90"
+                  v-slot="props"
+                >
+                  <b-button
+                    style="font-size: 12px"
+                    @click="removeType(instance, props.row.datatype_name)"
+                    >REMOVE TYPE FROM CONTRACT</b-button
+                  >
                 </b-table-column>
 
                 <template #detail="props">
@@ -135,7 +150,13 @@
                     <span v-if="index > 0">, </span>{{ type.name }}</span
                   >. <br /><br />
                   <b-button
-                    style="float: right; position: absolute; top: 0; right: 0"
+                    style="
+                      float: right;
+                      position: absolute;
+                      top: 0;
+                      right: 0;
+                      font-size: 12px;
+                    "
                     @click="addType(instance, index)"
                     >ADD TYPE TO CONTRACT</b-button
                   >
@@ -446,6 +467,43 @@ export default {
         console.log("ADD_TYPE_RECEIPT", receipt);
         app.fetchModels(instance);
         app.isWorking = false;
+        window.location.reload();
+      } catch (e) {
+        alert(e.message);
+        app.isWorking = false;
+      }
+    },
+    async removeType(instance, type) {
+      const app = this;
+      const contentsContract = new app.web3.eth.Contract(
+        app.abi_contents,
+        instance
+      );
+      app.isWorking = true;
+      let i = 0;
+      let c = 0;
+      for (let k in app.datatypes[instance]) {
+        if (k === type) {
+          i = c;
+        }
+        c++;
+      }
+      try {
+        console.log("Removing type:", type);
+        app.workingMessage = "Please confirm transaction in your wallet.";
+        const receipt = await contentsContract.methods
+          .removeType(type, i)
+          .send({
+            from: app.account,
+          })
+          .on("transactionHash", (tx) => {
+            app.workingMessage =
+              "Adding type, waiting for confirmations at " + tx;
+          });
+        console.log("ADD_TYPE_RECEIPT", receipt);
+        app.fetchModels(instance);
+        app.isWorking = false;
+        window.location.reload();
       } catch (e) {
         alert(e.message);
         app.isWorking = false;

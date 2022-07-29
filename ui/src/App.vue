@@ -2,7 +2,7 @@
   <div id="app">
     <div v-if="account && !checking && instance.length > 0">
       <div class="bar">
-        <a href="/">MEGO</a> |
+        <a href="/">MEGO CONTENTS</a> |
         <a href="/#/new">NEW</a>
         <a href="/#/drafts">DRAFTS</a>
         <a href="/#/public">PUBLIC</a>
