@@ -3,6 +3,7 @@ import App from './App.vue'
 import router from './router'
 import Buefy from 'buefy'
 import 'buefy/dist/buefy.css'
+import './themes/style.scss'
 
 /* import the fontawesome core */
 import { library } from '@fortawesome/fontawesome-svg-core'

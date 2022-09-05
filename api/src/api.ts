@@ -37,5 +37,5 @@ app.use((req, res, next) => {
 });
 
 app.listen(3000, () => {
-  console.log(`Retriev API running.`);
+  console.log(`Mego API running.`);
 });
