@@ -1,6 +1,8 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 import Home from '../views/Home.vue'
+import Instances from '../views/Instances.vue'
+import Instance from '../views/Instance.vue'
 import Drafts from '../views/Drafts.vue'
 import Manage from '../views/Manage.vue'
 import Public from '../views/Public.vue'
@@ -13,6 +15,16 @@ const routes = [
     path: '/',
     name: 'Home',
     component: Home
+  },
+  {
+    path: '/instances',
+    name: 'Instances',
+    component: Instances
+  },
+  {
+    path: '/manage-instance/:instance',
+    name: 'Instance',
+    component: Instance
   },
   {
     path: '/new',

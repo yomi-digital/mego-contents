@@ -21,7 +21,8 @@
 
 @font-face {
   font-family: 'SpaceGrotesk';
-  src: url('../assets/fonts/SpaceGrotesk-Regular.ttf') format('ttf');
+  src: url('~@/assets/fonts/SpaceGrotesk-Regular.woff2') format('woff2'),  
+    url('~@/assets/fonts/SpaceGrotesk-Regular.ttf') format('ttf');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -29,8 +30,9 @@
 
 @font-face {
   font-family: 'SpaceGrotesk';
-  src: url('../assets/fonts/SpaceGrotesk-Bold.ttf') format('ttf');
-  font-weight: bld;
+  src: url('~@/assets/fonts/SpaceGrotesk-Bold.woff2') format('woff2'),  
+    url('~@/assets/fonts/SpaceGrotesk-Bold.ttf') format('ttf');
+  font-weight: bold;
   font-style: normal;
   font-display: swap;
 }
@@ -70,13 +72,31 @@ button {background: none!important;border-radius: 8px!important;}
   flex-direction: row;
   align-content: space-between;
   align-items: center;
-  padding: 1.375rem 0 1.375rem 1.375rem;
+  padding: 1.375rem 0 1.375rem 2rem;
   background: #EDEDED;
 }
+#navbar * {font-family: 'Sk-Modernist';}
 #navbar > img {width: 180px;height: 15px;}
 .navbar_links {margin: 0 0 0 auto;}
 .navbar_links a {color: black; margin: 0 15px;}
 .navbar_links span {display: inline-block; width: 10px;height: 10px; border:1px solid black;border-radius: 100%; margin: 0 7px; transition: all .3s ease-in-out;}
 .navbar_link_active span {background: black;}
-#navbar_group > div:nth-child(2) {font-family: 'Sk-Modernist';font-size: 90px; color: black; display: flex; align-items: center; align-content: space-between; padding: 1rem 2rem;}
+#navbar_group > div:nth-child(2) {background: #EDEDED;font-family: 'Sk-Modernist';font-size: 90px; color: black; display: flex; align-items: center; align-content: space-between; padding: 1rem 2.6rem;}
 #navbar_group > div:nth-child(2) h1 {margin: auto;}
+#instances {background: #EDEDED;}
+.instances_container {display: flex; flex-direction: column; justify-content: center; width: calc(100vw - 120px); margin:auto; padding-top: 6rem;}
+.instances_header {display: flex; flex-direction: row; align-items: center; align-content: space-between; margin-bottom: 1rem;}
+.instances_header * {font-family: 'Sk-Modernist'!important}
+.instances_header h2 {font-size:24px;font-family: 'Sk-Modernist';color: black;}
+.instances_list {display: flex; flex-direction: column; justify-content: center;}
+.instance {display: flex; flex-direction: row; align-items: center; align-content: space-between; margin: 2rem 0;}
+.instances_left {display: flex; flex-direction: column;}
+.instances_right {display: flex; flex-direction: column; margin: 0 0 auto auto !important;}
+.instance_left > h3 * {font-family: 'Sk-Modernist'!important;}
+.instance_left *, .instances_right *  {font-family: 'SpaceGrotesk'; text-transform: uppercase;}
+.instance_left p {color: black;}
+.instances_loading {height: 200px; text-align: center; margin: 3rem;}
+.no_instances {text-align: center; margin: 3rem;}
+.instance_info {display: flex; flex-direction: row; justify-content: space-between; margin: -4.2rem 0 3.5rem 0;}
+.instance_info h2{font-size: 42px; font-family: 'Sk-Modernist'; color: black;}
+.instance_info p {font-size: 21px;height: fit-content;margin:auto 0;font-family: 'SpaceGrotesk';}

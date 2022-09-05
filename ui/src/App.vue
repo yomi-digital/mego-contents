@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <div v-if="account && !checking && instance.length > 0">
+    <div style="width:100vw;height:100vh" v-if="account && !checking && instance.length > 0">
       <Navbar :account="account" :instances="instances" />
       <router-view />
     </div>
