@@ -1,5 +1,40 @@
 <template>
   <div id="instance">
+    <div class="modal_container" v-if="modals.removeDatatype">
+      <div class="modal">
+        <img src="../assets/images/close-icon.svg" alt="Close" @click="modals.removeDatatype = false">
+        <h2 v-html="workingMessage"></h2>
+        <!-- <p>Define the name and the ticker of the instance.</p> -->
+        <font-awesome-icon icon="fa-solid fa-circle-notch" style="font-size:20px;margin-top: .2rem;" class="fa-spin"
+          v-if="isWorking" />
+      </div>
+    </div>
+    <div class="modal_container" v-if="modals.addDatatype">
+      <div class="modal">
+        <img src="../assets/images/close-icon.svg" alt="Close" @click="modals.addDatatype = false">
+        <h2 v-html="workingMessage"></h2>
+        <!-- <p>Define the name and the ticker of the instance.</p> -->
+        <font-awesome-icon icon="fa-solid fa-circle-notch" style="font-size:20px;margin-top: .2rem;" class="fa-spin"
+          v-if="isWorking" />
+      </div>
+    </div>
+    <div class="modal_container" v-if="modals.removeDatatypeAttr >= 0">
+      <div class="modal">
+        <img src="../assets/images/close-icon.svg" alt="Close" @click="modals.removeDatatypeAttr = -1">
+        <h2>Are you sure you want to delete the selected datatype attribute?</h2>
+        <!-- <p>Define the name and the ticker of the instance.</p> -->
+        <div style="display:flex">
+          <b-button type="button" class="button-light is-dark mx-3 mt-5"
+            style="color:black!important;border:1px solid black!important" @click="modals.removeDatatypeAttr = -1">
+            NO
+          </b-button>
+          <b-button type="button" class="button-dark is-light mx-3 mt-5"
+            style="background:#111!important;color:white!important" @click="resetCustomDatatypesAttrs">
+            YES
+          </b-button>
+        </div>
+      </div>
+    </div>
     <div class="instances_container">
       <div class="instance_info">
         <h2>MANAGE YOUR INSTANCE</h2>
@@ -18,9 +53,11 @@
           </b-button> -->
         </h2>
         <div style="display:flex;margin-right:0;margin-left:auto">
-          <p class="tab" :style="(tab === 'pre-compiled') ? 'color: black; font-weight: 800;' : ''" @click="tab = 'pre-compiled'" v-if="tab !== 'list'">
+          <p class="tab" :style="(tab === 'pre-compiled') ? 'color: black; font-weight: 800;' : ''"
+            @click="tab = 'pre-compiled'" v-if="tab !== 'list'">
             pre-compiled</p>
-          <p class="tab" :style="(tab === 'customized') ? 'color: black; font-weight: 800;' : ''" @click="tab = 'customized'" v-if="tab !== 'list'">
+          <p class="tab" :style="(tab === 'customized') ? 'color: black; font-weight: 800;' : ''"
+            @click="tab = 'customized'" v-if="tab !== 'list'">
             customized</p>
           <b-button type="button button-dark is-light ml-auto mr-0 mt-1"
             style="background:#111!important;color:white!important" class="button" v-if="tab === 'list'"
@@ -50,11 +87,12 @@
           </div>
           <div class="instance_right">
             <b-button type="button" class="button button-dark is-light mx-auto mt-0"
-              @click="$router.push({name: 'Instance', params: {instance: instance}})">Remove datatype</b-button>
+              @click="() => {modals.removeDatatype = true;removeDatatype(datatype)}">Remove
+              datatype</b-button>
           </div>
         </div>
       </div>
-      <div class="add_instance_container" v-if="tab === 'pre-compiled' || tab === 'customized'">
+      <div class="add_instance_container" v-if="!loading && (tab === 'pre-compiled' || tab === 'customized')">
         <div class="add_instance_list instances_list" v-if="tab === 'pre-compiled'">
           <div class="instance" v-for="datatype in preCompiledDatatypes" :key="datatype.name">
             <div class="instance_left">
@@ -64,7 +102,7 @@
             </div>
             <div class="instance_right">
               <b-button type="button" class="button button-dark is-light mx-auto mt-0"
-                @click="$router.push({name: 'Instance', params: {instance: instance}})">Add datatype to contract
+                @click="() => {addDatatype(datatype.name);modals.addDatatype = true;}">Add datatype to contract
               </b-button>
             </div>
           </div>
@@ -82,42 +120,53 @@
               <th>Specs</th>
               <th>Delete</th>
             </tr>
-            <tr v-for="(datatype, index) in customDatatypes" :key="index">
+            <tr v-for="(datatypeAttr, index) in customDatatypeAttrs" :key="index">
               <td>
-                <b-input type="checkbox" @click="datatype.active = !datatype.active" :checked="datatype.active"></b-input>
+                <b-input type="checkbox" @click="datatypeAttr.active = !datatypeAttr.active" :checked="datatypeAttr.active">
+                </b-input>
               </td>
               <td>
-                <b-input type="text" style="width:200px" placeholder="FIELD NAME" v-model="datatype.name"></b-input>
+                <b-input type="text" style="width:200px" placeholder="FIELD NAME" v-model="datatypeAttr.name"></b-input>
               </td>
               <td>
-                <b-input type="checkbox" @click="datatype.print = !datatype.print" :checked="datatype.print"></b-input>
+                <b-input type="checkbox" @click="datatypeAttr.print = !datatypeAttr.print" :checked="datatypeAttr.print"></b-input>
               </td>
               <td>
-                <b-input type="checkbox" @click="datatype.required = !datatype.required" :checked="datatype.required"></b-input>
+                <b-input type="checkbox" @click="datatypeAttr.required = !datatypeAttr.required" :checked="datatypeAttr.required">
+                </b-input>
               </td>
               <td>
-                <b-input type="checkbox" @click="datatype.multiple = !datatype.multiple" :checked="datatype.multiple"></b-input>
+                <b-input type="checkbox" @click="datatypeAttr.multiple = !datatypeAttr.multiple" :checked="datatypeAttr.multiple">
+                </b-input>
               </td>
               <td>
-                <b-select  v-model="datatype.type" style="width:120px">
+                <b-select v-model="datatypeAttr.type" style="width:120px">
                   <option v-for="option in datatypeTypes" :value="option" :key="option">
                     {{ option }}
                   </option>
                 </b-select>
               </td>
               <td>
-                <b-input type="text" style="width:300px" v-model="datatype.specs"></b-input>
+                <b-input type="text" style="width:300px" v-model="datatypeAttr.specs"></b-input>
               </td>
               <td style="text-align:center">
-                <img src="../assets/images/trash-icon.svg" alt="" style="cursor:pointer">
+                <img src="../assets/images/trash-icon.svg" alt="" style="cursor:pointer" @click="modals.removeDatatypeAttr = index">
               </td>
             </tr>
             <tr>
               <td colspan="7"></td>
               <td style="display:flex;justify-content:center">
-                <b-button type="button" class="button-dark is-light mr-0 ml-4" style="background:#111!important;color:white!important;height: 3rem;
-    text-align: center;
-    margin: auto!important;">
+                <b-button type="button" class="button-dark is-light mr-0 ml-4"
+                  style="background:#111!important;color:white!important;height: 3rem;text-align: center;margin: auto!important;"
+                  @click="customDatatypeAttrs.push({
+            active: false,
+            name: '',
+            print: false,
+            required: false,
+            multiple: false,
+            type: 'text',
+            specs: ''
+          })">
                   <font-awesome-icon icon="fa-solid fa-plus" style="font-size:23px" />
                 </b-button>
               </td>
@@ -159,39 +208,41 @@
         tab: 'list',
         newDatatypeName: '',
         preCompiledDatatypes: [{
-          name: 'Blog',
+          name: 'blog',
           attrs: [{
-              name: 'Title'
+              name: 'name'
             },
             {
-              name: 'Description'
+              name: 'description'
             },
             {
-              name: 'Image'
+              name: 'body'
             },
             {
-              name: 'Date'
+              name: 'type'
+            },
+            {
+              name: 'tag'
+            },
+            {
+              name: 'image'
             }
           ]
         }, {
-          name: 'Product',
+          name: 'nft',
           attrs: [{
-              name: 'Title'
+              name: 'name'
             },
             {
-              name: 'Description'
+              name: 'description'
             },
             {
-              name: 'Image'
-            },
-            {
-              name: 'Price'
+              name: 'image'
             }
           ]
         }],
         datatypeTypes: ['text', 'textarea', 'file', 'checkbox'],
-        customDatatypes: [
-          {
+        customDatatypeAttrs: [{
             active: false,
             name: '',
             print: false,
@@ -218,7 +269,14 @@
             type: 'text',
             specs: ''
           }
-        ]
+        ],
+        isWorking: false,
+        workingMessage: '',
+        modals: {
+          removeDatatype: false,
+          addDatatype: false,
+          removeDatatypeAttr: -1
+        }
       }
     },
     methods: {
@@ -265,6 +323,34 @@
           alert(
             "Wrong network, please connect to correct one (" + app.network + ")!"
           );
+        }
+      },
+      async addDatatype(datatype) {
+        const app = this;
+        const contentsContract = new app.web3.eth.Contract(
+          app.abi_contents,
+          app.instance
+        );
+        app.isWorking = true;
+        try {
+          console.log("Adding type:", datatype);
+          app.workingMessage = "Adding new datatype <br />Please confirm transaction in your wallet.";
+          const receipt = await contentsContract.methods
+            .addType(datatype)
+            .send({
+              from: app.account,
+            })
+            .on("transactionHash", (tx) => {
+              app.workingMessage =
+                "Adding new datatype <br />Waiting for confirmations at " + tx;
+            });
+          console.log("ADD_TYPE_RECEIPT", receipt);
+          app.fetchModels(app.instance);
+          app.isWorking = false;
+          window.location.reload();
+        } catch (e) {
+          alert(e.message);
+          app.isWorking = false;
         }
       },
       async fetchDatatypes() {
@@ -372,6 +458,52 @@
           response(true);
         });
       },
+      async removeDatatype(datatype) {
+        const app = this;
+        const contentsContract = new app.web3.eth.Contract(
+          app.abi_contents,
+          app.instance
+        );
+        app.isWorking = true;
+        let i = 0;
+        let c = 0;
+        for (let k in app.datatypes[app.instance]) {
+          if (k === datatype) {
+            i = c;
+          }
+          c++;
+        }
+        try {
+          console.log("Removing datatype:", datatype);
+          app.workingMessage = "Removing the datatype <br />Please confirm transaction in your wallet.";
+          const receipt = await contentsContract.methods
+            .removeType(datatype, i)
+            .send({
+              from: app.account,
+            })
+            .on("transactionHash", (tx) => {
+              app.workingMessage =
+                "Removing the datatype <br />Waiting for confirmations at " + tx;
+            });
+          console.log("ADD_TYPE_RECEIPT", receipt);
+          app.fetchModels(app.instance);
+          app.isWorking = false;
+          window.location.reload();
+        } catch (e) {
+          alert(e.message);
+          app.isWorking = false;
+        }
+      },
+      resetCustomDatatypesAttrs() {
+        let newArr = []
+        this.customDatatypeAttrs.forEach((attr, index) => {
+          if(index !== this.modals.removeDatatypeAttr) {
+            newArr.push(attr)
+          }
+        })
+        this.customDatatypeAttrs = newArr
+        this.modals.removeDatatypeAttr = -1
+      }
     },
     async mounted() {
       document.getElementById('app').style.background = '#EDEDED'
