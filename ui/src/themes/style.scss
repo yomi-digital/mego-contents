@@ -39,12 +39,38 @@
 
 .has-text-light {color:#4F4F4F}
 
-.input {
-  font-family: "JetBrains Mono", monospace;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  color: #2c3e50;
+.input, select, .select {
+  font-family: 'SpaceGrotesk';
+  color: black;
   font-size: 13px;
+  background: none!important;
+  border: 1px solid black;
+  border-radius: 5px;
+}
+.input::placeholder, select::placeholder {color: #666666;}
+.input:hover, select:hover {border: 1px solid black;}
+.input:focus, select:focus, select:active {box-shadow: unset!important; border: 1px solid #565857!important; outline: none!important;}
+span.select::after {border-color: black!important;}
+.input[type="checkbox"] {
+  display: block;
+  width: 1rem;
+  height: 1rem;
+  padding: 0;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+input[type=checkbox]:checked:after {
+  content: "";
+  display: block;
+  width: 4px;
+  height: 8px;
+  border: solid black;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+  position: absolute;
+  top: 2px;
+  left: 6px;
 }
 
 button {background: none!important;border-radius: 8px!important;}
@@ -83,20 +109,47 @@ button {background: none!important;border-radius: 8px!important;}
 .navbar_link_active span {background: black;}
 #navbar_group > div:nth-child(2) {background: #EDEDED;font-family: 'Sk-Modernist';font-size: 90px; color: black; display: flex; align-items: center; align-content: space-between; padding: 1rem 2.6rem;}
 #navbar_group > div:nth-child(2) h1 {margin: auto;}
-#instances {background: #EDEDED;}
+#instances {background: #EDEDED;position: relative;}
 .instances_container {display: flex; flex-direction: column; justify-content: center; width: calc(100vw - 120px); margin:auto; padding-top: 6rem;}
 .instances_header {display: flex; flex-direction: row; align-items: center; align-content: space-between; margin-bottom: 1rem;}
 .instances_header * {font-family: 'Sk-Modernist'!important}
 .instances_header h2 {font-size:24px;font-family: 'Sk-Modernist';color: black;}
 .instances_list {display: flex; flex-direction: column; justify-content: center;}
+#instance * {font-family: 'SpaceGrotesk';}
 .instance {display: flex; flex-direction: row; align-items: center; align-content: space-between; margin: 2rem 0;}
-.instances_left {display: flex; flex-direction: column;}
-.instances_right {display: flex; flex-direction: column; margin: 0 0 auto auto !important;}
+.instance_left {display: flex; flex-direction: column;}
+.instance_right {display: flex; flex-direction: column; margin: 0 0 auto auto !important;}
 .instance_left > h3 * {font-family: 'Sk-Modernist'!important;}
-.instance_left *, .instances_right *  {font-family: 'SpaceGrotesk'; text-transform: uppercase;}
+.instance_left *, .instance_right *  {text-transform: uppercase;}
 .instance_left p {color: black;}
 .instances_loading {height: 200px; text-align: center; margin: 3rem;}
 .no_instances {text-align: center; margin: 3rem;}
 .instance_info {display: flex; flex-direction: row; justify-content: space-between; margin: -4.2rem 0 3.5rem 0;}
-.instance_info h2{font-size: 42px; font-family: 'Sk-Modernist'; color: black;}
-.instance_info p {font-size: 21px;height: fit-content;margin:auto 0;font-family: 'SpaceGrotesk';}
+.instance_info h2{font-size: 42px; font-family: 'Sk-Modernist'!important; color: black;}
+.instance_info p {font-size: 21px;height: fit-content;margin:auto 0;}
+.modal_container::before {content:''; position: absolute; top: 0;bottom: 0;left: 0;right: 0;backdrop-filter: blur(0); transition: all .3s ease-in-out; z-index: 9; animation: blurInModal .3s ease-in-out forwards;}
+.modal_container > .modal {background: #EDEDED;border: 1px solid #565857;border-radius: 7px; z-index: 99; position: absolute; top: 50%;left: 50%;transform: translate(-50%,-50%) scale(.9); display: flex; padding: 4rem; width: 40vw;height: fit-content; justify-content: center; opacity: 0; transition: all .3 ease-in-out; animation: fadeInModal .3s ease-in-out forwards;}
+.modal_container > .modal > img {position: absolute; top: 2rem;right: 2rem;width: 2rem;height: 2rem; cursor: pointer;}
+.modal_container > .modal h2 {font-size: 22px; color: black; font-family: 'Sk-modernist'; text-align: center; margin: 0 auto .4rem auto;}
+.modal_container > .modal input {width: 15rem}
+@keyframes blurInModal {
+  0% {backdrop-filter: blur(0);}
+  100% {backdrop-filter: blur(6px);}
+}
+
+@keyframes fadeInModal {
+  0% {transform: translate(-50%,-50%) scale(.9);opacity: 0;}
+  100% {transform: translate(-50%,-50%) scale(1);opacity: 1;}
+}
+.add_instance_container {display: flex; flex-direction: column;}
+.instances_header p {font-weight:400;color:#4F4F4F; margin: auto 3.5rem auto 0; cursor: pointer;}
+.instances_header .tab {transition: all .3s ease-in-out; animation: fadeInTab .13s ease-in-out forwards;}
+@keyframes fadeInTab {
+  0% {transform: translateY(-20px) scale(.9);opacity: 0;}
+  100% {transform: translateY(0) scale(1);opacity: 1;}
+}
+.add_instance_form table {width: 100%;}
+.add_instance_form th {font-family: 'Sk-Modernist'!important;padding: 2.8rem 1.8rem .3rem 1.8rem; color: #A4A6A5; text-transform: uppercase;}
+.add_instance_form td {padding: 1.8rem; justify-content: center;}
+.add_instance_form td input[type="checkbox"] {margin: 5px auto auto auto;}
+.add_instance_form td .control span, .add_instance_form td .control select {width: 100%;}

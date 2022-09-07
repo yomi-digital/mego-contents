@@ -3,36 +3,126 @@
     <div class="instances_container">
       <div class="instance_info">
         <h2>MANAGE YOUR INSTANCE</h2>
-        <p>{{Object.keys(datatypes[instance]).length > 0 ? 'Deployed at: '+instance : 'Not deployed yet'}}</p>
+        <p v-if="!loading">
+          Deployed at: {{instance}}</p>
+        <p v-if="loading">
+          Deployed at: 0x
+          <font-awesome-icon icon="fa-solid fa-circle-notch" style="font-size:25px" class="fa-spin ml-3" />
+        </p>
       </div>
       <div class="instances_header">
-        <h2 class="has-text-weight-semibold">AVAILABLE DATATYPES<b-button type="button"
+        <h2 class="has-text-weight-semibold">AVAILABLE DATATYPES
+          <!-- <b-button type="button"
             class="button-dark is-light mr-0 ml-4" style="background:#111!important;color:white!important">
             <font-awesome-icon icon="fa-solid fa-plus" style="font-size:24px" />
-          </b-button>
+          </b-button> -->
         </h2>
-        <!-- <b-button type="button button-dark is-light ml-auto mr-0 mt-1"
-          style="background:#111!important;color:white!important" class="button">
-          <font-awesome-icon icon="fa-solid fa-plus" style="font-size:24px" />
-        </b-button> -->
+        <div style="display:flex;margin-right:0;margin-left:auto">
+          <p class="tab" :style="(tab === 'pre-compiled') ? 'color: black; font-weight: 800;' : ''" @click="tab = 'pre-compiled'" v-if="tab !== 'list'">
+            pre-compiled</p>
+          <p class="tab" :style="(tab === 'customized') ? 'color: black; font-weight: 800;' : ''" @click="tab = 'customized'" v-if="tab !== 'list'">
+            customized</p>
+          <b-button type="button button-dark is-light ml-auto mr-0 mt-1"
+            style="background:#111!important;color:white!important" class="button" v-if="tab === 'list'"
+            @click="tab = 'pre-compiled'">
+            CREATE NEW DATATYPE
+          </b-button>
+          <b-button type="button button-dark is-light ml-auto mr-0 mt-1"
+            style="background:#111!important;color:white!important" class="button" v-if="tab !== 'list'"
+            @click="tab = 'list'">
+            VIEW ALL DATATYPES
+          </b-button>
+        </div>
+
       </div>
       <div class="instances_loading" v-if="loading">
         <font-awesome-icon icon="fa-solid fa-circle-notch" style="font-size:25px" class="fa-spin" />
       </div>
-      <div class="no_instances" v-if="!loading && Object.keys(datatypes[instance]).length === 0">
+      <div class="no_instances" v-if="!loading && Object.keys(datatypes[instance]).length === 0 && tab == 'list'">
         You have no datatypes in this instance
       </div>
-      <div class="instances_list" v-if="!loading">
+      <div class="instances_list" v-if="!loading && tab === 'list'">
         <div class="instance" v-for="datatype in Object.keys(datatypes[instance])" :key="datatype">
           <div class="instance_left">
             <h3 class="my-2"><span style="font-weight:bold;color:black;font-size:22px;">{{datatype}}</span></h3>
             <p v-for="attr in datatypes[instance][datatype]" :key="attr.name" v-html="attr.name"></p>
             <p v-if="datatypes[instance][datatype].length === 0"><i style="color:#444">No attributes</i></p>
           </div>
-          <div class="instances_right">
+          <div class="instance_right">
             <b-button type="button" class="button button-dark is-light mx-auto mt-0"
               @click="$router.push({name: 'Instance', params: {instance: instance}})">Remove datatype</b-button>
           </div>
+        </div>
+      </div>
+      <div class="add_instance_container" v-if="tab === 'pre-compiled' || tab === 'customized'">
+        <div class="add_instance_list instances_list" v-if="tab === 'pre-compiled'">
+          <div class="instance" v-for="datatype in preCompiledDatatypes" :key="datatype.name">
+            <div class="instance_left">
+              <h3 class="my-2"><span style="font-weight:bold;color:black;font-size:22px;">{{datatype.name}}</span></h3>
+              <p v-for="attr in datatype.attrs" :key="attr.name" v-html="attr.name"></p>
+              <p v-if="datatype.attrs.length === 0"><i style="color:#444">No attributes</i></p>
+            </div>
+            <div class="instance_right">
+              <b-button type="button" class="button button-dark is-light mx-auto mt-0"
+                @click="$router.push({name: 'Instance', params: {instance: instance}})">Add datatype to contract
+              </b-button>
+            </div>
+          </div>
+        </div>
+        <div class="add_instance_form" v-if="tab === 'customized'">
+          <b-input type="text" v-model="newDatatypeName" class="mt-5" placeholder="DATATYPE_NAME"></b-input>
+          <table class="mx-auto">
+            <tr>
+              <th>Active</th>
+              <th>Name</th>
+              <th>Print</th>
+              <th>Required</th>
+              <th>Multiple</th>
+              <th>Type</th>
+              <th>Specs</th>
+              <th>Delete</th>
+            </tr>
+            <tr v-for="(datatype, index) in customDatatypes" :key="index">
+              <td>
+                <b-input type="checkbox" @click="datatype.active = !datatype.active" :checked="datatype.active"></b-input>
+              </td>
+              <td>
+                <b-input type="text" style="width:200px" placeholder="FIELD NAME" v-model="datatype.name"></b-input>
+              </td>
+              <td>
+                <b-input type="checkbox" @click="datatype.print = !datatype.print" :checked="datatype.print"></b-input>
+              </td>
+              <td>
+                <b-input type="checkbox" @click="datatype.required = !datatype.required" :checked="datatype.required"></b-input>
+              </td>
+              <td>
+                <b-input type="checkbox" @click="datatype.multiple = !datatype.multiple" :checked="datatype.multiple"></b-input>
+              </td>
+              <td>
+                <b-select  v-model="datatype.type" style="width:120px">
+                  <option v-for="option in datatypeTypes" :value="option" :key="option">
+                    {{ option }}
+                  </option>
+                </b-select>
+              </td>
+              <td>
+                <b-input type="text" style="width:300px" v-model="datatype.specs"></b-input>
+              </td>
+              <td style="text-align:center">
+                <img src="../assets/images/trash-icon.svg" alt="" style="cursor:pointer">
+              </td>
+            </tr>
+            <tr>
+              <td colspan="7"></td>
+              <td style="display:flex;justify-content:center">
+                <b-button type="button" class="button-dark is-light mr-0 ml-4" style="background:#111!important;color:white!important;height: 3rem;
+    text-align: center;
+    margin: auto!important;">
+                  <font-awesome-icon icon="fa-solid fa-plus" style="font-size:23px" />
+                </b-button>
+              </td>
+            </tr>
+          </table>
         </div>
       </div>
     </div>
@@ -65,7 +155,70 @@
         datatypes: {},
         available: {},
         names: [],
-        loading: true
+        loading: true,
+        tab: 'list',
+        newDatatypeName: '',
+        preCompiledDatatypes: [{
+          name: 'Blog',
+          attrs: [{
+              name: 'Title'
+            },
+            {
+              name: 'Description'
+            },
+            {
+              name: 'Image'
+            },
+            {
+              name: 'Date'
+            }
+          ]
+        }, {
+          name: 'Product',
+          attrs: [{
+              name: 'Title'
+            },
+            {
+              name: 'Description'
+            },
+            {
+              name: 'Image'
+            },
+            {
+              name: 'Price'
+            }
+          ]
+        }],
+        datatypeTypes: ['text', 'textarea', 'file', 'checkbox'],
+        customDatatypes: [
+          {
+            active: false,
+            name: '',
+            print: false,
+            required: false,
+            multiple: false,
+            type: 'text',
+            specs: ''
+          },
+          {
+            active: false,
+            name: '',
+            print: false,
+            required: false,
+            multiple: false,
+            type: 'text',
+            specs: ''
+          },
+          {
+            active: false,
+            name: '',
+            print: false,
+            required: false,
+            multiple: false,
+            type: 'text',
+            specs: ''
+          }
+        ]
       }
     },
     methods: {
@@ -223,7 +376,6 @@
     async mounted() {
       document.getElementById('app').style.background = '#EDEDED'
       await this.connect()
-      console.log(this.datatypes)
     }
   }
 </script>
