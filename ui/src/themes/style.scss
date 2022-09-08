@@ -41,7 +41,7 @@
 
 .input, select, .select {
   font-family: 'SpaceGrotesk';
-  color: black;
+  color: black!important;
   font-size: 13px;
   background: none!important;
   border: 1px solid black;
@@ -149,6 +149,7 @@ button {background: none!important;border-radius: 8px!important;}
   0% {transform: translateY(-20px) scale(.9);opacity: 0;}
   100% {transform: translateY(0) scale(1);opacity: 1;}
 }
+.add_instance_form {border-bottom: 1px solid rgba(164, 166, 165, 0.56);}
 .add_instance_form table {width: 100%;}
 .add_instance_form th {font-family: 'Sk-Modernist'!important;padding: 2.8rem 1.8rem .3rem 1.8rem; color: #A4A6A5; text-transform: uppercase;}
 .add_instance_form td {padding: 1.8rem; justify-content: center;}

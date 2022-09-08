@@ -85,7 +85,6 @@
         content: {},
         instances: [],
         datatypes: {},
-        available: {},
         names: [],
         loading: true,
         modals: {
@@ -137,7 +136,6 @@
                 await app.fetchModels(app.instances[k]);
               }
               app.loading = false
-              await app.fetchDatatypes();
             } else {
               alert("No accounts allowed, please retry!");
             }
@@ -148,53 +146,6 @@
           alert(
             "Wrong network, please connect to correct one (" + app.network + ")!"
           );
-        }
-      },
-      async fetchDatatypes() {
-        const app = this;
-        const factoryContract = new app.web3.eth.Contract(
-          app.abi_factory,
-          app.contract
-        );
-        let exists = true;
-        let i = 0;
-        while (exists) {
-          try {
-            const result = await factoryContract.methods.created(i).call();
-            console.log("Created datatypes:", result);
-            if (result.length > 0) {
-              app.available[result] = [];
-              let datatypes = [];
-              console.log("Datatype found:", result);
-              let finished = false;
-              let t = 0;
-              while (!finished) {
-                const datatype = await factoryContract.methods
-                  .returnModelType(result, t)
-                  .call();
-                if (datatype._active) {
-                  datatypes.push({
-                    name: datatype._name,
-                    print: datatype._print,
-                    required: datatype._required,
-                    multiple: datatype._multiple,
-                    input: datatype._input,
-                    specs: datatype._specs,
-                  });
-                }
-                t++;
-                if (datatype._name.length === 0) {
-                  finished = true;
-                }
-              }
-              app.available[result] = datatypes;
-            }
-            i++;
-          } catch (e) {
-            app.$forceUpdate();
-            console.log("Datatype parse finished.");
-            exists = false;
-          }
         }
       },
       fetchModels(instance) {
