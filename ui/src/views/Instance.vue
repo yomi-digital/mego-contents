@@ -46,7 +46,7 @@
         </p>
       </div>
       <div class="instances_header">
-        <h2 class="has-text-weight-semibold">{{(datatypeCreated) ? newDatatypeName : 'AVAILABLE DATATYPES'}}
+        <h2 class="has-text-weight-semibold">{{(datatypeCreated) ? newDatatypeName.toUpperCase() : 'AVAILABLE DATATYPES'}}
           <!-- <b-button type="button"
             class="button-dark is-light mr-0 ml-4" style="background:#111!important;color:white!important">
             <font-awesome-icon icon="fa-solid fa-plus" style="font-size:24px" />
@@ -62,7 +62,7 @@
           <b-button type="button button-dark is-light ml-auto mr-0 mt-1"
             style="background:#111!important;color:white!important" class="button" v-if="tab === 'list'"
             @click="tab = 'pre-compiled'">
-            CREATE NEW DATATYPE
+            ADD NEW DATATYPE
           </b-button>
           <b-button type="button button-dark is-light ml-auto mr-0 mt-1"
             style="background:#111!important;color:white!important" class="button" v-if="tab !== 'list'"
@@ -81,17 +81,24 @@
       <div class="instances_list" v-if="!loading && tab === 'list'">
         <div class="instance" v-for="datatype in Object.keys(datatypes[instance])" :key="datatype">
           <div class="instance_left">
-            <h3 class="my-2"><span style="font-weight:bold;color:black;font-size:22px;">{{datatype.slice(datatype.indexOf('__')+2, 99999)}}</span></h3>
+            <h3 class="my-2"><span
+                style="font-weight:bold;color:black;font-size:22px;">{{datatype.slice(datatype.indexOf('__')+2, 99999)}}</span>
+            </h3>
             <p v-for="attr in datatypes[instance][datatype].fields" :key="attr.name" v-html="attr.name"></p>
             <p v-if="datatypes[instance][datatype].fields.length === 0"><i style="color:#444">No fields</i></p>
           </div>
           <div class="instance_right">
             <b-button type="button" class="button button-dark is-light mx-auto mt-0"
-              @click="() => {modals.removeDatatype = true;removeDatatype(datatype)}">Remove
-              datatype</b-button>
+              style="margin: 0 .5rem!important; width: 50px;"
+              @click="() => {newDatatypeName = datatype.slice(datatype.indexOf('__')+2, 99999); datatypeCreated = true; tab = 'customized'}">
+              <img src="../assets/images/pencil.svg" style="transform:scale(1.5) translateY(1px)" alt="">
+            </b-button>
             <b-button type="button" class="button button-dark is-light mx-auto mt-0"
-              @click="() => {newDatatypeName = datatype.slice(datatype.indexOf('__')+2, 99999); datatypeCreated = true; tab = 'customized'}">Edit
-              datatype</b-button>
+              style="margin: 0 .5rem!important; width: 50px;"
+              @click="() => {modals.removeDatatype = true;removeDatatype(datatype)}"><img
+                src="../assets/images/trash-icon.svg" alt="" style="transform:translateY(2px)">
+            </b-button>
+
           </div>
         </div>
       </div>
@@ -111,7 +118,8 @@
           </div>
         </div>
         <div class="add_instance_form" v-if="tab === 'customized'">
-          <b-input type="text" v-model="newDatatypeName" class="my-5" placeholder="DATATYPE_NAME" v-if="!datatypeCreated"></b-input>
+          <b-input type="text" v-model="newDatatypeName" class="my-5" placeholder="DATATYPE_NAME"
+            v-if="!datatypeCreated"></b-input>
           <table class="mx-auto" v-if="datatypeCreated">
             <tr>
               <th style="text-align:center">Active</th>
@@ -125,21 +133,25 @@
             </tr>
             <tr v-for="(datatypeAttr, index) in customDatatypeAttrs" :key="index">
               <td>
-                <b-input type="checkbox" @change="datatypeAttr.active = !datatypeAttr.active" :checked="datatypeAttr.active">
+                <b-input type="checkbox" @change="datatypeAttr.active = !datatypeAttr.active"
+                  :checked="datatypeAttr.active">
                 </b-input>
               </td>
               <td>
                 <b-input type="text" style="width:200px" placeholder="FIELD NAME" v-model="datatypeAttr.name"></b-input>
               </td>
               <td>
-                <b-input type="checkbox" @change="datatypeAttr.print = !datatypeAttr.print" :checked="datatypeAttr.print"></b-input>
+                <b-input type="checkbox" @change="datatypeAttr.print = !datatypeAttr.print"
+                  :checked="datatypeAttr.print"></b-input>
               </td>
               <td>
-                <b-input type="checkbox" @change="datatypeAttr.required = !datatypeAttr.required" :checked="datatypeAttr.required">
+                <b-input type="checkbox" @change="datatypeAttr.required = !datatypeAttr.required"
+                  :checked="datatypeAttr.required">
                 </b-input>
               </td>
               <td>
-                <b-input type="checkbox" @change="datatypeAttr.multiple = !datatypeAttr.multiple" :checked="datatypeAttr.multiple">
+                <b-input type="checkbox" @change="datatypeAttr.multiple = !datatypeAttr.multiple"
+                  :checked="datatypeAttr.multiple">
                 </b-input>
               </td>
               <td>
@@ -153,7 +165,8 @@
                 <b-input type="text" style="width:300px" v-model="datatypeAttr.specs"></b-input>
               </td>
               <td style="text-align:center">
-                <img src="../assets/images/trash-icon.svg" alt="" style="cursor:pointer" @click="modals.removeDatatypeAttr = index">
+                <img src="../assets/images/trash-icon.svg" alt="" style="cursor:pointer"
+                  @click="modals.removeDatatypeAttr = index">
               </td>
             </tr>
             <tr>
@@ -178,11 +191,13 @@
         </div>
         <div class="pb-6 mx-auto" style="display:flex" v-if="tab === 'customized'">
           <b-button type="button" class="button-light is-dark mx-auto mt-5 px-5"
-            style="color:black!important;border:1px solid black!important" v-if="!datatypeCreated" @click="() => {modals.addDatatype = true;addDatatype(newDatatypeName)}">
+            style="color:black!important;border:1px solid black!important" v-if="!datatypeCreated"
+            @click="() => {modals.addDatatype = true;createModel(newDatatypeName)}">
             CREATE NEW DATATYPE
           </b-button>
           <b-button type="button" class="button-light is-dark mx-auto mt-5 px-5"
-            style="color:black!important;border:1px solid black!important" v-if="datatypeCreated" @click="() => {modals.addDatatype = true;populateDatatype(newDatatypeName)}">
+            style="color:black!important;border:1px solid black!important" v-if="datatypeCreated"
+            @click="() => {modals.addDatatype = true;populateDatatype(newDatatypeName)}">
             ADD TO CONTRACT
           </b-button>
         </div>
@@ -337,8 +352,8 @@
         }
       },
       async populateDatatype(datatype) {
-        if(datatype.indexOf('0x') !== -1) {
-          datatype = datatype.slice(datatype.indexOf('__')+2, 99999)
+        if (datatype.indexOf('0x') !== -1) {
+          datatype = datatype.slice(datatype.indexOf('__') + 2, 99999)
         }
         const app = this;
         const factoryContract = new app.web3.eth.Contract(
@@ -348,19 +363,21 @@
         app.isWorking = true;
         try {
           console.log("Populating type:", datatype);
-          app.workingMessage = "Updating "+datatype+" <br />Please confirm transaction in your wallet.";
-          for(let index of Object.keys(app.customDatatypeAttrs)) {
+          app.workingMessage = "Updating " + datatype + " <br />Please confirm transaction in your wallet.";
+          for (let index of Object.keys(app.customDatatypeAttrs)) {
             let field = app.customDatatypeAttrs[index]
             field.specs = 'plain'
-            console.log(app.account.substr(0,5)+app.account.substr(-3)+'__'+datatype, index, field.active, field.name, field.print, field.required, field.multiple, field.type, field.specs)
+            console.log(app.account.substr(0, 5) + app.account.substr(-3) + '__' + datatype, index, field.active,
+              field.name, field.print, field.required, field.multiple, field.type, field.specs)
             const receipt = await factoryContract.methods
-              .editDatatypeInModel(app.account.substr(0,5)+app.account.substr(-3)+'__'+datatype, index, field.active, field.name, field.print, field.required, field.multiple, field.type, field.specs)
+              .editDatatypeInModel(app.account.substr(0, 5) + app.account.substr(-3) + '__' + datatype, index, field
+                .active, field.name, field.print, field.required, field.multiple, field.type, field.specs)
               .send({
                 from: app.account,
               })
               .on("transactionHash", (tx) => {
                 app.workingMessage =
-                  "Updating"+datatype+" <br />Waiting for confirmations at " + tx;
+                  "Updating" + datatype + " <br />Waiting for confirmations at " + tx;
               });
             console.log("ADD_TYPE_RECEIPT", receipt);
           }
@@ -383,7 +400,7 @@
           console.log("Adding type:", datatype);
           app.workingMessage = "Adding new datatype <br />Please confirm transaction in your wallet.";
           const receipt = await contentsContract.methods
-            .addType(app.account.substr(0,5)+app.account.substr(-3)+'__'+datatype)
+            .addType(app.account.substr(0, 5) + app.account.substr(-3) + '__' + datatype)
             .send({
               from: app.account
             })
@@ -394,14 +411,7 @@
           console.log("ADD_TYPE_RECEIPT", receipt);
           app.fetchModels(app.instance);
           app.isWorking = false;
-          //If it's a pre-compiled datatype
-          if(this.preCompiledDatatypes.find(el => el.name === datatype) != undefined) {
-            window.location.reload();
-          }
-          else {
-            app.datatypeCreated = true
-            app.modals.addDatatype = false;
-          }
+          window.location.reload();
         } catch (e) {
           alert(e.message);
           app.isWorking = false;
@@ -453,7 +463,10 @@
                     finished = true;
                   }
                 }
-                app.datatypes[instance][result] = {fields: datatypes, modelIndex: i};
+                app.datatypes[instance][result] = {
+                  fields: datatypes,
+                  modelIndex: i
+                };
               }
               i++;
             } catch (e) {
@@ -494,16 +507,46 @@
       resetCustomDatatypesAttrs() {
         let newArr = []
         this.customDatatypeAttrs.forEach((attr, index) => {
-          if(index !== this.modals.removeDatatypeAttr) {
+          if (index !== this.modals.removeDatatypeAttr) {
             newArr.push(attr)
           }
         })
         this.customDatatypeAttrs = newArr
         this.modals.removeDatatypeAttr = -1
+      },
+      async createModel(datatype) {
+        const app = this;
+        const factoryContract = new app.web3.eth.Contract(
+          app.abi_factory,
+          app.instance
+        );
+        app.isWorking = true;
+        try {
+          console.log("Creating type:", datatype);
+          app.workingMessage = "Creating new datatype <br />Please confirm transaction in your wallet.";
+          const receipt = await factoryContract.methods
+            .createModel(app.account.substr(0, 5) + app.account.substr(-3) + '__' + datatype)
+            .send({
+              from: app.account
+            })
+            .on("transactionHash", (tx) => {
+              app.workingMessage =
+                "Creating new datatype <br />Waiting for confirmations at " + tx;
+            });
+          console.log("ADD_TYPE_RECEIPT", receipt);
+          app.fetchModels(app.instance);
+          app.isWorking = false;
+          app.datatypeCreated = true
+          app.modals.addDatatype = false;
+        } catch (e) {
+          alert(e.message);
+          app.isWorking = false;
+        }
       }
     },
     async mounted() {
       document.getElementById('app').style.background = '#EDEDED'
+      document.getElementById('navbar_group').children[1].style.background = '#EDEDED'
       await this.connect()
       this.loading = false
     }

@@ -45,7 +45,7 @@
   font-size: 13px;
   background: none!important;
   border: 1px solid black;
-  border-radius: 5px;
+  border-radius: 7px;
 }
 .input::placeholder, select::placeholder {color: #666666;}
 .input:hover, select:hover {border: 1px solid black;}
@@ -117,12 +117,12 @@ button {background: none!important;border-radius: 8px!important;}
 .instances_list {display: flex; flex-direction: column; justify-content: center;}
 #instance {position: relative;}
 #instance * {font-family: 'SpaceGrotesk';}
-.instance {display: flex; flex-direction: row; align-items: center; align-content: space-between; margin: 2rem 0;}
+.instance {display: flex; flex-direction: row; align-items: center; align-content: space-between; margin: .5rem 0;border-bottom: 1px solid rgb(186, 186, 186); padding: 2rem 0;}
 .instance_left {display: flex; flex-direction: column;}
-.instance_right {display: flex; flex-direction: column; margin: 0 0 auto auto !important;}
+.instance_right {display: flex; flex-direction: row; margin: 0 0 auto auto !important;}
 .instance_left > h3 * {font-family: 'Sk-Modernist'!important;}
 .instance_left *, .instance_right *  {text-transform: uppercase;}
-.instance_left p {color: black;}
+.instance_left p {color: black; font-family: 'SpaceGrotesk';}
 .instances_loading {height: 200px; text-align: center; margin: 3rem;}
 .no_instances {text-align: center; margin: 3rem;}
 .instance_info {display: flex; flex-direction: row; justify-content: space-between; margin: -4.2rem 0 3.5rem 0;}
@@ -155,3 +155,24 @@ button {background: none!important;border-radius: 8px!important;}
 .add_instance_form td {padding: 1.8rem; justify-content: center;}
 .add_instance_form td input[type="checkbox"] {margin: 5px auto auto auto;}
 .add_instance_form td .control span, .add_instance_form td .control select {width: 100%;}
+.new_model_form {padding: 1rem!important; display: flex; flex-direction: column;}
+.new_model_select {position: absolute; top: 3rem; z-index: 9; background: white; right: 0; left: 0; box-shadow: 1px 3px 18px rgba(0,0,0,.15); padding: .5rem; border-radius: 4px;opacity: 0;transform: scaleY(.9);transform-origin: top; transition: all .13s ease-in-out;}
+.new_model_select p {border-bottom: 1px solid rgba(226, 226, 226, 0.6); font-family: 'Sk-Modernist'; transition: all .13s ease-in-out; padding: .2rem .4rem; cursor: pointer; border-radius: 4px;}
+.new_model_select p:hover {background: rgb(240, 240, 240);}
+.new_model_select p:nth-last-child(1) {border-bottom: none!important;}
+.selected_model {border-bottom: 3px solid black;display: inline-block;line-height: 43px;position: relative;font-family: 'Sk-Modernist'!important;}
+.new_model_select_open {opacity: 1; transform: scaleY(1);}
+.home *{ font-family: 'SpaceGrotesk';}
+.home input, .home textarea, .ql-container.ql-snow, .ql-toolbar.ql-snow{border-color: #565857!important; border-radius: 7px;}
+.ql-toolbar.ql-snow {
+  border-radius: 7px 7px 0 0;
+}
+.ql-container.ql-snow {
+  border-radius: 0 0 7px 7px;
+}
+.home .field .label {font-family: 'Sk-Modernist'!important;}
+.upload .upload-draggable {border: 1px dashed #565857;}
+.upload .upload-draggable:hover.is-primary, .upload .upload-draggable.is-hovered.is-primary {
+  border-color: #343434;
+  background: rgba(79, 79, 79, 0.05);
+}

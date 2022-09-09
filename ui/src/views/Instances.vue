@@ -48,7 +48,7 @@
                   target="_blank"
                   style="color:black;text-decoration:underline">{{Object.entries(names).find(el => el[0] === instance)[0]}}</a></i>
             </h3>
-            <p v-for="datatype in Object.keys(datatypes[instance])" :key="datatype" v-html="datatype"></p>
+            <p v-for="datatype in Object.keys(datatypes[instance])" :key="datatype" v-html="datatype.slice(datatype.indexOf('__')+2, 99999)"></p>
             <p v-if="Object.keys(datatypes[instance]).length === 0"><i style="color:#444">No datatypes</i></p>
           </div>
           <div class="instance_right">
@@ -266,6 +266,7 @@
     },
     async mounted() {
       document.getElementById('app').style.background = '#EDEDED'
+      document.getElementById('navbar_group').children[1].style.background = '#EDEDED'
       const app = this;
       await app.connect();
     }
