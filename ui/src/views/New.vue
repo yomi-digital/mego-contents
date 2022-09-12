@@ -4,11 +4,11 @@
       <div class="instances_container" style="margin-top:-1rem">
         <div class="instance_info">
           <h2>CREATE YOUR <span class="selected_model">
-              {{category.slice(category.indexOf('__')+2, 99999).toUpperCase()}}
+              {{(category.indexOf('__') > 0) ? category.slice(category.indexOf('__')+2, 99999).toUpperCase() : category}}
               <div :class="{new_model_select:true, new_model_select_open:selectOpened}">
                 <p v-for="el in Object.keys(datatypes)" :value="el" :key="el"
                   @click="() => {category = el; selectOpened = false}">
-                  {{ el.slice(el.indexOf('__')+2, 99999).toUpperCase() }}
+                  {{(el.indexOf('__') > 0) ? el.slice(el.indexOf('__')+2, 99999).toUpperCase() : el }}
                 </p>
               </div>
             </span> <img style="margin-bottom:4px;cursor: pointer;" @click="selectOpened = !selectOpened"
@@ -16,37 +16,41 @@
         </div>
       </div>
 
-      <div v-if="!ipfsNft" class="new_model_form">
+      <div v-if="!ipfsNft && content[category]" class="new_model_form">
         <div v-for="input in datatypes[category]" v-bind:key="input.name">
           <b-field v-if="input.input === 'text'" :label="input.name.toUpperCase()">
-            <b-input v-model="content[input.name]"></b-input>
+            <b-input v-model="content[category][input.name]"></b-input>
           </b-field>
           <b-field v-if="input.input === 'textarea' && input.specs !== 'plain'" :label="input.name.toUpperCase()">
-            <VueEditor v-model="content[input.name]" />
+            <VueEditor v-model="content[category][input.name]" />
           </b-field>
           <b-field v-if="input.input === 'textarea' && input.specs === 'plain'" :label="input.name.toUpperCase()">
-            <b-input v-model="content[input.name]" type="textarea"></b-input>
+            <b-input v-model="content[category][input.name]" type="textarea"></b-input>
           </b-field>
           <b-field v-if="input.input === 'select'" v-bind:key="input.name" :label="input.name.toUpperCase()">
-            <b-select v-model="content[input.name]" expanded>
-              <option v-for="category in input.specs
+            <b-select v-model="content[category][input.name]" expanded>
+              <option v-for="categ in input.specs
                   .replace('[', '')
                   .replace(']', '')
-                  .split(',')" :value="category" :key="category">
-                {{ category }}
+                  .split(',')" :value="categ" :key="categ">
+                {{ categ }}
               </option>
             </b-select>
           </b-field>
+          <b-field v-if="input.input === 'tag'">
+            <b-taginput v-model="content[category][input.name]" ellipsis icon="label" placeholder="Add a tag" aria-close-label="Delete this tag">
+            </b-taginput>
+          </b-field>
           <b-field v-if="input.input === 'file'" v-bind:key="input.name" :label="input.name.toUpperCase()">
-            <b-upload v-model="content[input.name]" expanded drag-drop>
+            <b-upload v-model="content[category][input.name]" expanded drag-drop>
               <section class="section">
                 <div class="content has-text-centered">
-                  <p v-if="content[input.name].name === undefined">
+                  <p v-if="content[category][input.name] ? content[category][input.name].name === undefined : true">
                     Drop your file here or click to upload.<br />Supported
                     files: jpg, png, gif.
                   </p>
-                  <p v-if="content[input.name].name !== undefined">
-                    Chosen image is <b>{{ content[input.name].name }}</b>.<br />Click or drop another file to change it.
+                  <p v-if="content[category][input.name] ? content[category][input.name].name !== undefined : content[category][input.name]">
+                    Chosen image is <b>{{ content[category][input.name].name }}</b>.<br />Click or drop another file to change it.
                   </p>
                 </div>
               </section>
@@ -55,8 +59,7 @@
           <br />
         </div>
         <b-button type="button" class="button-light is-dark mx-auto mt-5 px-6"
-          style="color:black!important;border:1px solid black!important"
-          v-if="!isWorking && !ipfsNft" @click="prepare">
+          style="color:black!important;border:1px solid black!important" v-if="!isWorking && !ipfsNft" @click="prepare">
           PREPARE METADATA
         </b-button>
       </div>
@@ -127,11 +130,15 @@
         selectOpened: false
       };
     },
-    mounted() {
+    async mounted() {
       document.getElementById('navbar_group').children[1].style.background = 'white'
       document.getElementById('app').style.background = 'white'
       const app = this;
-      app.connect();
+      await app.connect();
+      for(const el of Object.keys(app.datatypes)) {
+        app.content[el] = app.datatypes[el]
+      }
+      console.log(app.content)
       setInterval(function () {
         app.$forceUpdate();
       }, 100);
@@ -161,7 +168,7 @@
             if (accounts.length > 0) {
               app.account = accounts[0];
               app.instance = localStorage.getItem("instance");
-              app.fetchModels();
+              await app.fetchModels();
             } else {
               alert("No accounts allowed, please retry!");
             }
@@ -246,8 +253,9 @@
         console.log("CONTENT", app.content);
         let isValid = true;
         for (let k in app.datatypes[app.category]) {
+          console.log(k)
           const datatype = app.datatypes[app.category][k];
-          if (datatype.required && app.content[datatype.name] === "") {
+          if (datatype.required && app.content[app.category][datatype.name] === "") {
             isValid = false;
           }
         }

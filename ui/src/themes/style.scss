@@ -72,6 +72,20 @@ input[type=checkbox]:checked:after {
   top: 2px;
   left: 6px;
 }
+.taginput-container.is-focusable {
+  border: 1px solid #565857;
+  border-radius: 7px!important;
+}
+.taginput .taginput-container.is-focusable:active {
+  outline:none!important;
+  box-shadow: none!important;
+  border: 1px solid #565857!important;
+}
+.taginput-container.is-focusable:focus {
+  outline:none!important;
+  box-shadow: none!important;
+  border: 1px solid #565857!important;
+}
 
 button {background: none!important;border-radius: 8px!important;}
 
@@ -156,12 +170,12 @@ button {background: none!important;border-radius: 8px!important;}
 .add_instance_form td input[type="checkbox"] {margin: 5px auto auto auto;}
 .add_instance_form td .control span, .add_instance_form td .control select {width: 100%;}
 .new_model_form {padding: 1rem!important; display: flex; flex-direction: column;}
-.new_model_select {position: absolute; top: 3rem; z-index: 9; background: white; right: 0; left: 0; box-shadow: 1px 3px 18px rgba(0,0,0,.15); padding: .5rem; border-radius: 4px;opacity: 0;transform: scaleY(.9);transform-origin: top; transition: all .13s ease-in-out;}
+.new_model_select {position: absolute; top: 3rem; z-index: 9; background: white; left:50%; width: fit-content; box-shadow: 1px 3px 18px rgba(0,0,0,.15); border-radius: 4px;opacity: 0;transform: scaleY(.9) translateX(-50%);transform-origin: top; transition: all .13s ease-in-out;height: 0; overflow: hidden; padding: 0;}
 .new_model_select p {border-bottom: 1px solid rgba(226, 226, 226, 0.6); font-family: 'Sk-Modernist'; transition: all .13s ease-in-out; padding: .2rem .4rem; cursor: pointer; border-radius: 4px;}
 .new_model_select p:hover {background: rgb(240, 240, 240);}
 .new_model_select p:nth-last-child(1) {border-bottom: none!important;}
 .selected_model {border-bottom: 3px solid black;display: inline-block;line-height: 43px;position: relative;font-family: 'Sk-Modernist'!important;}
-.new_model_select_open {opacity: 1; transform: scaleY(1);}
+.new_model_select_open {opacity: 1; transform: scaleY(1) translateX(-50%);height: fit-content; padding: .5rem; overflow: visible;}
 .home *{ font-family: 'SpaceGrotesk';}
 .home input, .home textarea, .ql-container.ql-snow, .ql-toolbar.ql-snow{border-color: #565857!important; border-radius: 7px;}
 .ql-toolbar.ql-snow {

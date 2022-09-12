@@ -48,7 +48,7 @@
                   target="_blank"
                   style="color:black;text-decoration:underline">{{Object.entries(names).find(el => el[0] === instance)[0]}}</a></i>
             </h3>
-            <p v-for="datatype in Object.keys(datatypes[instance])" :key="datatype" v-html="datatype.slice(datatype.indexOf('__')+2, 99999)"></p>
+            <p v-for="datatype in Object.keys(datatypes[instance])" :key="datatype" v-html="(datatype.indexOf('__') > 0) ? datatype.slice(datatype.indexOf('__')+2, 99999) : datatype"></p>
             <p v-if="Object.keys(datatypes[instance]).length === 0"><i style="color:#444">No datatypes</i></p>
           </div>
           <div class="instance_right">
@@ -174,27 +174,27 @@
                 app.datatypes[instance][result] = [];
                 let datatypes = [];
                 console.log("Model found:", result);
-                let finished = false;
-                let t = 0;
-                while (!finished) {
-                  const datatype = await factoryContract.methods
-                    .returnModelType(result, t)
-                    .call();
-                  if (datatype._active) {
-                    datatypes.push({
-                      name: datatype._name,
-                      print: datatype._print,
-                      required: datatype._required,
-                      multiple: datatype._multiple,
-                      input: datatype._input,
-                      specs: datatype._specs,
-                    });
-                  }
-                  t++;
-                  if (datatype._name.length === 0) {
-                    finished = true;
-                  }
-                }
+                // let finished = false;
+                // let t = 0;
+                // while (!finished) {
+                //   const datatype = await factoryContract.methods
+                //     .returnModelType(result, t)
+                //     .call();
+                //   if (datatype._active) {
+                //     datatypes.push({
+                //       name: datatype._name,
+                //       print: datatype._print,
+                //       required: datatype._required,
+                //       multiple: datatype._multiple,
+                //       input: datatype._input,
+                //       specs: datatype._specs,
+                //     });
+                //   }
+                //   t++;
+                //   if (datatype._name.length === 0) {
+                //     finished = true;
+                //   }
+                // }
                 app.datatypes[instance][result] = datatypes;
               }
               i++;
