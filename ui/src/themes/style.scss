@@ -49,7 +49,7 @@
 }
 .input::placeholder, select::placeholder {color: #666666;}
 .input:hover, select:hover {border: 1px solid black;}
-.input:focus, select:focus, select:active {box-shadow: unset!important; border: 1px solid #565857!important; outline: none!important;}
+.input:focus, select:focus, select:active, .textarea:focus, .textarea:active, textarea:focus, textarea:active {box-shadow: 0 0 0 0.125em rgb(0 0 0 / 25%)!important;-webkit-box-shadow:0 0 0 0.125em rgb(0 0 0 / 25%); border: 1px solid #565857!important; outline: none!important;}
 span.select::after {border-color: black!important;}
 .input[type="checkbox"] {
   display: block;
@@ -72,20 +72,22 @@ input[type=checkbox]:checked:after {
   top: 2px;
   left: 6px;
 }
-.taginput-container.is-focusable {
-  border: 1px solid #565857;
+.taginput-container, .is-focusable {
+  border: 1px solid #565857!important;
   border-radius: 7px!important;
 }
 .taginput .taginput-container.is-focusable:active {
   outline:none!important;
-  box-shadow: none!important;
+  box-shadow: 0 0 0 0.125em rgb(0 0 0 / 25%)!important;
   border: 1px solid #565857!important;
 }
 .taginput-container.is-focusable:focus {
   outline:none!important;
-  box-shadow: none!important;
+  box-shadow: 0 0 0 0.125em rgb(0 0 0 / 25%)!important;
   border: 1px solid #565857!important;
 }
+.taginput .taginput-container .autocomplete input:focus {border: none!important;}
+.is-focused {box-shadow: 0 0 0 0.125em rgb(0 0 0 / 25%)!important; border-color: #565857!important;}
 
 button {background: none!important;border-radius: 8px!important;}
 
@@ -137,7 +139,7 @@ button {background: none!important;border-radius: 8px!important;}
 .instance_left > h3 * {font-family: 'Sk-Modernist'!important;}
 .instance_left *, .instance_right *  {text-transform: uppercase;}
 .instance_left p {color: black; font-family: 'SpaceGrotesk';}
-.instances_loading {height: 200px; text-align: center; margin: 3rem;}
+.instances_loading {  position: absolute; top: 0;bottom: 0;left: 0;right: 0; display: grid; place-content: center; place-items: center; z-index: 999999; background: rgba(255,255,255,.28);}
 .no_instances {text-align: center; margin: 3rem;}
 .instance_info {display: flex; flex-direction: row; justify-content: space-between; margin: -4.2rem 0 3.5rem 0;}
 .instance_info h2{font-size: 42px; font-family: 'Sk-Modernist'!important; color: black;}
@@ -184,9 +186,18 @@ button {background: none!important;border-radius: 8px!important;}
 .ql-container.ql-snow {
   border-radius: 0 0 7px 7px;
 }
+.ql-container.ql-snow:active, .ql-container.ql-snow:focus  {box-shadow: 0 0 0 0.125em rgb(0 0 0 / 25%);}
 .home .field .label {font-family: 'Sk-Modernist'!important;}
 .upload .upload-draggable {border: 1px dashed #565857;}
 .upload .upload-draggable:hover.is-primary, .upload .upload-draggable.is-hovered.is-primary {
   border-color: #343434;
   background: rgba(79, 79, 79, 0.05);
+}
+.loading_box {border-radius:7px; overflow: hidden; position: relative;transform: translateY(3px);}
+.loading_box::before {content: ''; position:absolute;top: 0;right: 0;left: 0;bottom: 0; background-position: 20%;
+  background-size: 2000px;
+  background-image: linear-gradient(103deg, rgba(0, 0, 0, 0.13) 50%, rgba(255, 255, 255, 0.8) 51%, rgba(0, 0, 0, 0.13) 55%); animation:loadingBlink 2s ease-in-out infinite;}
+@keyframes loadingBlink {
+  from {background-position: 20%;}
+  to {background-position: 90%;}
 }

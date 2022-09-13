@@ -1,9 +1,9 @@
 <template>
   <div class="home">
-    <div v-if="!loading">
+    <div>
       <div class="instances_container" style="margin-top:-1rem">
         <div class="instance_info">
-          <h2>CREATE YOUR <span class="selected_model">
+          <h2 :style="(loading) ? 'opacity:.5' : ''">CREATE YOUR <div v-if="loading" class="loading_box" style="width:100px;height:35px;display:inline-block;"></div> <span class="selected_model" v-if="!loading">
               {{(category.indexOf('__') > 0) ? category.slice(category.indexOf('__')+2, 99999).toUpperCase() : category}}
               <div :class="{new_model_select:true, new_model_select_open:selectOpened}">
                 <p v-for="el in Object.keys(datatypes)" :value="el" :key="el"
@@ -71,9 +71,8 @@
     </div>
     <div v-if="loading" class="mx-auto" style="text-align:center">
       <p>
-        <font-awesome-icon icon="fa-solid fa-circle-notch" class="fa-spin" style="font-size:24px" />
+        <font-awesome-icon icon="fa-solid fa-circle-notch" class="fa-spin mt-6" style="font-size:24px" />
       </p>
-      <p>Syncing state with blockchain, please wait..</p>
     </div>
     <div v-if="isWorking" style="padding: 20px 0; text-align: center">
       {{ workingMessage }}
@@ -250,13 +249,15 @@
       },
       async prepare() {
         const app = this;
-        console.log("CONTENT", app.content);
-        let isValid = true;
-        for (let k in app.datatypes[app.category]) {
-          console.log(k)
-          const datatype = app.datatypes[app.category][k];
-          if (datatype.required && app.content[app.category][datatype.name] === "") {
-            isValid = false;
+        let isValid = true
+        let content = app.content[app.category]
+        let fields = content.map(el => (el.name) ? el.name : false)
+        for(const field of fields) {
+          if(Object.keys(content).find(el => el === field) == undefined) {
+            isValid = false
+          }
+          if(content.find(el => el.name===field && el.required) && content[field] == '') {
+            isValid = false
           }
         }
         if (isValid && !app.isWorking) {

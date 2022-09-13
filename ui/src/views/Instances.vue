@@ -1,5 +1,8 @@
 <template>
   <div id="instances">
+    <div class="instances_loading" v-if="loading">
+      <font-awesome-icon icon="fa-solid fa-circle-notch" style="font-size:25px" class="fa-spin" />
+    </div>
     <div class="modal_container" v-if="modals.createInstance">
       <div class="modal">
         <img src="../assets/images/close-icon.svg" alt="Close" @click="modals.createInstance = false">
@@ -34,11 +37,27 @@
           CREATE NEW INSTANCE
         </b-button>
       </div>
-      <div class="instances_loading" v-if="loading">
-        <font-awesome-icon icon="fa-solid fa-circle-notch" style="font-size:25px" class="fa-spin" />
-      </div>
       <div class="no_instances" v-if="instances.length === 0 && !loading">
         You have no instance at the moment
+      </div>
+      <div class="instances_list" v-if="loading">
+        <div class="instance" v-for="i in 3" :key="i">
+          <div class="instance_left">
+            <h3 class="my-2">
+              <div class="loading_box"
+                style="width:100px;height:20px;display: inline-block;filter: drop-shadow(0 0 0 black);"></div><i
+                style="font-size:15px; margin:0 1rem">Deployed at: <div class="loading_box"
+                  style="width:150px;height: 15px;display: inline-block; margin-left: 4px;"></div></i>
+            </h3>
+            <div class="loading_box mt-1" style="width:100px;height: 14px; opacity: .35;"></div>
+            <div class="loading_box mt-3" style="width:100px;height: 14px; opacity: .35;"></div>
+            <div class="loading_box mt-3" style="width:100px;height: 14px; opacity: .35;"></div>
+          </div>
+          <div class="instance_right">
+            <div class="loading_box" style="width:180px;height: 38px;"></div>
+          </div>
+        </div>
+        <div class="loading_box" style="width:100%"></div>
       </div>
       <div class="instances_list" v-if="!loading">
         <div class="instance" v-for="instance in Object.keys(datatypes)" :key="instance">
@@ -48,7 +67,8 @@
                   target="_blank"
                   style="color:black;text-decoration:underline">{{Object.entries(names).find(el => el[0] === instance)[0]}}</a></i>
             </h3>
-            <p v-for="datatype in Object.keys(datatypes[instance])" :key="datatype" v-html="(datatype.indexOf('__') > 0) ? datatype.slice(datatype.indexOf('__')+2, 99999) : datatype"></p>
+            <p v-for="datatype in Object.keys(datatypes[instance])" :key="datatype"
+              v-html="(datatype.indexOf('__') > 0) ? datatype.slice(datatype.indexOf('__')+2, 99999) : datatype"></p>
             <p v-if="Object.keys(datatypes[instance]).length === 0"><i style="color:#444">No datatypes</i></p>
           </div>
           <div class="instance_right">

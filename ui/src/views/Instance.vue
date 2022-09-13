@@ -1,5 +1,8 @@
 <template>
   <div id="instance">
+    <div class="instances_loading" v-if="loading">
+      <font-awesome-icon icon="fa-solid fa-circle-notch" style="font-size:25px" class="fa-spin" />
+    </div>
     <div class="modal_container" v-if="modals.removeDatatype">
       <div class="modal">
         <img src="../assets/images/close-icon.svg" alt="Close" @click="modals.removeDatatype = false">
@@ -73,11 +76,29 @@
         </div>
 
       </div>
-      <div class="instances_loading" v-if="loading || (tab !== 'list' && modelsLoading)">
-        <font-awesome-icon icon="fa-solid fa-circle-notch" style="font-size:25px" class="fa-spin" />
+      <div class="py-6" style="position:relative" v-if="tab !== 'list' && modelsLoading">
+        <div class="instances_loading" style="background:none!important">
+          <font-awesome-icon icon="fa-solid fa-circle-notch" style="font-size:25px" class="fa-spin" />
+        </div>
       </div>
       <div class="no_instances" v-if="!loading && Object.keys(datatypes[instance]).length === 0 && tab == 'list'">
         You have no datatypes in this instance
+      </div>
+      <div class="instances_list" v-if="loading">
+        <div class="instance" v-for="i in 3" :key="i">
+          <div class="instance_left">
+            <h3 class="my-2"><div class="loading_box" style="width:100px;height:20px;display: inline-block;filter: drop-shadow(0 0 0 black);"></div>
+            </h3>
+            <div class="loading_box mt-1" style="width:100px;height: 14px; filter: contrast(0.1); opacity: .35;"></div>
+            <div class="loading_box mt-3" style="width:100px;height: 14px; filter: contrast(0.1); opacity: .35;"></div>
+            <div class="loading_box mt-3" style="width:100px;height: 14px; filter: contrast(0.1); opacity: .35;"></div>
+          </div>
+          <div class="instance_right">
+            <div class="loading_box" style="margin: 0 .5rem!important; width: 50px;height: 40px;"></div>
+            <div class="loading_box" style="margin: 0 .5rem!important; width: 50px;height: 40px;"></div>
+          </div>
+        </div>
+        <div class="loading_box" style="width:100%"></div>
       </div>
       <div class="instances_list" v-if="!loading && tab === 'list'">
         <div class="instance" v-for="datatype in Object.keys(datatypes[instance])" :key="datatype">
@@ -408,22 +429,28 @@
         app.isWorking = true;
         try {
           let attrsArr = (app.datatypeSelected.name) ? app.datatypeSelected.datatypes : app.customDatatypeAttrs
-          for (let index of Object.keys(attrsArr)) {
-            let field = attrsArr[index]
-            app.workingMessage = "Adding "+field.name+" in " + datatype + " <br />Please confirm transaction in your wallet.";
-            let datatypeSigned = (app.preCompiledDatatypes.find(el => el===datatype)) ? datatype : app.account.substr(0, 5) + app.account.substr(-3) + '__' + datatype
-            const receipt = await factoryContract.methods
-              .editDatatypeInModel(datatypeSigned, index, field.active, field.name, field.print, field.required, field.multiple, field.input, field.specs)
-              .send({
-                from: app.account,
-              })
-              .on("transactionHash", (tx) => {
-                app.workingMessage =
-                  "Adding "+field.name+" in " + datatype + " <br />Waiting for confirmations at " + tx;
-              });
-            console.log("ADD_TYPE_RECEIPT", receipt);
+          if(attrsArr.find(el => el.name != '') == undefined) {
+            app.modals.addDatatype = false;
+            app.log('danger', 'Please, fill in the name field')
           }
-          window.location.reload();
+          else {
+            for (let index of Object.keys(attrsArr)) {
+              let field = attrsArr[index]
+              app.workingMessage = "Adding "+field.name+" in " + datatype + " <br />Please confirm transaction in your wallet.";
+              let datatypeSigned = (app.preCompiledDatatypes.find(el => el===datatype)) ? datatype : app.account.substr(0, 5) + app.account.substr(-3) + '__' + datatype
+              const receipt = await factoryContract.methods
+                .editDatatypeInModel(datatypeSigned, index, field.active, field.name, field.print, field.required, field.multiple, field.input, field.specs)
+                .send({
+                  from: app.account,
+                })
+                .on("transactionHash", (tx) => {
+                  app.workingMessage =
+                    "Adding "+field.name+" in " + datatype + " <br />Waiting for confirmations at " + tx;
+                });
+              console.log("ADD_TYPE_RECEIPT", receipt);
+            }
+            window.location.reload();
+          }
         } catch (e) {
           alert(e.message);
           app.isWorking = false;
