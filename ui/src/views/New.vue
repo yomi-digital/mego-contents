@@ -267,19 +267,19 @@
           for (let k in app.datatypes[app.category]) {
             const datatype = app.datatypes[app.category][k];
             if (datatype.input !== "file") {
-              metadata[datatype.name] = app.content[datatype.name];
+              metadata[datatype.name] = content[datatype.name];
             } else {
               const ext =
-                app.content[datatype.name].name.split(".")[
-                  app.content[datatype.name].name.split(".").length - 1
+                content[datatype.name].name.split(".")[
+                  content[datatype.name].name.split(".").length - 1
                 ];
               console.log("Extension file is:", ext);
               const supported = ["gif", "png", "jpg", "jpeg"];
               if (supported.indexOf(ext) !== -1) {
                 app.log("success", "File is valid, uploading on IPFS..");
                 const formData = new FormData();
-                formData.append("file", app.content[datatype.name]);
-                formData.append("name", app.content[datatype.name].name);
+                formData.append("file", content[datatype.name]);
+                formData.append("name", content[datatype.name].name);
                 try {
                   let ipfsImageUpload = await axios({
                     method: "post",
@@ -317,6 +317,9 @@
           metadata.author = app.account;
           metadata.timestamp = new Date().getTime();
           metadata.category = app.category;
+          metadata.name = (metadata.name) ? metadata.name : (metadata.title) ? metadata.title : 'MEGO CONTENT'
+          metadata.description = (metadata.description) ? metadata.description : 'This NFT represents a decentralised content on MEGO'
+          metadata.image = (metadata.image) ? metadata.image : ''
           app.workingMessage = "Creating final NFT metadata..";
           let ipfNftUpload = await axios({
             method: "post",

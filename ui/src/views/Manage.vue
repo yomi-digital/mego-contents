@@ -174,7 +174,7 @@ export default {
       workingMessage: "",
       ipfsNft: "",
       tokenId: "",
-      freezed: false,
+      freezed: false
     };
   },
   mounted() {
