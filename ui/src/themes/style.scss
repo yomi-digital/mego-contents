@@ -144,8 +144,9 @@ button {background: none!important;border-radius: 8px!important;}
 .instance_info {display: flex; flex-direction: row; justify-content: space-between; margin: -4.2rem 0 3.5rem 0;}
 .instance_info h2{font-size: 42px; font-family: 'Sk-Modernist'!important; color: black;}
 .instance_info p {font-size: 21px;height: fit-content;margin:auto 0;}
+.instance_info p a {color: black; text-decoration: underline;}
 .modal_container::before {content:''; position: absolute; top: 0;bottom: 0;left: 0;right: 0;backdrop-filter: blur(0); transition: all .3s ease-in-out; z-index: 9; animation: blurInModal .3s ease-in-out forwards;}
-.modal_container > .modal {background: #EDEDED;border: 1px solid #565857;border-radius: 7px; z-index: 99; position: absolute; top: 50%;left: 50%;transform: translate(-50%,-50%) scale(.9); display: flex; padding: 4rem;width:fit-content; max-width: 80vw;height: fit-content; justify-content: center; opacity: 0; transition: all .3 ease-in-out; animation: fadeInModal .3s ease-in-out forwards;}
+.modal_container > .modal {background: #ededed85;backdrop-filter: blur(4px);border: 1px solid #565857;border-radius: 7px; z-index: 99; position: absolute; top: 50%;left: 50%;transform: translate(-50%,-50%) scale(.9); display: flex; padding: 4rem;width:fit-content; max-width: 80vw;height: fit-content; justify-content: center; opacity: 0; transition: all .3 ease-in-out; animation: fadeInModal .3s ease-in-out forwards;}
 .modal_container > .modal > img {position: absolute; top: 2rem;right: 2rem;width: 2rem;height: 2rem; cursor: pointer;}
 .modal_container > .modal h2 {font-size: 22px; color: black; font-family: 'Sk-modernist'; text-align: center; margin: 0 auto .4rem auto;}
 .modal_container > .modal input {width: 15rem}
@@ -206,7 +207,7 @@ button {background: none!important;border-radius: 8px!important;}
 .draft_list {display: flex; flex-direction: row; flex-wrap: wrap;justify-content: flex-end; padding: 0 3rem 0 0; }
 .draft {background: #F1F0F0;border-radius: 11px; padding: 1.5rem; width: 450px; position: relative; flex-basis: 45%; margin: .3rem; cursor: pointer;}
 .draft > div {display: flex; align-items: center; align-content: center;}
-.draft > div > div {border-radius: 7px; background: #D9D9D9;width:47px;height: 47px;}
+.draft > div > div {border-radius: 7px; background: #D9D9D9;width:47px;height: 47px;background-size: cover!important;background-position: center center!important;}
 .draft > div > h3 {font-size: 18px; margin-left: 1rem;}
 .draft > p {color: #ACACAC;font-size: 14px; margin: 1rem 0;}
 .draft > img {position: absolute; right: .9rem;bottom: .9rem;width: 20px;height: 20px;}

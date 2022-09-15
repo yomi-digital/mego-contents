@@ -42,7 +42,7 @@
       <div class="instance_info">
         <h2>MANAGE YOUR INSTANCE</h2>
         <p v-if="!loading">
-          Deployed at: {{instance}}</p>
+          Deployed at: <a :href="'https://etherscan.io/address/'+instance" target="_blank" style="margin-right:1rem">{{instance.substr(0, 5) +'...'+ instance.substr(-3)}}</a>  Headless endpoint: <a :href="'https://api.mego.cx/contents/'+instance" target="_blank">api.mego.cx/c...{{instance.substr(-3)}}</a></p>
         <p v-if="loading">
           Deployed at: 0x
           <font-awesome-icon icon="fa-solid fa-circle-notch" style="font-size:25px" class="fa-spin ml-3" />
@@ -70,7 +70,7 @@
           </b-button>
           <b-button type="button button-dark is-light ml-auto mr-0 mt-1"
             style="background:#111!important;color:white!important" class="button" v-if="tab !== 'list'"
-            @click="tab = 'list'; datatypeSelected = {}">
+            @click="tab = 'list'; datatypeSelected = {}; newDatatypeName = ''; datatypeCreated = false">
             VIEW ALL DATATYPES
           </b-button>
         </div>
@@ -112,7 +112,7 @@
           <div class="instance_right">
             <b-button type="button" class="button button-dark is-light mx-auto mt-0"
               style="margin: 0 .5rem!important; width: 50px;"
-              @click="() => {newDatatypeName = (datatype.indexOf('__') > 0) ? datatype.slice(datatype.indexOf('__')+2, 99999) : datatype; datatypeCreated = true; tab = 'customized'; datatypeSelected = {name: datatype, datatypes: datatypes[instance][datatype].fields}}">
+              @click="newDatatypeName = (datatype.indexOf('__') > 0) ? datatype.slice(datatype.indexOf('__')+2, 99999) : datatype; datatypeCreated = true; tab = 'customized'; datatypeSelected = {name: datatype, datatypes: datatypes[instance][datatype].fields}">
               <img src="../assets/images/pencil.svg" style="transform:scale(1.5) translateY(1px)" alt="">
             </b-button>
             <b-button type="button" class="button button-dark is-light mx-auto mt-0"
@@ -144,7 +144,7 @@
               </b-button>
               <b-button type="button" class="button button-dark is-light mx-auto mt-0"
                 style="margin: 0 .5rem!important; width: 50px;"
-                @click="() => {newDatatypeName = (datatype.name.indexOf('__') > 0) ? datatype.name.slice(datatype.name.indexOf('__')+2, 99999) : datatype.name; datatypeCreated = true; tab = 'customized'; datatypeSelected = datatype}">
+                @click="editCustomDatatype(datatype.name)">
                 <img src="../assets/images/pencil.svg" style="transform:scale(1.5) translateY(1px)" alt="">
               </b-button>
             </div>
@@ -205,7 +205,7 @@
                 </td>
                 <td style="text-align:center">
                   <img src="../assets/images/trash-icon.svg" alt="" style="cursor:pointer"
-                    @click="modals.removeDatatypeAttr = index">
+                    @click="modals.removeDatatypeAttr = index" v-if="customDatatypeAttrs.length > 1">
                 </td>
               </tr>
             </template>
@@ -250,7 +250,7 @@
                 </td>
                 <td style="text-align:center">
                   <img src="../assets/images/trash-icon.svg" alt="" style="cursor:pointer"
-                    @click="modals.removeDatatypeAttr = index">
+                    @click="modals.removeDatatypeAttr = index" v-if="datatypeSelected.datatypes.length > 1">
                 </td>
               </tr>
             </template>
@@ -340,24 +340,6 @@
             multiple: false,
             input: 'text',
             specs: ''
-          },
-          {
-            active: false,
-            name: '',
-            print: false,
-            required: false,
-            multiple: false,
-            input: 'text',
-            specs: ''
-          },
-          {
-            active: false,
-            name: '',
-            print: false,
-            required: false,
-            multiple: false,
-            input: 'text',
-            specs: ''
           }
         ],
         isWorking: false,
@@ -438,6 +420,7 @@
               let field = attrsArr[index]
               app.workingMessage = "Adding "+field.name+" in " + datatype + " <br />Please confirm transaction in your wallet.";
               let datatypeSigned = (app.preCompiledDatatypes.find(el => el===datatype)) ? datatype : app.account.substr(0, 5) + app.account.substr(-3) + '__' + datatype
+              console.log("Editing ",datatypeSigned)
               const receipt = await factoryContract.methods
                 .editDatatypeInModel(datatypeSigned, index, field.active, field.name, field.print, field.required, field.multiple, field.input, field.specs)
                 .send({
@@ -685,6 +668,16 @@
           message: content,
           pauseOnHover: true,
         });
+      },
+      editCustomDatatype(datatype) {
+        const app = this
+        console.log(datatype)
+        app.newDatatypeName = (datatype.indexOf('__') > 0) ? datatype.slice(datatype.indexOf('__')+2, 99999) : datatype; 
+        app.datatypeCreated = true; 
+        app.tab = 'customized'; 
+        console.log(app.models.find(el => el.name === datatype).datatypes)
+        let datatypes = app.models.find(el => el.name === datatype).datatypes
+        app.datatypeSelected = {name: datatype, datatypes: datatypes}
       }
     },
     async mounted() {

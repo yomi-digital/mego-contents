@@ -73,7 +73,7 @@
           </div>
           <div class="instance_right">
             <b-button type="button" class="button button-dark is-light mx-auto mt-0"
-              @click="$router.push({name: 'Instance', params: {instance: instance}})">MANAGE INSTANCE</b-button>
+              @click="changeInstance(instance)">MANAGE INSTANCE</b-button>
           </div>
         </div>
       </div>
@@ -282,6 +282,10 @@
           app.isWorking = false;
           alert(e.message);
         }
+      },
+      changeInstance(instance) {
+        localStorage.setItem('instance', instance)
+        this.$router.push({name: 'Instance', params: {instance: instance}})
       }
     },
     async mounted() {

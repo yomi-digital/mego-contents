@@ -1,9 +1,19 @@
 <template>
   <div class="home">
-    <div>
+    <div style="position:relative">
+      <div class="modal_container" v-if="modals.prepare">
+        <div class="modal">
+          <img src="../assets/images/close-icon.svg" alt="Close" @click="modals.prepare = false">
+          <h2 v-html="workingMessage"></h2>
+          <!-- <p>Define the name and the ticker of the instance.</p> -->
+          <font-awesome-icon icon="fa-solid fa-circle-notch" style="font-size:20px;margin-top: .2rem;" class="fa-spin"
+            v-if="isWorking" />
+        </div>
+      </div>
       <div class="instances_container" style="margin-top:-1rem">
         <div class="instance_info">
-          <h2 :style="(loading) ? 'opacity:.5' : ''">CREATE YOUR <div v-if="loading" class="loading_box" style="width:100px;height:35px;display:inline-block;"></div> <span class="selected_model" v-if="!loading">
+          <h2 :style="(loading) ? 'opacity:.5' : ''">CREATE YOUR <div v-if="loading" class="loading_box"
+              style="width:100px;height:35px;display:inline-block;"></div> <span class="selected_model" v-if="!loading">
               {{(category.indexOf('__') > 0) ? category.slice(category.indexOf('__')+2, 99999).toUpperCase() : category}}
               <div :class="{new_model_select:true, new_model_select_open:selectOpened}">
                 <p v-for="el in Object.keys(datatypes)" :value="el" :key="el"
@@ -37,8 +47,9 @@
               </option>
             </b-select>
           </b-field>
-          <b-field v-if="input.input === 'tag'">
-            <b-taginput v-model="content[category][input.name]" ellipsis icon="label" placeholder="Add a tag" aria-close-label="Delete this tag">
+          <b-field v-if="input.input === 'tag'" :label="input.name.toUpperCase()">
+            <b-taginput v-model="content[category][input.name]" ellipsis icon="label" placeholder="Add a tag"
+              aria-close-label="Delete this tag">
             </b-taginput>
           </b-field>
           <b-field v-if="input.input === 'file'" v-bind:key="input.name" :label="input.name.toUpperCase()">
@@ -49,8 +60,10 @@
                     Drop your file here or click to upload.<br />Supported
                     files: jpg, png, gif.
                   </p>
-                  <p v-if="content[category][input.name] ? content[category][input.name].name !== undefined : content[category][input.name]">
-                    Chosen image is <b>{{ content[category][input.name].name }}</b>.<br />Click or drop another file to change it.
+                  <p
+                    v-if="content[category][input.name] ? content[category][input.name].name !== undefined : content[category][input.name]">
+                    Chosen image is <b>{{ content[category][input.name].name }}</b>.<br />Click or drop another file to
+                    change it.
                   </p>
                 </div>
               </section>
@@ -63,19 +76,20 @@
           PREPARE METADATA
         </b-button>
       </div>
-      <div v-if="ipfsNft" style="text-align: center; padding: 30vh 0">
-        Metadata are generated, please double check them before mint at<br />
-        <a target="_blank" :href="'https://ipfs.yomi.digital/ipfs/' + ipfsNft">{{ ipfsNft }}</a><br /><br />
-        <b-button v-if="!isWorking" expanded @click="mint">MINT CONTENT</b-button>
+      <div v-if="ipfsNft" style="text-align: center; padding: 3rem 0;font-size:20px">
+        <span>Metadata are generated, please double check them before mint at</span><br />
+        <a target="_blank" style="color:black;text-decoration:underline"
+          :href="'https://ipfs.yomi.digital/ipfs/' + ipfsNft">{{ ipfsNft }}</a><br /><br />
+        <b-button type="button" class="button-dark is-light mx-3 mt-5" v-if="!isWorking"
+          style="background:#111!important;color:white!important" @click="mint">
+          MINT CONTENT
+        </b-button>
       </div>
     </div>
     <div v-if="loading" class="mx-auto" style="text-align:center">
       <p>
         <font-awesome-icon icon="fa-solid fa-circle-notch" class="fa-spin mt-6" style="font-size:24px" />
       </p>
-    </div>
-    <div v-if="isWorking" style="padding: 20px 0; text-align: center">
-      {{ workingMessage }}
     </div>
   </div>
 </template>
@@ -126,7 +140,10 @@
         loading: true,
         workingMessage: "",
         ipfsNft: "",
-        selectOpened: false
+        selectOpened: false,
+        modals: {
+          prepare: false
+        }
       };
     },
     async mounted() {
@@ -134,7 +151,7 @@
       document.getElementById('app').style.background = 'white'
       const app = this;
       await app.connect();
-      for(const el of Object.keys(app.datatypes)) {
+      for (const el of Object.keys(app.datatypes)) {
         app.content[el] = app.datatypes[el]
       }
       console.log(app.content)
@@ -252,17 +269,18 @@
         let isValid = true
         let content = app.content[app.category]
         let fields = content.map(el => (el.name) ? el.name : false)
-        for(const field of fields) {
-          if(Object.keys(content).find(el => el === field) == undefined) {
+        for (const field of fields) {
+          if (Object.keys(content).find(el => el === field) == undefined) {
             isValid = false
           }
-          if(content.find(el => el.name===field && el.required) && content[field] == '') {
+          if (content.find(el => el.name === field && el.required) && content[field] == '') {
             isValid = false
           }
         }
         if (isValid && !app.isWorking) {
           app.isWorking = true;
           app.workingMessage = "Validating input data..";
+          app.modals.prepare = true
           let metadata = {};
           for (let k in app.datatypes[app.category]) {
             const datatype = app.datatypes[app.category][k];
@@ -297,10 +315,12 @@
                       "ipfs://" + ipfsImageUpload.data.ipfs_hash;
                   } else {
                     app.isWorking = false;
+                    app.modals.prepare = false
                     app.log("danger", "Upload on IPFS failed, please retry.");
                   }
                 } catch (e) {
                   app.isWorking = false;
+                  app.modals.prepare = false
                   app.log("danger", "Upload on IPFS failed, please retry.");
                 }
               } else {
@@ -309,6 +329,7 @@
                   "Extension is not allowed, please retry with a different file."
                 );
                 app.isWorking = false;
+                app.modals.prepare = false
               }
             }
           }
@@ -318,7 +339,8 @@
           metadata.timestamp = new Date().getTime();
           metadata.category = app.category;
           metadata.name = (metadata.name) ? metadata.name : (metadata.title) ? metadata.title : 'MEGO CONTENT'
-          metadata.description = (metadata.description) ? metadata.description : 'This NFT represents a decentralised content on MEGO'
+          metadata.description = (metadata.description) ? metadata.description :
+            'This NFT represents a decentralised content on MEGO'
           metadata.image = (metadata.image) ? metadata.image : ''
           app.workingMessage = "Creating final NFT metadata..";
           let ipfNftUpload = await axios({
@@ -335,13 +357,16 @@
           ) {
             app.ipfsNft = ipfNftUpload.data.ipfs_hash;
             app.isWorking = false;
+            app.modals.prepare = false
           } else {
             app.isWorking = false;
+            app.modals.prepare = false
             app.log("danger", "Upload on IPFS failed, please retry.");
           }
         } else {
           app.log("danger", "Please fill all required fields.");
           app.isWorking = false;
+          app.modals.prepare = false
         }
       },
       async mint() {
