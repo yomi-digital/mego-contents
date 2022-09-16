@@ -19,6 +19,7 @@ contract MEGO_Contents is ERC721, Ownable {
     mapping(string => bool) public activated_models;
     mapping(uint256 => string) public token_models;
     mapping(string => uint256) public minted_tokens;
+
     string[] public content_models;
     address internal factory_address;
 

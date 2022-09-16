@@ -10,7 +10,9 @@ contract MEGO_Factory is MEGO_Types, Ownable {
     uint256 public instances_counter;
     mapping(address => uint256) public owned_instances;
     mapping(uint256 => address) public instances;
-    uint256 public deployment_price = 0.05 ether;
+    mapping(address => uint8) public subscriptions;
+    mapping(uint8 => uint256) public deployment_prices;
+    mapping(uint8 => uint256) public subscription_prices;
     address public vault_address;
 
     event InstanceCreated(address _contents);
@@ -26,6 +28,31 @@ contract MEGO_Factory is MEGO_Types, Ownable {
     constructor() {
         types = new MEGO_Types();
         vault_address = msg.sender;
+        // Premium subscription price
+        subscription_prices[1] = 0.2 ether;
+        // Unlimited subscription price
+        subscription_prices[2] = 0.5 ether;
+        // Deployment price for free accounts
+        deployment_prices[0] = 0.3 ether;
+        // Deployment price for unlimited accounts
+        deployment_prices[1] = 0.08 ether;
+    }
+
+    function buySubscription(uint8 _type) public payable returns (address) {
+        // Be sure subscription exists and has price > 0
+        require(subscription_prices[_type] > 0, "Subscription not found.");
+        // Be sure value is the same of subscription
+        require(
+            msg.value == subscription_prices[_type],
+            "Must send exact amount needed to deploy the instance."
+        );
+        // Be sure sender doesn't own same subscription yet
+        require(
+            subscriptions[msg.sender] < _type,
+            "You already own this subscription."
+        );
+        // Finally upgrade subscription
+        subscriptions[msg.sender] = _type;
     }
 
     function startNewInstance(string memory _name, string memory _ticker)
@@ -33,7 +60,10 @@ contract MEGO_Factory is MEGO_Types, Ownable {
         payable
         returns (address)
     {
-        require(msg.value == deployment_price, "Must send exact amount needed to deploy the instance.");
+        require(
+            msg.value == deployment_prices[subscriptions[msg.sender]],
+            "Must send exact amount needed to deploy the instance."
+        );
         // Increase instances counter
         instances_counter++;
         // Create new instance of contract
