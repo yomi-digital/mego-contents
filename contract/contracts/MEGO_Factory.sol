@@ -38,7 +38,7 @@ contract MEGO_Factory is MEGO_Types, Ownable {
         deployment_prices[1] = 0.08 ether;
     }
 
-    function buySubscription(uint8 _type) public payable returns (address) {
+    function buySubscription(uint8 _type) public payable {
         // Be sure subscription exists and has price > 0
         require(subscription_prices[_type] > 0, "Subscription not found.");
         // Be sure value is the same of subscription
@@ -152,8 +152,12 @@ contract MEGO_Factory is MEGO_Types, Ownable {
     }
 
     // Admin functions
-    function fixDeploymentPrice(uint256 _newPrice) public onlyOwner {
-        deployment_price = _newPrice;
+    function fixDeploymentPrices(uint8 _type, uint256 _newPrice) public onlyOwner {
+        deployment_prices[_type] = _newPrice;
+    }
+
+    function fixSubscriptionPrices(uint8 _type, uint256 _newPrice) public onlyOwner {
+        subscription_prices[_type] = _newPrice;
     }
 
     function fixVault(address newAddress) public onlyOwner {

@@ -9,7 +9,11 @@ async function main() {
   const contract = new ethers.Contract(configs.contract_address, ABI.abi, wallet)
   const name = 'CONTENTS_NAME'
   const ticker = 'CONTENTS_TICKER'
-  const result = await contract.startNewInstance(name, ticker)
+  const subscription = await contract.subscriptions(wallet.address)
+  console.log("Subscription is:", subscription)
+  const price = await contract.deployment_prices(subscription)
+  console.log("Price to deploy is:", price.toString(), "wei")
+  const result = await contract.startNewInstance(name, ticker, { value: price })
   const receipt = await result.wait()
   console.log("New contents contract created at:", receipt.events[2].args._contents)
   console.log("💸 Gas used:", receipt.gasUsed.toString())
