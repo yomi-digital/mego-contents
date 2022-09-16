@@ -341,7 +341,7 @@
           metadata.name = (metadata.name) ? metadata.name : (metadata.title) ? metadata.title : 'MEGO CONTENT'
           metadata.description = (metadata.description) ? metadata.description :
             'This NFT represents a decentralised content on MEGO'
-          metadata.image = (metadata.image) ? metadata.image : ''
+          metadata.image = (metadata.image) ? metadata.image : 'ipfs://bafkreiblyp34mtsvwk2tv4u7cwq6wdj5lkfgpmvkytvkzq4xlhwybebrhe'
           app.workingMessage = "Creating final NFT metadata..";
           let ipfNftUpload = await axios({
             method: "post",
@@ -374,6 +374,7 @@
         if (!app.isWorking) {
           app.isWorking = true;
           app.workingMessage = "Minting NFT, please continue with your wallet..";
+          app.modals.prepare = true
           const network = await app.web3.eth.net.getId();
           console.log("Found network:", network);
           if (network === app.network) {
@@ -395,7 +396,8 @@
                 "success",
                 "Minting was successful, redirecting to draft page.."
               );
-              app.isWorking = false;
+              //app.isWorking = false;
+              app.modals.prepare = false
               setTimeout(function () {
                 window.location.href = "/#/drafts";
               }, 2000);
@@ -403,6 +405,7 @@
               console.log("MINTING FAILED:", e);
               app.log("danger", "Minting failed, please retry..");
               app.isWorking = false;
+              app.modals.prepare = false
             }
           } else {
             alert(

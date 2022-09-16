@@ -1,5 +1,14 @@
 <template>
   <div class="home">
+    <div class="modal_container" v-if="modals.working">
+      <div class="modal">
+        <img src="../assets/images/close-icon.svg" alt="Close" @click="modals.working = false">
+        <h2 v-html="workingMessage"></h2>
+        <!-- <p>Define the name and the ticker of the instance.</p> -->
+        <font-awesome-icon icon="fa-solid fa-circle-notch" style="font-size:20px;margin-top: .2rem;" class="fa-spin"
+          v-if="isWorking" />
+      </div>
+    </div>
     <div class="instances_container" style="margin-top:-1rem">
       <div class="instance_info">
         <h2 :style="(loading) ? 'opacity:.5' : ''">UPDATE YOUR <div v-if="loading" class="loading_box"
@@ -23,6 +32,7 @@
           </b-button>
         </p>
       </div>
+      <div v-if="loading">Syncing state with blockchain, please wait..</div>
     </div>
     <div v-if="!loading" style="position: relative" class="new_model_form">
       <!-- <b-field label="MODEL">
@@ -77,14 +87,17 @@
         </b-field>
         <br />
       </div>
-      <b-button v-if="!isWorking && !ipfsNft && !freezed" expanded @click="prepare">PREPARE METADATA</b-button>
+      <div style="display:grid;place-items:center">
+        <b-button v-if="!isWorking && !ipfsNft && !freezed" @click="prepare"
+          class="button-light is-dark mx-3 mt-5" style="color:black!important;border:1px solid black!important;margin: auto; width: 200px;">UPDATE
+        </b-button>
+      </div>
       <div v-if="ipfsNft" style="text-align: center; padding: 20px 0 20px 0">
         Metadata are generated, please double check them before mint at<br />
         <a target="_blank" :href="'https://ipfs.yomi.digital/ipfs/' + ipfsNft">{{ ipfsNft }}</a><br /><br />
-        <b-button v-if="!isWorking" expanded @click="mint">MINT NFT</b-button>
+        <b-button v-if="!isWorking" @click="mint" class="button-light is-dark mx-3 mt-5" style="color:black!important;border:1px solid black!important;margin: auto; width: 200px;">MINT NFT</b-button>
       </div>
     </div>
-    <div v-if="loading">Syncing state with blockchain, please wait..</div>
     <div v-if="isWorking" style="padding: 20px 0; text-align: center">
       {{ workingMessage }}
     </div>
@@ -112,7 +125,7 @@
   const abi_contents = require("../abis/contents.json");
 
   export default {
-    name: "Home",
+    name: "Manage",
     components: {
       VueEditor,
     },
@@ -138,7 +151,10 @@
         workingMessage: "",
         ipfsNft: "",
         tokenId: "",
-        freezed: false
+        freezed: false,
+        modals: {
+          working: false
+        }
       };
     },
     mounted() {
@@ -286,6 +302,7 @@
         if (isValid && !app.isWorking) {
           app.isWorking = true;
           app.workingMessage = "Validating input data..";
+          app.modals.working = true
           let metadata = {};
           for (let k in app.datatypes[app.category]) {
             const datatype = app.datatypes[app.category][k];
@@ -321,10 +338,12 @@
                         "ipfs://" + ipfsImageUpload.data.ipfs_hash;
                     } else {
                       app.isWorking = false;
+                      app.modals.working = false
                       app.log("danger", "Upload on IPFS failed, please retry.");
                     }
                   } catch (e) {
                     app.isWorking = false;
+                    app.modals.working = false
                     app.log("danger", "Upload on IPFS failed, please retry.");
                   }
                 } else {
@@ -333,6 +352,7 @@
                     "Extension is not allowed, please retry with a different file."
                   );
                   app.isWorking = false;
+                  app.modals.working = false
                 }
               } else {
                 metadata[datatype.name] = app.stored[datatype.name];
@@ -359,13 +379,16 @@
           ) {
             app.ipfsNft = ipfNftUpload.data.ipfs_hash;
             app.isWorking = false;
+            app.modals.working = false
           } else {
             app.isWorking = false;
+            app.modals.working = false
             app.log("danger", "Upload on IPFS failed, please retry.");
           }
         } else {
           app.log("danger", "Please fill all required fields.");
           app.isWorking = false;
+          app.modals.working = false
         }
       },
       async mint() {
@@ -373,6 +396,7 @@
         if (!app.isWorking) {
           app.isWorking = true;
           app.workingMessage = "Changing NFT, please continue with your wallet..";
+          app.modals.working = true;
           const network = await app.web3.eth.net.getId();
           console.log("Found network:", network);
           if (network === app.network) {
@@ -394,7 +418,8 @@
                 "success",
                 "Minting was successful, redirecting to draft page.."
               );
-              app.isWorking = false;
+              //app.isWorking = false;
+              app.modals.working = false
               setTimeout(function () {
                 location.reload();
               }, 2000);
@@ -402,6 +427,7 @@
               console.log("MINTING FAILED:", e);
               app.log("danger", "Minting failed, please retry..");
               app.isWorking = false;
+              app.modals.working = false
             }
           } else {
             alert(
@@ -417,6 +443,7 @@
         if (!app.isWorking) {
           app.isWorking = true;
           app.workingMessage = "Freezing NFT, please continue with your wallet..";
+          app.modals.working = true;
           const network = await app.web3.eth.net.getId();
           console.log("Found network:", network);
           if (network === app.network) {
@@ -438,7 +465,8 @@
                 "success",
                 "Freeze was successful, redirecting to public page.."
               );
-              app.isWorking = false;
+              //app.isWorking = false;
+              app.modals.working = false;
               setTimeout(function () {
                 window.location.href = "/#/public";
               }, 2000);
@@ -446,6 +474,7 @@
               console.log("MINTING FAILED:", e);
               app.log("danger", "Minting failed, please retry..");
               app.isWorking = false;
+              app.modals.working = false;
             }
           } else {
             alert(

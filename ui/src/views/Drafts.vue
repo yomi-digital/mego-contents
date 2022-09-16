@@ -12,11 +12,11 @@
           <p @click="filterActive = 'type'" :style="(filterActive === 'type') ? 'font-weight:600' : ''">type</p>
         </div>
         <div class="column is-two-thirds">
-          <div class="draft_list" v-if="!loading && drafts.length > 0">
+          <div class="draft_list" id="draft_list" v-if="drafts.length > 0">
             <div class="draft" v-for="(draft,index) in drafts" :key="index"
-              @click="$router.push({name: 'Manage', params: {tokenId: draft.tokenId+1}})">
+              @click="$router.push({name: 'Manage', params: {tokenId: parseInt(draft.tokenId)}})">
               <div>
-                <div :style="'background: url(https://ipfs.yomi.digital/ipfs/'+draft.image.split('//')[1]+')'">
+                <div :style="{'background': 'url(https://ipfs.yomi.digital/ipfs/'+draft.image.split('//')[1]+')'}">
                 </div>
                 <h3 v-html="draft.name"></h3>
               </div>
@@ -24,7 +24,7 @@
               <img src="../assets/images/draft_arrow.svg">
             </div>
           </div>
-          <div class="draft_list" style="position:relative" v-if="loading">
+          <div class="draft_list" id="draft_list_loading" style="position:relative" v-if="drafts.length === 0 && loading">
             <div class="instances_loading" style="opacity:.9">
               <font-awesome-icon icon="fa-solid fa-circle-notch" style="font-size:25px" class="fa-spin" />
             </div>
@@ -98,24 +98,31 @@
         originalDrafts: [],
         datatypes: [],
         loading: true,
-        filterActive: 'title'
+        filterActive: 'title',
+        models: []
       };
     },
     async mounted() {
       document.getElementById('navbar_group').children[1].style.background = 'white'
       document.getElementById('app').style.background = 'white'
       await this.connect();
-      this.drafts.forEach((el, i) => {
-        el.tokenId = i
-      })
       this.originalDrafts = this.drafts
+      this.$forceUpdate()
       this.loading = false
+      //Removing extra loading element
+      let tempInterval = setInterval(() => {
+        if(document.getElementById('draft_extra_loading')) {
+          document.getElementById('draft_extra_loading').remove()
+          clearInterval(tempInterval)
+        }
+      },50)
     },
     watch: {
       filterActive: {
         handler() {
           if (!this.loading) {
             let drafts = this.originalDrafts
+            console.log(this.drafts)
             if (this.filterActive === 'title') {
               drafts.sort(function (a, b) {
                 if (a.name.toLowerCase() < b.name.toLowerCase()) {
@@ -172,37 +179,42 @@
             if (accounts.length > 0) {
               app.account = accounts[0];
               app.instance = localStorage.getItem("instance");
-              app.fetchModels();
+              await app.fetchModels();
+              let loadingEl = document.getElementById('draft_list_loading')?.children[1]?.cloneNode(true)
+              loadingEl?.setAttribute('id', 'draft_extra_loading')
               const contentsContract = new web3.eth.Contract(
                 app.abi_contents,
                 app.instance
               );
-              const owned = await contentsContract.methods
-                .tokensOfModel(app.account, "blog")
-                .call();
-              console.log("Nft of model?", owned);
-              console.log(owned);
-              for (let k in owned) {
-                let tokenURI = await contentsContract.methods
-                  .tokenURI(owned[k])
+              for(const model of app.models) {
+                const owned = await contentsContract.methods
+                  .tokensOfModel(app.account, model)
                   .call();
-                const freezed = await contentsContract.methods
-                  .metadata_freezed(tokenURI.replace("ipfs://", ""))
-                  .call();
-                console.log("Metadata is freezed?", freezed);
-                if (!freezed) {
-                  console.log("TOKEN URI FOR #" + owned[k] + ":", tokenURI);
-                  try {
-                    const content = await app.axios.get(
-                      tokenURI.replace(
-                        "ipfs://",
-                        "https://ipfs.yomi.digital/ipfs/"
-                      )
-                    );
-                    content.data.tokenId = owned[k];
-                    app.drafts.push(content.data);
-                  } catch (e) {
-                    console.log("Can't download from IPFS..");
+                for (let k in owned) {
+                  let tokenURI = await contentsContract.methods
+                    .tokenURI(owned[k])
+                    .call();
+                  const freezed = await contentsContract.methods
+                    .metadata_freezed(tokenURI.replace("ipfs://", ""))
+                    .call();
+                  console.log("Metadata is freezed?", freezed);
+                  if (!freezed) {
+                    console.log("TOKEN URI FOR #" + owned[k] + ":", tokenURI);
+                    try {
+                      const content = await app.axios.get(
+                        tokenURI.replace(
+                          "ipfs://",
+                          "https://ipfs.yomi.digital/ipfs/"
+                        ) 
+                      );
+                      content.data.tokenId = owned[k];
+                      console.log(owned[k])
+                      app.drafts.push(content.data);
+                      //spawn extra loading element to fill empty space
+                      setTimeout(() => {document.getElementById('draft_list')?.append(loadingEl)},100)
+                    } catch (e) {
+                      console.log("Can't download from IPFS..");
+                    }
                   }
                 }
               }
@@ -220,60 +232,22 @@
       },
       async fetchModels() {
         const app = this;
-        const contentsContract = new app.web3.eth.Contract(
-          app.abi_contents,
-          app.instance
-        );
         const factoryContract = new app.web3.eth.Contract(
           app.abi_factory,
           app.contract
         );
-        let exists = true;
-        let i = 0;
-        while (exists) {
+        let ended = false
+        let k = 0
+        while (!ended) {
           try {
-            const result = await contentsContract.methods
-              .content_models(i)
-              .call();
-            if (result.length > 0) {
-              app.datatypes[result] = [];
-              if (app.category.length === 0) {
-                app.category = result;
-              }
-              let datatypes = [];
-              console.log("Model found:", result);
-              let finished = false;
-              let t = 0;
-              while (!finished) {
-                const datatype = await factoryContract.methods
-                  .returnModelType(result, t)
-                  .call();
-                if (datatype._active) {
-                  if (datatype._input !== "file") {
-                    app.content[datatype._name] = "";
-                  } else {
-                    app.content[datatype._name] = {};
-                  }
-                  datatypes.push({
-                    name: datatype._name,
-                    print: datatype._print,
-                    required: datatype._required,
-                    multiple: datatype._multiple,
-                    input: datatype._input,
-                    specs: datatype._specs,
-                  });
-                }
-                t++;
-                if (datatype._name.length === 0) {
-                  finished = true;
-                }
-              }
-              app.datatypes[result] = datatypes;
+            const created = await factoryContract.methods.created(k).call()
+            app.models.push(created)
+            k++
+            if (created.length === 0) {
+              ended = true
             }
-            i++;
           } catch (e) {
-            console.log("Model parse finished.");
-            exists = false;
+            ended = true
           }
         }
       },

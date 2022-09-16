@@ -179,6 +179,7 @@ button {background: none!important;border-radius: 8px!important;}
 .new_model_select p:nth-last-child(1) {border-bottom: none!important;}
 .selected_model {border-bottom: 3px solid black;display: inline-block;line-height: 43px;position: relative;font-family: 'Sk-Modernist'!important;}
 .new_model_select_open {opacity: 1; transform: scaleY(1) translateX(-50%);height: fit-content; padding: .5rem; overflow: visible;}
+.home { position: relative;}
 .home *{ font-family: 'SpaceGrotesk';}
 .home input, .home textarea, .ql-container.ql-snow, .ql-toolbar.ql-snow{border-color: #565857!important; border-radius: 7px;}
 .ql-toolbar.ql-snow {
@@ -211,3 +212,10 @@ button {background: none!important;border-radius: 8px!important;}
 .draft > div > h3 {font-size: 18px; margin-left: 1rem;}
 .draft > p {color: #ACACAC;font-size: 14px; margin: 1rem 0;}
 .draft > img {position: absolute; right: .9rem;bottom: .9rem;width: 20px;height: 20px;}
+.project_container {border: 1.2px solid black;border-radius: 11px; padding: 2rem; box-sizing: border-box;display: flex; flex-direction: row;}
+.project_container * {font-family: 'Sk-Modernist';}
+.project_container > .img_container div {border-radius: 7px; background: rgb(226, 192, 255); width: 47px;height: 47px;}
+.project_container > .body_container > h1 {font-size: 30px;font-weight: 700; color: black;}
+.project_container > .body_container > h2 {font-size: 20px; font-weight: 400; margin-bottom: 2rem;}
+.project_container > .body_container {padding: 0 2rem;}
+.project_container > .body_container .body p{color: black;}

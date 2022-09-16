@@ -1,6 +1,6 @@
 <template>
   <div id="instances">
-    <div class="instances_loading" v-if="loading">
+    <div class="instances_loading" v-if="loading && Object.keys(datatypes).length === 0">
       <font-awesome-icon icon="fa-solid fa-circle-notch" style="font-size:25px" class="fa-spin" />
     </div>
     <div class="modal_container" v-if="modals.createInstance">
@@ -40,8 +40,26 @@
       <div class="no_instances" v-if="instances.length === 0 && !loading">
         You have no instance at the moment
       </div>
+      <div class="instances_list" v-if="Object.keys(datatypes).length > 0">
+        <div class="instance" v-for="instance in Object.keys(datatypes)" :key="instance">
+          <div class="instance_left">
+            <h3 class="my-2"><span style="font-weight:bold;color:black;font-size:22px;">{{names[instance]}}</span><i
+                style="font-size:15px; margin:0 1rem">Deployed at: <a :href="'https://etherscan.io/address/'+instance"
+                  target="_blank"
+                  style="color:black;text-decoration:underline">{{Object.entries(names).find(el => el[0] === instance)[0]}}</a></i>
+            </h3>
+            <p v-for="datatype in Object.keys(datatypes[instance])" :key="datatype"
+              v-html="(datatype.indexOf('__') > 0) ? datatype.slice(datatype.indexOf('__')+2, 99999) : datatype"></p>
+            <p v-if="Object.keys(datatypes[instance]).length === 0"><i style="color:#444">No datatypes</i></p>
+          </div>
+          <div class="instance_right">
+            <b-button type="button" class="button button-dark is-light mx-auto mt-0" @click="changeInstance(instance)">
+              MANAGE INSTANCE</b-button>
+          </div>
+        </div>
+      </div>
       <div class="instances_list" v-if="loading">
-        <div class="instance" v-for="i in 3" :key="i">
+        <div class="instance" v-for="i in 3-Object.keys(datatypes).length" :key="i">
           <div class="instance_left">
             <h3 class="my-2">
               <div class="loading_box"
@@ -58,24 +76,6 @@
           </div>
         </div>
         <div class="loading_box" style="width:100%"></div>
-      </div>
-      <div class="instances_list" v-if="!loading">
-        <div class="instance" v-for="instance in Object.keys(datatypes)" :key="instance">
-          <div class="instance_left">
-            <h3 class="my-2"><span style="font-weight:bold;color:black;font-size:22px;">{{names[instance]}}</span><i
-                style="font-size:15px; margin:0 1rem">Deployed at: <a :href="'https://etherscan.io/address/'+instance"
-                  target="_blank"
-                  style="color:black;text-decoration:underline">{{Object.entries(names).find(el => el[0] === instance)[0]}}</a></i>
-            </h3>
-            <p v-for="datatype in Object.keys(datatypes[instance])" :key="datatype"
-              v-html="(datatype.indexOf('__') > 0) ? datatype.slice(datatype.indexOf('__')+2, 99999) : datatype"></p>
-            <p v-if="Object.keys(datatypes[instance]).length === 0"><i style="color:#444">No datatypes</i></p>
-          </div>
-          <div class="instance_right">
-            <b-button type="button" class="button button-dark is-light mx-auto mt-0"
-              @click="changeInstance(instance)">MANAGE INSTANCE</b-button>
-          </div>
-        </div>
       </div>
     </div>
   </div>
@@ -285,7 +285,12 @@
       },
       changeInstance(instance) {
         localStorage.setItem('instance', instance)
-        this.$router.push({name: 'Instance', params: {instance: instance}})
+        this.$router.push({
+          name: 'Instance',
+          params: {
+            instance: instance
+          }
+        })
       }
     },
     async mounted() {

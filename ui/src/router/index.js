@@ -7,6 +7,7 @@ import Drafts from '../views/Drafts.vue'
 import Manage from '../views/Manage.vue'
 import Public from '../views/Public.vue'
 import New from '../views/New.vue'
+import View from '../views/View.vue'
 
 Vue.use(VueRouter)
 
@@ -40,6 +41,11 @@ const routes = [
     path: '/manage/:tokenId',
     name: 'Manage',
     component: Manage
+  },
+  {
+    path: '/view/:tokenId',
+    name: 'View',
+    component: View
   },
   {
     path: '/public',
