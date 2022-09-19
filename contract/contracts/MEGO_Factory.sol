@@ -11,9 +11,15 @@ contract MEGO_Factory is MEGO_Types, Ownable {
     mapping(address => uint256) public owned_instances;
     mapping(uint256 => address) public instances;
     mapping(address => uint8) public subscriptions;
+    mapping(address => uint256) public registration_timestamps;
+    mapping(address => mapping(uint256 => bool)) public monthly_payments;
     mapping(uint8 => uint256) public deployment_prices;
+    mapping(uint8 => uint256) public monthly_prices;
     mapping(uint8 => uint256) public subscription_prices;
     address public vault_address;
+    uint256 public payment_window = 2_592_000; // 1 Month payment window
+    mapping(address => uint256) public free_mints;
+    uint256 public free_limit = 5;
 
     event InstanceCreated(address _contents);
     event ContentCreated(
@@ -29,13 +35,36 @@ contract MEGO_Factory is MEGO_Types, Ownable {
         types = new MEGO_Types();
         vault_address = msg.sender;
         // Premium subscription price
-        subscription_prices[1] = 0.2 ether;
-        // Unlimited subscription price
-        subscription_prices[2] = 0.5 ether;
+        subscription_prices[1] = 0.15 ether;
+        // Premium subscription price
+        subscription_prices[2] = 0.3 ether;
         // Deployment price for free accounts
-        deployment_prices[0] = 0.3 ether;
+        deployment_prices[0] = 0.2 ether;
         // Deployment price for unlimited accounts
-        deployment_prices[1] = 0.08 ether;
+        deployment_prices[1] = 0.15 ether;
+        // Deployment price for unlimited accounts
+        deployment_prices[2] = 0.05 ether;
+        // Deployment price for unlimited accounts
+        monthly_prices[1] = 0.025 ether;
+        // Deployment price for unlimited accounts
+        monthly_prices[2] = 0.01 ether;
+    }
+
+    function getEpoch(address _account) public view returns (uint256) {
+        uint256 epoch = (block.timestamp - registration_timestamps[_account]) /
+            payment_window;
+        return epoch;
+    }
+
+    function isSubscriptionActive(address _account) public view returns (bool) {
+        bool active = false;
+        if (subscriptions[msg.sender] == 0) {
+            active = true;
+        } else {
+            uint256 epoch = getEpoch(_account);
+            active = monthly_payments[msg.sender][epoch];
+        }
+        return active;
     }
 
     function buySubscription(uint8 _type) public payable {
@@ -53,6 +82,24 @@ contract MEGO_Factory is MEGO_Types, Ownable {
         );
         // Finally upgrade subscription
         subscriptions[msg.sender] = _type;
+        registration_timestamps[msg.sender] = block.timestamp;
+        // Pay first month of subscription
+        uint256 epoch = getEpoch(msg.sender);
+        monthly_payments[msg.sender][epoch] = true;
+    }
+
+    function payMonthlyFee() public payable {
+        require(subscriptions[msg.sender] > 0, "Subscription not found.");
+        require(
+            msg.value == monthly_prices[subscriptions[msg.sender]],
+            "Send exact amount"
+        );
+        uint256 epoch = getEpoch(msg.sender);
+        require(
+            !isSubscriptionActive(msg.sender),
+            "You already paid for monthly fee"
+        );
+        monthly_payments[msg.sender][epoch] = true;
     }
 
     function startNewInstance(string memory _name, string memory _ticker)
@@ -120,6 +167,14 @@ contract MEGO_Factory is MEGO_Types, Ownable {
         string memory _metadata,
         string memory _model
     ) public {
+        require(isSubscriptionActive(msg.sender), "Subscription not active");
+        if (subscriptions[msg.sender] == 0) {
+            require(
+                free_mints[msg.sender] < free_limit,
+                "Can't mint more for free"
+            );
+            free_mints[msg.sender]++;
+        }
         MEGO_Contents instance = MEGO_Contents(_instance);
         require(msg.sender == instance.owner(), "Only owner can drop contents");
         uint256 _newTokenId = instance.dropContent(_metadata, _model);
@@ -152,12 +207,26 @@ contract MEGO_Factory is MEGO_Types, Ownable {
     }
 
     // Admin functions
-    function fixDeploymentPrices(uint8 _type, uint256 _newPrice) public onlyOwner {
+    function fixPaymentWindow(uint256 _window) public onlyOwner {
+        payment_window = _window;
+    }
+
+    function fixDeploymentPrices(uint8 _type, uint256 _newPrice)
+        public
+        onlyOwner
+    {
         deployment_prices[_type] = _newPrice;
     }
 
-    function fixSubscriptionPrices(uint8 _type, uint256 _newPrice) public onlyOwner {
+    function fixSubscriptionPrices(uint8 _type, uint256 _newPrice)
+        public
+        onlyOwner
+    {
         subscription_prices[_type] = _newPrice;
+    }
+
+    function fixMonthlyPrices(uint8 _type, uint256 _newPrice) public onlyOwner {
+        monthly_prices[_type] = _newPrice;
     }
 
     function fixVault(address newAddress) public onlyOwner {
