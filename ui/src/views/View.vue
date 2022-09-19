@@ -14,16 +14,15 @@
       <div v-if="loading">Syncing state with blockchain, please wait..</div>
       <div class="project_container" v-if="!loading">
         <div class="img_container">
-          <div></div>
+          <div :style="'background-image: url('+content.image.replace('ipfs://', 'https://ipfs.yomi.digital/ipfs/')+')'"></div>
         </div>
         <div class="body_container">
           <h1 v-html="content.name"></h1>
           <h2 v-html="'by '+content.author"></h2>
-          <div v-for="input in datatypes[category]" v-bind:key="input.name" class="body">
+          <div v-for="input in datatypes[category]" v-bind:key="input.name" class="body my-4">
             <h4 v-html="input.name"></h4>
             <p v-html="content[input.name]" v-if="input.name != 'image'"></p>
-            <img :src="content['image']" alt="" v-if="input.name == 'image'">
-            {{content['image']}}
+            <img style="width:700px;margin-top: 1rem;" :src="content['image'].replace('ipfs://', 'https://ipfs.yomi.digital/ipfs/')" alt="" v-if="input.name == 'image'">
           </div>
         </div>
       </div>
@@ -78,9 +77,11 @@
     },
     async mounted() {
       const app = this;
-      await app.connect();
       app.tokenId = app.$route.params.tokenId;
-      console.log(app.content)
+      await app.connect();
+      if(!app.freezed) {
+        app.$router.push({name: 'Manage', params: {tokenId: app.tokenId}})
+      }
       setInterval(function () {
         app.$forceUpdate();
       }, 100);
@@ -110,7 +111,7 @@
             if (accounts.length > 0) {
               app.account = accounts[0];
               app.instance = localStorage.getItem("instance");
-              app.fetchModels();
+              await app.fetchModels();
             } else {
               alert("No accounts allowed, please retry!");
             }
@@ -198,7 +199,7 @@
         const content = await app.axios.get(
           tokenURI.replace("ipfs://", "https://ipfs.yomi.digital/ipfs/")
         );
-        console.log(content.data);
+        app.content = content.data
         for (let k in app.datatypes[app.category]) {
           const datatype = app.datatypes[app.category][k];
           if (datatype.input !== "file") {

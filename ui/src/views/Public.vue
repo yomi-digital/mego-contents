@@ -1,5 +1,5 @@
 <template>
-  <div id="drafts">
+  <div id="drafts" class="public">
     <div class="instances_container">
       <div class="instance_info">
         <h2>PUBLIC</h2>
@@ -49,7 +49,7 @@
             </div>
           </div>
           <div class="mx-auto my-2" style="display:grid;place-items:center" v-if="!loading && drafts.length === 0">
-            <p>You have no drafts at the moment</p>
+            <p>You have no published nft at the moment</p>
             <b-button type="button" class="button-dark is-light mx-3 mt-5"
               style="background:#111!important;color:white!important" @click="$router.push({name: 'New'})">
               CREATE NOW

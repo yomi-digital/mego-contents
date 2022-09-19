@@ -157,10 +157,13 @@
         }
       };
     },
-    mounted() {
+    async mounted() {
       const app = this;
-      app.connect();
       app.tokenId = app.$route.params.tokenId;
+      await app.connect();
+      if(app.freezed) {
+        app.$router.push({name: 'View', params: {tokenId: app.tokenId}})
+      }
       setInterval(function () {
         app.$forceUpdate();
       }, 100);
@@ -190,7 +193,7 @@
             if (accounts.length > 0) {
               app.account = accounts[0];
               app.instance = localStorage.getItem("instance");
-              app.fetchModels();
+              await app.fetchModels();
             } else {
               alert("No accounts allowed, please retry!");
             }

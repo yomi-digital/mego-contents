@@ -5,9 +5,9 @@
       <div class="navbar_links">
         <a href="/#/new" v-if="$route.name != 'Instances'" :class="{'has-text-weight-bold':true, 'navbar_link_active': $route.name === 'New'}"><span></span>new</a>
         <a href="/#/drafts" v-if="$route.name != 'Instances'" :class="{'has-text-weight-bold':true, 'navbar_link_active': $route.name === 'Drafts'}"><span></span>drafts</a>
-        <a href="/#/public" :class="{'has-text-weight-bold':true, 'navbar_link_active': $route.name === 'Public'}"><span></span>public</a>
-        <router-link v-if="instances.length > 0" :to="{name: 'Instances'}" :class="{'has-text-weight-bold':true, 'navbar_link_active': $route.name === 'Instances'}"><span></span>manage instances</router-link>
-        <a href="#" style="padding: 18.5px 2rem 18.5px 2rem; border-left: 1px solid black"
+        <a href="/#/public" v-if="$route.name != 'Instances'" :class="{'has-text-weight-bold':true, 'navbar_link_active': $route.name === 'Public'}"><span></span>public</a>
+        <router-link :to="{name: 'Instances'}" :class="{'has-text-weight-bold':true, 'navbar_link_active': $route.name === 'Instances'}"><span></span>manage instances</router-link>
+        <a style="padding: 18.5px 2rem 18.5px 2rem; border-left: 1px solid black"
           >{{ account.substr(0, 8) }}...{{ account.substr(-8) }}</a
         >
       </div>

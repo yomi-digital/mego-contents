@@ -78,6 +78,9 @@ export default {
     },
     mounted() {
         this.connect();
+        if(this.$route.name === 'Home') {
+            this.$router.push({name: 'Instances'})
+        }
     },
     methods: {
         async connect() {

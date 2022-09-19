@@ -1,6 +1,6 @@
 <template>
   <div id="instance">
-    <div class="instances_loading" v-if="overlayLoading">
+    <div class="instances_loading" v-if="overlayLoading && loading">
       <font-awesome-icon icon="fa-solid fa-circle-notch" style="font-size:25px" class="fa-spin" />
     </div>
     <div class="modal_container" v-if="modals.removeDatatype">
@@ -86,7 +86,7 @@
                 style="font-weight:bold;color:black;font-size:22px;">{{(datatype.indexOf('__') > 0) ? datatype.slice(datatype.indexOf('__')+2, 99999) : datatype}}</span>
             </h3>
             <p v-for="attr in datatypes[instance][datatype].fields" :key="attr.name" v-html="attr.name"></p>
-            <p v-if="datatypes[instance][datatype] ? datatypes[instance][datatype].fields.length === 0 : false"><i style="color:#444">No fields</i></p>
+            <p v-if="datatypes[instance][datatype] ? datatypes[instance][datatype].fields ? datatypes[instance][datatype].fields.length === 0 : false : false"><i style="color:#444">No fields</i></p>
           </div>
           <div class="instance_right">
             <b-button type="button" class="button button-dark is-light mx-auto mt-0"

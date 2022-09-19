@@ -11,7 +11,7 @@
         </div>
       </div>
       <div class="instances_container" style="margin-top:-1rem">
-        <div class="instance_info">
+        <div class="instance_info" v-if="loading || Object.keys(datatypes).length > 0">
           <h2 :style="(loading) ? 'opacity:.5' : ''">CREATE YOUR <div v-if="loading" class="loading_box"
               style="width:100px;height:35px;display:inline-block;"></div> <span class="selected_model" v-if="!loading">
               {{(category.indexOf('__') > 0) ? category.slice(category.indexOf('__')+2, 99999).toUpperCase() : category}}
@@ -23,6 +23,13 @@
               </div>
             </span> <img style="margin-bottom:4px;cursor: pointer;" @click="selectOpened = !selectOpened"
               src="../assets/images/arrow.svg" alt=""></h2>
+        </div>
+        <div class="instance_info" v-if="!loading && Object.keys(datatypes).length === 0">
+          <h2>Add at least one datatype to your instance first</h2>
+          <b-button type="button" class="button-dark is-light mx-3 mt-5"
+            style="background:#111!important;color:white!important" @click="$router.push({name: 'Instances'})">
+            ADD NOW
+          </b-button>
         </div>
       </div>
 
