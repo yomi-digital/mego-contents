@@ -16,6 +16,7 @@ contract MEGO_Factory is MEGO_Types, Ownable {
     mapping(uint8 => uint256) public deployment_prices;
     mapping(uint8 => uint256) public monthly_prices;
     mapping(uint8 => uint256) public subscription_prices;
+    mapping(address => mapping(address => bool)) public instance_users;
     address public vault_address;
     uint256 public payment_window = 2_592_000; // 1 Month payment window
     mapping(address => uint256) public free_mints;
@@ -121,10 +122,12 @@ contract MEGO_Factory is MEGO_Types, Ownable {
         );
         // Transfer the ownership to sender user
         newInstance.transferOwnership(msg.sender);
-        // Increment the number of instances owned by the sender
-        owned_instances[msg.sender]++;
         // Store the instance address
         instances[instances_counter] = address(newInstance);
+        // Add user to instance
+        instance_users[address(newInstance)][msg.sender] = true;
+        // Increment user instances
+        owned_instances[msg.sender]++;
         // Finally emit creation event
         emit InstanceCreated(address(newInstance));
         return address(newInstance);
@@ -152,7 +155,10 @@ contract MEGO_Factory is MEGO_Types, Ownable {
                 MEGO_Contents instance = MEGO_Contents(
                     instances[instanceIndex]
                 );
-                if (instance.owner() == _owner) {
+                if (
+                    instance.owner() == _owner ||
+                    instance_users[instances[instanceIndex]][_owner]
+                ) {
                     result[resultIndex] = instances[instanceIndex];
                     resultIndex++;
                 }
@@ -176,9 +182,37 @@ contract MEGO_Factory is MEGO_Types, Ownable {
             free_mints[msg.sender]++;
         }
         MEGO_Contents instance = MEGO_Contents(_instance);
-        require(msg.sender == instance.owner(), "Only owner can drop contents");
+        require(
+            instance_users[_instance][msg.sender],
+            "Not an allowed user in instance"
+        );
         uint256 _newTokenId = instance.dropContent(_metadata, _model);
         emit ContentCreated(_instance, _newTokenId, _metadata, _model);
+    }
+
+    function manageInstanceUsers(
+        address _instance,
+        address _user,
+        bool _state
+    ) public {
+        MEGO_Contents instance = MEGO_Contents(_instance);
+        require(msg.sender == instance.owner(), "Only owner can drop contents");
+        require(
+            subscriptions[msg.sender] > 0,
+            "Only paid account can manage users"
+        );
+        require(
+            instance_users[_instance][_user] != _state,
+            "This account already has this state"
+        );
+        instance_users[_instance][_user] = _state;
+        if (_state == true) {
+            // Increment the number of instances owned by the sender
+            owned_instances[_user]++;
+        } else {
+            // Decrement the number of instances owned by the sender
+            owned_instances[_user]--;
+        }
     }
 
     function fixContent(
