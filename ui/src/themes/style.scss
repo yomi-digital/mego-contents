@@ -224,4 +224,15 @@ button {background: none!important;border-radius: 8px!important;}
 .public .draft > div > h3 {color: white;}
 .public .draft > img {filter: invert(1);}
 .public .draft .loading_box {filter: invert(1);}
-.public .instances_loading svg {filter: invert(1);}
+.public .instances_loading svg {color: white!important;}
+
+.plans_container {display: flex; flex-direction: row;width: 80vw; margin: 4rem auto auto auto;}
+.plans_container * {font-family: 'Sk-Modernist';}
+.plans_container .plan {transition: all .12s ease-in-out;background: white;border-radius: 2rem;box-shadow: 1px 3px 24px rgba(0,0,0,.18); padding: 3rem;text-align: center;width: 33vw;}
+.plans_container .plan h1 {font-size: 28px;font-weight: 700;}
+.plans_container .plan h2 {font-size: 24px;}
+.plans_container .plan:nth-child(2) {z-index: 9; transform: scale(1.1);}
+.plans_container .plan li {display: block; width: fit-content; position: relative; margin: auto}
+.plans_container .plan li::before {content: '';width: 7px;height: 7px; background: black; border-radius: 100%;position: absolute; left: -.8rem;top: 9px;}
+.plans_container .plan:hover {transform: scale(1.12);z-index: 99;}
+.plans_container .plan:hover + .plan:nth-child(2) {transform: scale(1)!important;}

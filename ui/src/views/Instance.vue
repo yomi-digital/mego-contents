@@ -42,7 +42,7 @@
       <div class="instance_info">
         <h2>MANAGE YOUR INSTANCE</h2>
         <p v-if="!loading">
-          Deployed at: <a :href="'https://etherscan.io/address/'+instance" target="_blank" style="margin-right:1rem">{{instance.substr(0, 5) +'...'+ instance.substr(-3)}}</a>  Headless endpoint: <a :href="'https://api.mego.cx/contents/'+instance" target="_blank">api.mego.cx/c...{{instance.substr(-3)}}</a></p>
+          Deployed at: <a :href="explorer_url+'/address/'+instance" target="_blank" style="margin-right:1rem">{{instance.substr(0, 5) +'...'+ instance.substr(-3)}}</a>  Headless endpoint: <a :href="contents_api+'/contents/'+instance" target="_blank">api.mego.cx/c...{{instance.substr(-3)}}</a></p>
         <p v-if="loading">
           Deployed at: 0x
           <font-awesome-icon icon="fa-solid fa-circle-notch" style="font-size:25px" class="fa-spin ml-3" />
@@ -343,7 +343,9 @@
         axios: axios,
         abi_factory: abi_factory,
         abi_contents: abi_contents,
+        contents_api: process.env.VUE_APP_CONTENTS_API,
         factory_contract: process.env.VUE_APP_FACTORY_CONTRACT,
+        explorer_url: process.env.VUE_APP_EXPLORER_URL,
         network: parseInt(process.env.VUE_APP_CHAIN_ID),
         web3: {},
         account: "",

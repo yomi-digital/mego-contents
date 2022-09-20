@@ -6,10 +6,10 @@
       </div>
       <div class="columns">
         <div class="column drafts_filters">
-          <p style="font-weight: 700;color: #6F706F;margin-bottom: 1.9rem;cursor: inherit;">filters</p>
-          <p @click="filterActive = 'title'" :style="(filterActive === 'title') ? 'font-weight:600' : ''">title</p>
-          <p @click="filterActive = 'date'" :style="(filterActive === 'date') ? 'font-weight:600' : ''">date</p>
-          <p @click="filterActive = 'type'" :style="(filterActive === 'type') ? 'font-weight:600' : ''">type</p>
+          <p style="font-weight: 700;color: #6F706F;margin-bottom: 1.9rem;cursor: inherit;">sort by</p>
+          <p @click="(!loading) ? filterActive = 'title' : ''" :style="(filterActive === 'title') ? 'font-weight:600' : ''">title</p>
+          <p @click="(!loading) ? filterActive = 'date' : ''" :style="(filterActive === 'date') ? 'font-weight:600' : ''">date</p>
+          <p @click="(!loading) ? filterActive = 'type' : ''" :style="(filterActive === 'type') ? 'font-weight:600' : ''">type</p>
         </div>
         <div class="column is-two-thirds">
           <div class="draft_list" id="draft_list" v-if="drafts.length > 0">

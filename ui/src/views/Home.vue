@@ -20,7 +20,7 @@
             <span
               ><b>Deployed at</b>:
               <a
-                :href="'https://rinkeby.etherscan.io/address/' + instance"
+                :href="explorer_url + '/address/' + instance"
                 target="_blank"
                 style="font-weight: normal"
                 >{{ instance }}</a
@@ -29,8 +29,8 @@
             <b>Headless endpoint</b>:
             <a
               target="_blank"
-              :href="'https://api.mego.cx/contents/' + instance"
-              >https://api.mego.cx/contents/{{ instance }}</a
+              :href="contents_api + '/contents/' + instance"
+              >{{contents_api + '/contents/' + instance }}</a
             >
             <b-button
               style="float: right"
@@ -236,6 +236,8 @@ export default {
       axios: axios,
       abi_factory: abi_factory,
       abi_contents: abi_contents,
+      explorer_url: process.env.VUE_APP_EXPLORER_URL,
+      contents_api: process.env.VUE_APP_CONTENTS_API,
       contract: process.env.VUE_APP_FACTORY_CONTRACT,
       network: parseInt(process.env.VUE_APP_CHAIN_ID),
       web3: {},

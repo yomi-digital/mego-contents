@@ -41,13 +41,13 @@ contract MEGO_Factory is MEGO_Types, Ownable {
         subscription_prices[2] = 0.3 ether;
         // Deployment price for free accounts
         deployment_prices[0] = 0.2 ether;
-        // Deployment price for unlimited accounts
+        // Deployment price for premium accounts
         deployment_prices[1] = 0.15 ether;
         // Deployment price for unlimited accounts
         deployment_prices[2] = 0.05 ether;
-        // Deployment price for unlimited accounts
+        // Monthly price for premium accounts
         monthly_prices[1] = 0.025 ether;
-        // Deployment price for unlimited accounts
+        // Monthly price for unlimited accounts
         monthly_prices[2] = 0.01 ether;
     }
 

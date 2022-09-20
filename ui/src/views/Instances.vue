@@ -44,7 +44,7 @@
         <div class="instance" v-for="instance in Object.keys(datatypes)" :key="instance">
           <div class="instance_left">
             <h3 class="my-2"><span style="font-weight:bold;color:black;font-size:22px;">{{names[instance]}}</span><i
-                style="font-size:15px; margin:0 1rem">Deployed at: <a :href="'https://etherscan.io/address/'+instance"
+                style="font-size:15px; margin:0 1rem">Deployed at: <a :href="explorer_url+'/address/'+instance"
                   target="_blank"
                   style="color:black;text-decoration:underline">{{Object.entries(names).find(el => el[0] === instance)[0]}}</a></i>
             </h3>
@@ -99,6 +99,7 @@
         abi_factory: abi_factory,
         abi_contents: abi_contents,
         contract: process.env.VUE_APP_FACTORY_CONTRACT,
+        explorer_url: process.env.VUE_APP_EXPLORER_URL,
         network: parseInt(process.env.VUE_APP_CHAIN_ID),
         web3: {},
         account: "",
