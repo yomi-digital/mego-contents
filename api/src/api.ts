@@ -29,6 +29,12 @@ app.get("/contents/:instance", async function (req, res) {
   res.send(contents)
 })
 
+app.get("/contents/:instance/:index", async function (req, res) {
+  const db = new Database.Mongo();
+  const content = await db.find('contents', { instance: req.params.instance, index: req.params.index })
+  res.send(content)
+})
+
 // Default endpoint
 app.use((req, res, next) => {
   return res.status(404).json({
