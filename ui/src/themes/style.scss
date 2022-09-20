@@ -106,6 +106,8 @@ button {background: none!important;border-radius: 8px!important;}
 .connect_wallet > div > div > h2 {font-size: 30px; color: white; margin-left: 2.5rem; display: inline-block; flex-basis: 80%;}
 .connect_wallet > div > div > div {flex-basis: 20%; position: relative; border-left: 1px solid white;height: 100%;}
 
+.app_loading {position: absolute;z-index: 999999; background: rgb(237, 237, 237); top: 0;left: 0;bottom: 0;right: 0; display: grid; place-items: center;}
+
 #navbar {
   width: 100vw;
   height: 56px;
@@ -226,9 +228,9 @@ button {background: none!important;border-radius: 8px!important;}
 .public .draft .loading_box {filter: invert(1);}
 .public .instances_loading svg {color: white!important;}
 
-.plans_container {display: flex; flex-direction: row;width: 80vw; margin: 4rem auto auto auto;}
+.plans_container {display: flex; flex-direction: row;width: 80vw; margin: 6em auto auto auto;}
 .plans_container * {font-family: 'Sk-Modernist';}
-.plans_container .plan {transition: all .12s ease-in-out;background: white;border-radius: 2rem;box-shadow: 1px 3px 24px rgba(0,0,0,.18); padding: 3rem;text-align: center;width: 33vw;}
+.plans_container .plan {transition: all .12s ease-in-out;background: white;border-radius: 2rem;box-shadow: 1px 3px 24px rgba(0,0,0,.16); padding: 3rem;text-align: center;width: 33vw;}
 .plans_container .plan h1 {font-size: 28px;font-weight: 700;}
 .plans_container .plan h2 {font-size: 24px;}
 .plans_container .plan:nth-child(2) {z-index: 9; transform: scale(1.1);}
@@ -236,3 +238,4 @@ button {background: none!important;border-radius: 8px!important;}
 .plans_container .plan li::before {content: '';width: 7px;height: 7px; background: black; border-radius: 100%;position: absolute; left: -.8rem;top: 9px;}
 .plans_container .plan:hover {transform: scale(1.12);z-index: 99;}
 .plans_container .plan:hover + .plan:nth-child(2) {transform: scale(1)!important;}
+.free_mints {font-size: 20px;text-align: center; margin-top: 5rem; font-family: 'SpaceGrotesk';}

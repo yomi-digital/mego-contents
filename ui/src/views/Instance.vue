@@ -119,7 +119,7 @@
         </div>
         <div class="loading_box" style="width:100%"></div>
       </div>
-      <div class="add_instance_container" v-if="models.length > 0 && (tab === 'pre-compiled' || tab === 'customized')">
+      <div class="add_instance_container" v-if="(!modelsLoading || models.length > 0) && (tab === 'pre-compiled' || tab === 'customized')">
         <div class="add_instance_list instances_list" v-if="tab === 'pre-compiled'">
           <div class="instance"
             v-for="datatype in models.filter(el => { return Object.keys(datatypes[instance]).find(dt => dt===el.name)===undefined})"
@@ -329,9 +329,6 @@
   import axios from "axios";
   import Web3Modal from "web3modal";
   import WalletConnectProvider from "@walletconnect/web3-provider";
-  import {
-    create
-  } from "domain";
   const abi_factory = require("../abis/factory.json");
   const abi_contents = require("../abis/contents.json");
   export default {
@@ -462,7 +459,7 @@
               console.log("ADD_TYPE_RECEIPT", receipt);
             }
             //Reset extra previous fields if present to default values
-            if(Object.keys(attrsArr).length < originalDatatype.datatypes.length) {
+            if(originalDatatype && Object.keys(attrsArr).length < originalDatatype.datatypes.length) {
               for(let i=Object.keys(attrsArr).length; i < originalDatatype.datatypes.length-1; i++) {
                 const receipt = await factoryContract.methods
                   .editDatatypeInModel(datatypeSigned, i, false, '', false, false, false, '', '')

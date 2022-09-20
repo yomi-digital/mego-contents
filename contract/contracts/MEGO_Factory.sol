@@ -37,7 +37,7 @@ contract MEGO_Factory is MEGO_Types, Ownable {
         vault_address = msg.sender;
         // Premium subscription price
         subscription_prices[1] = 0.15 ether;
-        // Premium subscription price
+        // Unlimited subscription price
         subscription_prices[2] = 0.3 ether;
         // Deployment price for free accounts
         deployment_prices[0] = 0.2 ether;
