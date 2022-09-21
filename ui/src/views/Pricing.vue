@@ -1,57 +1,139 @@
 <template>
   <div id="pricing">
-    <div class="app_loading" v-if="loading">
+    <div class="app_loading" v-if="!subscriptions[0]">
       <font-awesome-icon icon="fa-solid fa-circle-notch" style="font-size:20px;margin-top: .2rem;" class="fa-spin" />
     </div>
-    <div class="plans_container">
+    <div class="modal_container" v-if="modals.working">
+      <div class="modal">
+        <img src="../assets/images/close-icon.svg" alt="Close" @click="modals.working = false">
+        <h2 v-html="workingMessage"></h2>
+        <!-- <p>Define the name and the ticker of the instance.</p> -->
+        <font-awesome-icon icon="fa-solid fa-circle-notch" style="font-size:20px;margin-top: .2rem;" class="fa-spin"
+          v-if="isWorking" />
+      </div>
+    </div>
+    <div class="plans_container" v-if="loading">
       <div class="plan">
+        <div class="loading_box" style="width:150px;height:35px;margin:auto"></div>
+        <div class="loading_box mt-2" style="width:100px;height:25px;margin:auto;opacity:.8"></div>
+        <div class="loading_box mt-2" style="width:150px;height:20px;margin:auto;opacity:.5"></div>
+        <div class="loading_box mt-3" style="width:100%;height:10px;margin:auto"></div>
+        <div class="loading_box mt-1" style="width:70%;height:10px;margin:auto;float:left"></div>
+        <div class="loading_box mt-1 ml-1" style="width:25%;height:10px;margin:auto;float:left"></div>
+        <div class="loading_box ml-0" style="width:40%;height:10px;margin-top: 18px;"></div>
+        <ul>
+          <li style="opacity:.6">
+            <div class="loading_box mt-5" style="width:180px;height:15px;margin:auto"></div>
+          </li>
+          <li style="opacity:.6">
+            <div class="loading_box mt-2" style="width:150px;height:15px;margin:auto"></div>
+          </li>
+        </ul>
+        <div class="loading_box mt-5" style="width:150px;height:30px;margin:auto;filter: brightness(10);"></div>
+      </div>
+      <div class="plan">
+        <div class="loading_box" style="width:150px;height:35px;margin:auto"></div>
+        <div class="loading_box mt-2" style="width:100px;height:25px;margin:auto;opacity:.8"></div>
+        <div class="loading_box mt-2" style="width:150px;height:20px;margin:auto;opacity:.5"></div>
+        <div class="loading_box mt-3" style="width:100%;height:10px;margin:auto"></div>
+        <div class="loading_box mt-1" style="width:70%;height:10px;margin:auto;float:left"></div>
+        <div class="loading_box mt-1 ml-1" style="width:25%;height:10px;margin:auto;float:left"></div>
+        <div class="loading_box ml-0" style="width:40%;height:10px;margin-top: 18px;"></div>
+        <ul>
+          <li style="opacity:.6">
+            <div class="loading_box mt-5" style="width:180px;height:15px;margin:auto"></div>
+          </li>
+          <li style="opacity:.6">
+            <div class="loading_box mt-2" style="width:150px;height:15px;margin:auto"></div>
+          </li>
+        </ul>
+        <div class="loading_box mt-5" style="width:150px;height:30px;margin:auto;filter: brightness(10);"></div>
+      </div>
+      <div class="plan">
+        <div class="loading_box" style="width:150px;height:35px;margin:auto"></div>
+        <div class="loading_box mt-2" style="width:100px;height:25px;margin:auto;opacity:.8"></div>
+        <div class="loading_box mt-2" style="width:150px;height:20px;margin:auto;opacity:.5"></div>
+        <div class="loading_box mt-3" style="width:100%;height:10px;margin:auto"></div>
+        <div class="loading_box mt-1" style="width:70%;height:10px;margin:auto;float:left"></div>
+        <div class="loading_box mt-1 ml-1" style="width:25%;height:10px;margin:auto;float:left"></div>
+        <div class="loading_box ml-0" style="width:40%;height:10px;margin-top: 18px;"></div>
+        <ul>
+          <li style="opacity:.6">
+            <div class="loading_box mt-5" style="width:180px;height:15px;margin:auto"></div>
+          </li>
+          <li style="opacity:.6">
+            <div class="loading_box mt-2" style="width:150px;height:15px;margin:auto"></div>
+          </li>
+        </ul>
+        <div class="loading_box mt-5" style="width:150px;height:30px;margin:auto;filter: brightness(10);"></div>
+      </div>
+    </div>
+    <div class="plans_container" v-if="!loading">
+      <div :class="{'plan':true, 'unavailable': subscriptionActive !== 0}">
         <h1>FREE</h1>
-        <h2>0.0 ether</h2>
-        <i>0.0 / month</i>
+        <h2 v-html="web3.utils.fromWei(subscriptions[0].activation, 'ether')+' ether'"></h2>
+        <i>{{web3.utils.fromWei(subscriptions[0].monthly, 'ether')}} / month</i>
         <p>Lorem, ipsum dolor sit amet consectetur adipisicing elit.</p>
         <ul>
-          <li>Mint max 5 times</li>
-          <li>0.2 ether to deploy an instance</li>
+          <li>Mint max {{free_limit}} times</li>
+          <li>{{web3.utils.fromWei(subscriptions[0].deploy, 'ether')}} ether to deploy an instance</li>
         </ul>
-        <b-button type="button" class="button-dark is-light mx-3 mt-5" v-if="subscriptionActive !== 0"
-          style="background:#111!important;color:white!important" @click="buySubscription(0)">
-          SELECT
-        </b-button>
+        <i class="mt-4" style="display: block;" v-if="subscriptionActive !== 0">Available only once</i>
         <b-button type="button" class="button-light is-dark mx-3 mt-5" v-if="subscriptionActive === 0"
           style="color:black!important;border:1px solid black!important;opacity:.5">
           ACTIVE
         </b-button>
       </div>
-      <div class="plan">
+      <div class="plan" id="middle_plan">
         <h1>UNLIMITED</h1>
-        <h2>0.3 ether</h2>
-        <i>0.01 / month</i>
+        <h2 v-html="web3.utils.fromWei(subscriptions[2].activation, 'ether')+' ether'"></h2>
+        <i>{{web3.utils.fromWei(subscriptions[2].monthly, 'ether')}} / month</i>
         <p>Lorem, ipsum dolor sit amet consectetur adipisicing elit. Dolorem dolore corporis quod?</p>
         <ul>
           <li>Mint unlimited times</li>
-          <li>0.05 ether to deploy an instance</li>
+          <li>{{web3.utils.fromWei(subscriptions[2].deploy, 'ether')}} ether to deploy an instance</li>
         </ul>
-        <b-button type="button" class="button-dark is-light mx-3 mt-5"
+        <b-button type="button" class="button-dark is-light mx-3 mt-5" v-if="subscriptionActive !== 2"
           style="background:#111!important;color:white!important" @click="buySubscription(2)">
           {{subscriptionActive===0 ? 'UPGRADE' : 'SELECT'}}
         </b-button>
+        <b-button type="button" class="button-light is-dark mx-3 mt-5" v-if="subscriptionActive === 2"
+          style="color:black!important;border:1px solid black!important;opacity:.5">
+          ACTIVE
+        </b-button>
       </div>
-      <div class="plan">
+      <div class="plan" id="right_plan">
         <h1>PREMIUM</h1>
-        <h2>0.15 ether</h2>
-        <i>0.025 / month</i>
+        <h2 v-html="web3.utils.fromWei(subscriptions[1].activation, 'ether')+' ether'"></h2>
+        <i>{{web3.utils.fromWei(subscriptions[1].monthly, 'ether')}} / month</i>
         <p>Lorem, ipsum dolor sit amet consectetur adipisicing elit. Dolorem dolore corporis quod?</p>
         <ul>
           <li>Mint unlimited times</li>
-          <li>0.15 ether to deploy an instance</li>
+          <li>{{web3.utils.fromWei(subscriptions[1].deploy, 'ether')}} ether to deploy an instance</li>
         </ul>
-        <b-button type="button" class="button-dark is-light mx-3 mt-5"
+        <b-button type="button" class="button-dark is-light mx-3 mt-5" v-if="subscriptionActive !== 1"
           style="background:#111!important;color:white!important" @click="buySubscription(1)">
           {{subscriptionActive===0 ? 'UPGRADE' : 'SELECT'}}
         </b-button>
+        <b-button type="button" class="button-light is-dark mx-3 mt-5" v-if="subscriptionActive === 1"
+          style="color:black!important;border:1px solid black!important;opacity:.5">
+          ACTIVE
+        </b-button>
       </div>
     </div>
-    <p v-if="subscriptionActive === 0" class="free_mints">You have {{5-free_mints}} free mints left <br /><i>({{free_mints}} used)</i></p>
+    <p v-if="subscriptionActive === 0 && !loading" class="free_mints">You have {{free_limit-free_mints}} free mints left
+      <br /><i>({{free_mints}} used)</i>
+    </p>
+    <p v-if="(subscriptionActive === 1 || subscriptionActive === 2) && !loading" class="free_mints">
+      Next payment: <i>{{web3.utils.fromWei(subscriptions[subscriptionActive].monthly, 'ether')}}</i> ether on the
+      <strong>{{new Date(new Date(registration_timestamp).setMonth(new
+      Date(registration_timestamp).getMonth()+1)).toLocaleString('it')}}</strong>
+    </p>
+    <p v-if="(subscriptionActive === 1 || subscriptionActive === 2) && !loading" class="subscription_status mt-3">
+      Subscription status: <span
+        :style="(isSubscriptionActive) ? 'background:#71ff9e' : 'background:#ffc7c7'">{{(isSubscriptionActive) ?
+        'ACTIVE' : 'SUSPENDED'}}</span>
+    </p>
   </div>
 </template>
 
@@ -77,24 +159,42 @@ export default {
       network: parseInt(process.env.VUE_APP_CHAIN_ID),
       web3: {},
       account: "",
-      subscriptions: [],
+      subscriptions: [], //subscriptions prices
       subscriptionActive: -1,
+      isSubscriptionActive: false,
       loading: true,
       free_mints: 0,
-      epoch: ''
+      epoch: '',
+      free_limit: 0,
+      registration_timestamp: '',
+      modals: {
+        working: false
+      }
     }
   },
   async mounted() {
-    document.getElementById('app').style.background = '#EDEDED'
-    document.getElementById('navbar_group').children[1].style.background = '#EDEDED'
-    document.querySelectorAll('.plan')[2].addEventListener('mouseover', () => {
-      document.querySelectorAll('.plan')[1].setAttribute('style', 'transform:scale(1)!important')
-    })
-    document.querySelectorAll('.plan')[2].addEventListener('mouseout', () => {
-      document.querySelectorAll('.plan')[1].removeAttribute('style')
-    })
+    let count = 0
+    let intervalTemp = setInterval(() => {
+      try {
+        count++
+        document.getElementById('app').style.background = '#EDEDED'
+        document.getElementById('navbar_group').children[1].style.background = '#EDEDED'
+        document.getElementById('right_plan').addEventListener('mouseover', () => {
+          document.getElementById('middle_plan').setAttribute('style', 'transform:scale(1)!important')
+        })
+        document.getElementById('right_plan').addEventListener('mouseout', () => {
+          document.getElementById('middle_plan').removeAttribute('style')
+        })
+        clearInterval(intervalTemp)
+        count = undefined
+      }
+      catch {
+        if (count > 100) { clearInterval(intervalTemp); count = undefined }
+      }
+    }, 100)
     await this.connect()
     this.loading = false
+    console.log(this.epoch)
   },
   methods: {
     async connect() {
@@ -105,7 +205,7 @@ export default {
           walletconnect: {
             package: WalletConnectProvider,
             options: {
-              infuraId: app.infuraId,
+              infuraId: app.infuraId
             },
           },
         },
@@ -143,16 +243,29 @@ export default {
         let i = 0
         let ended = false
         while (!ended) {
-          const sub = await factoryContract.methods.subscription_prices(i).call()
-          app.subscriptions.push(sub)
-          i++
-          if (sub === '0' && i > 1) {
+          const activationPrice = await factoryContract.methods.subscription_prices(i).call()
+          const monthly = await factoryContract.methods.monthly_prices(i).call()
+          const deploy = await factoryContract.methods.deployment_prices(i).call()
+          if (activationPrice === '0' && i > 1) {
             ended = true
           }
+          else {
+            app.subscriptions.push({
+              id: i,
+              activation: activationPrice,
+              monthly: monthly,
+              deploy: deploy
+            })
+          }
+          i++
         }
+        if (app.subscriptionActive === 0)
+          app.free_mints = await factoryContract.methods.free_mints(app.account).call()
         app.subscriptionActive = parseInt(await factoryContract.methods.subscriptions(app.account).call())
-        app.free_mints = await factoryContract.methods.free_mints(app.account).call()
+        app.isSubscriptionActive = await factoryContract.methods.isSubscriptionActive(app.account).call()
+        app.free_limit = await factoryContract.methods.free_limit().call()
         app.epoch = await factoryContract.methods.getEpoch(app.account).call()
+        app.registration_timestamp = Number(await factoryContract.methods.registration_timestamps(app.account).call()) * 1000
       }
       catch (e) {
         console.log(e)
@@ -160,16 +273,23 @@ export default {
     },
     async buySubscription(subscription) {
       const app = this
+      app.isWorking = true
+      app.workingMessage = 'Please, confirm the transaction on your wallet'
+      app.modals.working = true
       const factoryContract = new app.web3.eth.Contract(
         app.abi_factory,
         app.factory_contract
       );
       try {
-        const sub = await factoryContract.methods.buySubscription(subscription).send({ from: app.account, value: app.subscriptions[subscription] })
-        console.log(sub)
+        const sub = await factoryContract.methods.buySubscription(subscription).send({ from: app.account, value: app.subscriptions[subscription].activation }).on("transactionHash", tx => {
+          app.workingMessage =
+            "Buying subscription <br />Waiting for confirmations at " + tx;
+        });
+        location.reload()
       }
-      catch (e) {
-        console.log(e)
+      catch {
+        app.isWorking = false
+        app.modals.working = false
       }
     }
   }

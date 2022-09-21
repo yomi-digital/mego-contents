@@ -1,5 +1,17 @@
 <template>
   <div id="instances">
+    <div class="modal_container" v-if="modals.info">
+      <div class="modal">
+        <img src="../assets/images/close-icon.svg" alt="Close" @click="modals.info = false">
+        <p class="mt-5" style="text-align: center;font-size: 18px;">In order to create contents you must create an new contract (instance) where your
+          contents will be stored. This contract will be owned by you of course and
+          you'll be able to see it on OpenSea.<br />Each new deploy will costs you {{web3.utils.fromWei(deployment_price, 'ether')+' ether'}} with your current {{subscriptionActive===0 ? 'Free' : (subscriptionActive===1) ? 'Premium' : (subscriptionActive===2) ? 'Unlimited' : ''}} plan.</p>
+          <b-button type="button" class="button-dark is-light mx-3 mt-5"
+            style="background:#111!important;color:white!important" @click="$router.push({name: 'Pricing'})">
+            MANAGE PLAN
+          </b-button>
+      </div>
+    </div>
     <div class="instances_loading" v-if="loading && Object.keys(datatypes).length === 0">
       <font-awesome-icon icon="fa-solid fa-circle-notch" style="font-size:25px" class="fa-spin" />
     </div>
@@ -26,7 +38,7 @@
         <h2>DEPLOY YOUR INSTANCE</h2>
       </div>
       <div class="instances_header">
-        <h2 class="has-text-weight-semibold">AVAILABLE INSTANCES
+        <h2 class="has-text-weight-semibold" style="position:relative">AVAILABLE INSTANCES<font-awesome-icon icon="fa-solid fa-circle-info" class="instances_info_icon" @click="modals.info = true" />
           <!-- <b-button type="button" class="button-dark is-light mr-0 ml-4"
             style="background:#111!important;color:white!important">
             <font-awesome-icon icon="fa-solid fa-plus" style="font-size:24px" />
@@ -109,12 +121,14 @@ export default {
       names: [],
       loading: true,
       modals: {
-        createInstance: false
+        createInstance: false,
+        info: false
       },
       newInstanceName: '',
       newInstanceTicker: '',
       isWorking: false,
-      subscriptionActive: -1
+      subscriptionActive: -1,
+      deployment_price: ''
     }
   },
   methods: {
@@ -145,6 +159,8 @@ export default {
               app.abi_factory,
               app.contract
             );
+            app.subscriptionActive = parseInt(await factoryContract.methods.subscriptions(app.account).call())
+            app.deployment_price = await factoryContract.methods.deployment_prices(app.subscriptionActive).call()
             app.instances = await factoryContract.methods
               .instancesOfOwner(app.account)
               .call();
@@ -252,14 +268,11 @@ export default {
             app.abi_factory,
             app.contract
           );
-          app.subscriptionActive = parseInt(await nftContract.methods.subscriptions(app.account).call())
-          const deployment_price = await nftContract.methods.deployment_prices(app.subscriptionActive).call()
-
           const newInstance = await nftContract.methods
             .startNewInstance(app.newInstanceName, app.newInstanceTicker)
             .send({
               from: app.account,
-              value: deployment_price,
+              value: app.deployment_price,
             })
             .on("transactionHash", (tx) => {
               app.workingMessage = "Found pending transaction at: " + tx;
@@ -300,6 +313,10 @@ export default {
     document.getElementById('navbar_group').children[1].style.background = '#EDEDED'
     const app = this;
     await app.connect();
+    if(localStorage.getItem('instancesInfoModal') == null) {
+      localStorage.setItem('instancesInfoModal',1)
+      app.modals.info = true
+    }
   }
 }
 </script>

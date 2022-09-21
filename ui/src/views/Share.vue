@@ -1,6 +1,6 @@
 <template>
   <div class="home">
-    <div class="instances_container" style="margin-top:-1rem">
+    <div class="instances_container" style="margin-top:-3rem">
       <div class="instance_info" v-if="!loading && Object.keys(content).length === 0">
         <h2>NFT NOT FOUND</h2>
       </div>
@@ -12,18 +12,21 @@
         </div>
         <div class="body_container">
           <h1 v-html="content.name"></h1>
-          <h2 v-html="'by '+content.author"></h2>
-          <div v-for="input in datatypes[category]" v-bind:key="input.name" class="body my-4">
-            <h4 v-html="input.name"></h4>
-            <p v-html="content[input.name]" v-if="input.name != 'image'"></p>
-            <img style="width:700px;margin-top: 1rem;"
-              :src="content['image'].replace('ipfs://', 'https://ipfs.yomi.digital/ipfs/')" alt=""
-              v-if="input.name == 'image'">
+          <h2>by <i @click="openTab(explorer_url+'/address/'+content.author)" v-html="content.author"></i></h2>
+          <div v-for="key in Object.keys(content)" :key="key" class="body my-4">
+            <template
+              v-if="key !== 'name' && key !== 'title' && key !== 'author' && key !== 'category' && key !== 'timestamp'">
+              <h4 v-html="key"></h4>
+              <p v-html="content[key]" v-if="key != 'image'"></p>
+              <img style="width:700px;margin-top: 1rem;"
+                :src="content['image'].replace('ipfs://', 'https://ipfs.yomi.digital/ipfs/')" alt=""
+                v-if="key == 'image'">
+            </template>
           </div>
         </div>
       </div>
       <b-button type="button" class="button-dark is-light"
-        style="background:#111!important;color:white!important;width:120px;margin-top: -2rem;"
+        style="background:#111!important;color:white!important;width:120px;margin-top: -1rem;"
         v-if="!loading && Object.keys(content).length === 0" @click="$router.push({name:'Public'})">
         GO BACK
       </b-button>
@@ -50,8 +53,9 @@ export default {
   data() {
     return {
       axios: axios,
+      contents_api: process.env.VUE_APP_CONTENTS_API,
       instance: "",
-      hash: '',
+      index: '',
       isWorking: false,
       loading: true,
       workingMessage: "",
@@ -59,19 +63,22 @@ export default {
     };
   },
   async mounted() {
+    document.getElementById('navbar_group').children[1].style.background = 'white'
     const app = this;
     app.instance = app.$route.params.instance;
-    app.hash = app.$route.params.hash;
+    app.index = app.$route.params.index;
     await app.fetchNft()
     app.loading = false
   },
   methods: {
     async fetchNft() {
       try {
-        const nft = await axios.get('')
+        const nft = await axios.get(this.contents_api + '/contents/' + this.instance + '/' + this.index)
+        this.content = nft.data.metadata
+        console.log(nft.data)
       }
       catch (e) {
-        alert(e)
+        this.content = {}
       }
     },
     openTab(link) {

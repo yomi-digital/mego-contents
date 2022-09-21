@@ -147,6 +147,8 @@ button {background: none!important;border-radius: 8px!important;}
 .instance_info h2{font-size: 42px; font-family: 'Sk-Modernist'!important; color: black;}
 .instance_info p {font-size: 21px;height: fit-content;margin:auto 0;}
 .instance_info p a {color: black; text-decoration: underline;}
+.instances_info_icon {font-size:20px; position:absolute;top: 4px; color: grey; right: -25px;cursor: pointer; transition: all .17s ease-in-out;}
+.instances_info_icon:hover {color: black;}
 .modal_container::before {content:''; position: absolute; top: 0;bottom: 0;left: 0;right: 0;backdrop-filter: blur(0); transition: all .3s ease-in-out; z-index: 9; animation: blurInModal .3s ease-in-out forwards;}
 .modal_container > .modal {background: #ededed85;backdrop-filter: blur(4px);border: 1px solid #565857;border-radius: 7px; z-index: 99; position: absolute; top: 50%;left: 50%;transform: translate(-50%,-50%) scale(.9); display: flex; padding: 4rem;width:fit-content; max-width: 80vw;height: fit-content; justify-content: center; opacity: 0; transition: all .3 ease-in-out; animation: fadeInModal .3s ease-in-out forwards;}
 .modal_container > .modal > img {position: absolute; top: 2rem;right: 2rem;width: 2rem;height: 2rem; cursor: pointer;}
@@ -218,7 +220,7 @@ button {background: none!important;border-radius: 8px!important;}
 .project_container * {font-family: 'Sk-Modernist';}
 .project_container > .img_container div {border-radius: 7px; background-position: center center; background-size: cover; width: 70px;height: 70px;}
 .project_container > .body_container > h1 {font-size: 30px;font-weight: 700; color: black;}
-.project_container > .body_container > h2 {font-size: 20px; font-weight: 400; margin-bottom: 2rem;}
+.project_container > .body_container > h2 {font-size: 20px; font-weight: 400; margin-bottom: 2rem; i {cursor: pointer;}i:hover {text-decoration: underline;}}
 .project_container > .body_container {padding: 0 2rem;}
 .project_container > .body_container .body p{color: black; font-size: 20px;}
 
@@ -233,9 +235,12 @@ button {background: none!important;border-radius: 8px!important;}
 .plans_container .plan {transition: all .12s ease-in-out;background: white;border-radius: 2rem;box-shadow: 1px 3px 24px rgba(0,0,0,.16); padding: 3rem;text-align: center;width: 33vw;}
 .plans_container .plan h1 {font-size: 28px;font-weight: 700;}
 .plans_container .plan h2 {font-size: 24px;}
-.plans_container .plan:nth-child(2) {z-index: 9; transform: scale(1.1);}
+.plans_container .plan:nth-child(2) {z-index: 2; transform: scale(1.1);}
 .plans_container .plan li {display: block; width: fit-content; position: relative; margin: auto}
 .plans_container .plan li::before {content: '';width: 7px;height: 7px; background: black; border-radius: 100%;position: absolute; left: -.8rem;top: 9px;}
-.plans_container .plan:hover {transform: scale(1.12);z-index: 99;}
+.plans_container .plan:hover {transform: scale(1.12);z-index: 3;}
+.plan.unavailable {opacity: .7;}
+.plan.unavailable:hover {transform: unset;z-index: unset}
 .plans_container .plan:hover + .plan:nth-child(2) {transform: scale(1)!important;}
 .free_mints {font-size: 20px;text-align: center; margin-top: 5rem; font-family: 'SpaceGrotesk';}
+.subscription_status {margin: auto; text-align: center; span {border-radius: 4px; padding: 8px;}font-family: 'SpaceGrotesk';}

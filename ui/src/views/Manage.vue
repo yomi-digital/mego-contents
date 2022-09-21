@@ -23,9 +23,11 @@
           </span></h2>
         <h2 v-if="!loading && Object.keys(datatypes).length === 0">NFT NOT FOUND</h2>
         <p v-if="!loading && Object.keys(datatypes).length > 0">
-          <a style="text-decoration: underlined;color: black; font-size: 18px;" class="mr-3" @click="copyText('link','test')">
+          <a style="text-decoration: underlined;color: black; font-size: 18px;" class="mr-3"
+            @click="copyText('link','/share/'+instance+'/'+tokenId)">
             <font-awesome-icon icon="fa-solid fa-link" style="font-size:16px;margin-top: .2rem;" class="mt-5" />
-            share</a>
+            share
+          </a>
           <b-button type="button" class="button-light is-dark mx-3 mt-4"
             style="color:black!important;border:1px solid black!important"
             @click="openTab(opensea_url+'/'+instance+'/'+tokenId)">
@@ -75,6 +77,11 @@
             )
           " width="100%" /><br /><br />
         </div>
+        <b-field v-if="input.input === 'tag'" :label="input.name.toUpperCase()">
+          <b-taginput v-model="content[input.name]" ellipsis icon="label" placeholder="Add a tag"
+            aria-close-label="Delete this tag">
+          </b-taginput>
+        </b-field>
         <b-field v-if="input.input === 'file' && !freezed" v-bind:key="input.name" :label="input.name.toUpperCase()">
           <b-upload v-model="content[input.name]" expanded drag-drop>
             <section class="section">
@@ -314,11 +321,10 @@ export default {
     },
     async prepare() {
       const app = this;
-      console.log("CONTENT", app.content);
       let isValid = true;
       for (let k in app.datatypes[app.category]) {
         const datatype = app.datatypes[app.category][k];
-        if (datatype.required && app.content[datatype.name] === "") {
+        if (datatype.required && (app.content[datatype.name] == null || app.content[datatype.name] == '')) {
           isValid = false;
         }
       }
@@ -383,7 +389,10 @@ export default {
           }
         }
         // Uploading final metadata to IPFS
-        console.log("METADATA", metadata);
+        metadata.name = (metadata.name) ? metadata.name : (metadata.title) ? metadata.title : 'MEGO CONTENT'
+        metadata.description = (metadata.description) ? metadata.description :
+          'This NFT represents a decentralised content on MEGO'
+        metadata.image = (metadata.image) ? metadata.image : 'ipfs://bafkreiblyp34mtsvwk2tv4u7cwq6wdj5lkfgpmvkytvkzq4xlhwybebrhe'
         metadata.author = app.account;
         metadata.timestamp = new Date().getTime();
         metadata.category = app.category;
@@ -511,12 +520,16 @@ export default {
     openTab(link) {
       window.open(link, '_blank')
     },
-    copyText(type,text) {
-      navigator.clipboard.writeText(text);
-      this.log('success', type+' copied!')
-      if(type === 'link') {
-        setTimeout(() => {this.openTab(text)},1000)
+    copyText(type, text) {
+      if (type === 'link') {
+        text = location.href.split('#')[0] + '#' + text
+        navigator.clipboard.writeText(text);
+        setTimeout(() => { this.openTab(text) }, 1000)
       }
+      else {
+        navigator.clipboard.writeText(text);
+      }
+      this.log('success', type + ' copied!')
     }
   },
 };

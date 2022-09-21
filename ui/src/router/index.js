@@ -10,7 +10,6 @@ import New from '../views/New.vue'
 import View from '../views/View.vue'
 import Share from '../views/Share.vue'
 import Pricing from '../views/Pricing.vue'
-import Account from '../views/Account.vue'
 
 Vue.use(VueRouter)
 
@@ -51,7 +50,7 @@ const routes = [
     component: View
   },
   {
-    path: '/share/:instance/:hash',
+    path: '/share/:instance/:index',
     name: 'Share',
     component: Share
   },
@@ -64,11 +63,6 @@ const routes = [
     path: '/pricing',
     name: 'Pricing',
     component: Pricing
-  },
-  {
-    path: '/account',
-    name: 'Account',
-    component: Account
   }
 ]
 

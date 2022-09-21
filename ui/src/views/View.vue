@@ -5,9 +5,11 @@
         <h2 v-if="loading || (!loading && Object.keys(content).length !== 0)">PUBLIC</h2>
         <h2 v-if="!loading && Object.keys(content).length === 0">NFT NOT FOUND</h2>
         <p v-if="!loading && Object.keys(content).length !== 0">
-          <a style="text-decoration: underlined;color: black;font-size: 18px;" class="mr-3" @click="copyText('link','test')">
+          <a style="text-decoration: underlined;color: black;font-size: 18px;" class="mr-3"
+            @click="copyText('link','/share/'+instance+'/'+tokenId)">
             <font-awesome-icon icon="fa-solid fa-link" style="font-size:16px;margin-top: .2rem;" class="mt-5" />
-            share</a>
+            share
+          </a>
           <b-button type="button" class="button-light is-dark mx-3 mt-4"
             style="color:black!important;border:1px solid black!important"
             @click="openTab(opensea_url+'/'+instance+'/'+tokenId)">
@@ -24,21 +26,24 @@
         </div>
         <div class="body_container">
           <h1 v-html="content.name"></h1>
-          <h2 v-html="'by '+content.author"></h2>
-          <div v-for="input in datatypes[category]" v-bind:key="input.name" class="body my-4">
-            <h4 v-html="input.name"></h4>
-            <p v-html="content[input.name]" v-if="input.name != 'image'"></p>
-            <img style="width:700px;margin-top: 1rem;"
-              :src="content['image'].replace('ipfs://', 'https://ipfs.yomi.digital/ipfs/')" alt=""
-              v-if="input.name == 'image'">
+          <h2>by <i @click="openTab(explorer_url+'/address/'+content.author)" v-html="content.author"></i></h2>
+          <div v-for="key in Object.keys(content)" :key="key" class="body my-4">
+            <template
+              v-if="key !== 'name' && key !== 'title' && key !== 'author' && key !== 'category' && key !== 'timestamp'">
+              <h4 v-html="key"></h4>
+              <p v-html="content[key]" v-if="key != 'image'"></p>
+              <img style="width:700px;margin-top: 1rem;"
+                :src="content['image'].replace('ipfs://', 'https://ipfs.yomi.digital/ipfs/')" alt=""
+                v-if="key == 'image'">
+            </template>
           </div>
         </div>
       </div>
       <b-button type="button" class="button-dark is-light"
-      style="background:#111!important;color:white!important;width:120px;margin-top: -2rem;"
-      v-if="!loading && Object.keys(content).length === 0" @click="$router.push({name:'Public'})">
-      GO BACK
-    </b-button>
+        style="background:#111!important;color:white!important;width:120px;margin-top: -2rem;"
+        v-if="!loading && Object.keys(content).length === 0" @click="$router.push({name:'Public'})">
+        GO BACK
+      </b-button>
     </div>
     <div v-if="isWorking" style="padding: 20px 0; text-align: center">
       {{ workingMessage }}
@@ -59,7 +64,6 @@ import Web3 from "web3";
 import axios from "axios";
 import Web3Modal from "web3modal";
 import WalletConnectProvider from "@walletconnect/web3-provider";
-const FormData = require("form-data");
 const abi_factory = require("../abis/factory.json");
 const abi_contents = require("../abis/contents.json");
 
@@ -74,6 +78,7 @@ export default {
       abi_contents: abi_contents,
       contract: process.env.VUE_APP_FACTORY_CONTRACT,
       opensea_url: process.env.VUE_APP_OPENSEA_URL,
+      explorer_url: process.env.VUE_APP_EXPLORER_URL,
       instance: "",
       network: parseInt(process.env.VUE_APP_CHAIN_ID),
       datatypes: {},
@@ -90,6 +95,7 @@ export default {
     };
   },
   async mounted() {
+    document.getElementById('navbar_group').children[1].style.background = 'white'
     const app = this;
     app.tokenId = app.$route.params.tokenId;
     await app.connect();
@@ -215,14 +221,6 @@ export default {
           tokenURI.replace("ipfs://", "https://ipfs.yomi.digital/ipfs/")
         );
         app.content = content.data
-        for (let k in app.datatypes[app.category]) {
-          const datatype = app.datatypes[app.category][k];
-          if (datatype.input !== "file") {
-            app.content[datatype.name] = content.data[datatype.name];
-          } else {
-            app.stored[datatype.name] = content.data[datatype.name];
-          }
-        }
       }
       catch {
         app.content = {}
@@ -233,11 +231,15 @@ export default {
       window.open(link, '_blank')
     },
     copyText(type, text) {
-      navigator.clipboard.writeText(text);
-      this.log('success', type+' copied!')
-      if(type === 'link') {
-        setTimeout(() => {this.openTab(text)},1000)
+      if (type === 'link') {
+        text = location.href.split('#')[0] + '#' + text
+        navigator.clipboard.writeText(text);
+        setTimeout(() => { this.openTab(text) }, 1000)
       }
+      else {
+        navigator.clipboard.writeText(text);
+      }
+      this.log('success', type + ' copied!')
     }
   },
 };
