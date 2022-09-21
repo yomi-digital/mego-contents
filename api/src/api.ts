@@ -31,7 +31,7 @@ app.get("/contents/:instance", async function (req, res) {
 
 app.get("/contents/:instance/:index", async function (req, res) {
   const db = new Database.Mongo();
-  const content = await db.find('contents', { instance: req.params.instance, index: req.params.index })
+  const content = await db.find('contents', { instance: req.params.instance, index: parseInt(req.params.index) })
   res.send(content)
 })
 
