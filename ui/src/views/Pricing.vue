@@ -79,8 +79,7 @@
           <li>{{web3.utils.fromWei(subscriptions[0].deploy, 'ether')}} ether to deploy an instance</li>
         </ul>
         <i class="mt-4" style="display: block;" v-if="subscriptionActive !== 0">Available only once</i>
-        <b-button type="button" class="button-light is-dark mx-3 mt-5" v-if="subscriptionActive === 0"
-          style="color:black!important;border:1px solid black!important;opacity:.5">
+        <b-button type="button" class="button-light is-dark mx-3 mt-5 button_success" disabled style="opacity:.8!important" v-if="subscriptionActive === 0">
           ACTIVE
         </b-button>
       </div>
@@ -95,10 +94,9 @@
         </ul>
         <b-button type="button" class="button-dark is-light mx-3 mt-5" v-if="subscriptionActive !== 2"
           style="background:#111!important;color:white!important" @click="buySubscription(2)">
-          {{subscriptionActive===0 ? 'UPGRADE' : 'SELECT'}}
+          UPGRADE
         </b-button>
-        <b-button type="button" class="button-light is-dark mx-3 mt-5" v-if="subscriptionActive === 2"
-          style="color:black!important;border:1px solid black!important;opacity:.5">
+        <b-button type="button" class="button-light is-dark mx-3 mt-5 button_success" disabled style="opacity:.8!important" v-if="subscriptionActive === 2">
           ACTIVE
         </b-button>
       </div>
@@ -115,12 +113,12 @@
           style="background:#111!important;color:white!important" @click="buySubscription(1)">
           {{subscriptionActive===0 ? 'UPGRADE' : 'SELECT'}}
         </b-button>
-        <b-button type="button" class="button-light is-dark mx-3 mt-5" v-if="subscriptionActive === 1"
-          style="color:black!important;border:1px solid black!important;opacity:.5">
+        <b-button type="button" class="button-light is-dark mx-3 mt-5 button_success" disabled style="opacity:.8!important" v-if="subscriptionActive === 1">
           ACTIVE
         </b-button>
       </div>
     </div>
+    <div class="loading_box" style="width:350px;height:20px;margin:6rem auto auto auto;opacity:.5" v-if="loading"></div>
     <p v-if="subscriptionActive === 0 && !loading" class="free_mints">You have {{free_limit-free_mints}} free mints left
       <br /><i>({{free_mints}} used)</i>
     </p>

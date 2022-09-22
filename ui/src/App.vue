@@ -49,14 +49,27 @@ export default {
             contract: process.env.VUE_APP_FACTORY_CONTRACT,
             account: "",
             instance: "",
+            web3: {},
             instances: [],
             checking: false,
             isWorking: false,
             workingMessage: "",
             newInstanceName: "",
             newInstanceTicker: "",
-            mobile: window.matchMedia('(max-width:767px)').matches
+            mobile: window.matchMedia('(max-width:767px)').matches,
+            subscription: -1,
+            isSubscriptionActive: true,
+            canMint: true
         };
+    },
+    watch: {
+        '$route': {
+            handler: function (route) {
+                this.subscriptionCheck(route)
+            },
+            deep: true,
+            immediate: true
+        }
     },
     async mounted() {
         if (this.$route.name !== 'Share') {
@@ -68,17 +81,18 @@ export default {
                 this.$router.push({ name: 'Pricing' })
             }
             //instance selected check
-            if (localStorage.getItem('instance') == null) {
+            if (localStorage.getItem('instance') == null && this.$route.name !== 'Pricing') {
                 if (this.$route.name !== 'Instances') {
                     this.$router.push({ name: 'Instances' })
                 }
             }
         }
         else {
-            if(localStorage.getItem('WEB3_CONNECT_CACHED_PROVIDER')) {
+            if (localStorage.getItem('WEB3_CONNECT_CACHED_PROVIDER')) {
                 await this.connect()
             }
         }
+        await this.subscriptionCheck(this.$route)
     },
     methods: {
         async connect() {
@@ -96,6 +110,7 @@ export default {
             });
             const provider = await web3Modal.connect();
             const web3 = await new Web3(provider);
+            app.web3 = web3
             try {
                 const network = await web3.eth.net.getId();
                 console.log("Found network:", network);
@@ -185,6 +200,25 @@ export default {
                 alert(e.message);
             }
         },
+        async subscriptionCheck(route) {
+            const app = this
+            if (app.account) {
+                const factoryContract = new app.web3.eth.Contract(
+                    app.abi,
+                    app.contract
+                );
+                app.subscription = parseInt(await factoryContract.methods.subscriptions(app.account).call())
+                if (app.subscription === 0) {
+                    let free_mints = await factoryContract.methods.free_mints(app.account).call()
+                    let free_limit = await factoryContract.methods.free_limit().call()
+                    app.canMint = (free_limit - free_mints === 0) ? false : true
+                }
+                else {
+                    app.isSubscriptionActive = (app.subscription === 0) ? true : await factoryContract.methods.isSubscriptionActive(app.account).call()
+                    app.registration_timestamp = Number(await factoryContract.methods.registration_timestamps(app.account).call()) * 1000
+                }
+            }
+        }
     },
     components: { Navbar }
 };

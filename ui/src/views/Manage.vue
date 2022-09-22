@@ -23,6 +23,7 @@
           </span></h2>
         <h2 v-if="!loading && Object.keys(datatypes).length === 0">NFT NOT FOUND</h2>
         <p v-if="!loading && Object.keys(datatypes).length > 0">
+          <span class="mr-6">Headless endpoint: <a :href="contents_api+'/contents/'+instance+'/'+tokenId" target="_blank">api.mego.cx/c...{{instance.substr(-3)}}</a></span>
           <a style="text-decoration: underlined;color: black; font-size: 18px;" class="mr-3"
             @click="copyText('link','/share/'+instance+'/'+tokenId)">
             <font-awesome-icon icon="fa-solid fa-link" style="font-size:16px;margin-top: .2rem;" class="mt-5" />
@@ -157,6 +158,7 @@ export default {
       abi_contents: abi_contents,
       contract: process.env.VUE_APP_FACTORY_CONTRACT,
       opensea_url: process.env.VUE_APP_OPENSEA_URL,
+      contents_api: process.env.VUE_APP_CONTENTS_API,
       instance: "",
       network: parseInt(process.env.VUE_APP_CHAIN_ID),
       datatypes: {},
