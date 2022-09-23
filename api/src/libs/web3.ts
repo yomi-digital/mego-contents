@@ -72,7 +72,13 @@ export const parseContent = async (instance_address, content_index) => {
         response(true)
       } else {
         console.log('[CONTENTS] --> Contents exists yet, updating.')
-        await db.update('contents', { index: content_index }, { $set: { freezed: freezed, owner: owner, metadata: metadata.data, timestamp: metadata.data.timestamp } })
+        let changed
+        if (checkDB.changed === undefined) {
+          changed = 1
+        } else {
+          changed = checkDB.changed + 1
+        }
+        await db.update('contents', { index: content_index }, { $set: { freezed: freezed, owner: owner, metadata: metadata.data, last_change: metadata.data.timestamp, changed } })
         response(false)
       }
     } catch (e) {
