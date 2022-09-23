@@ -241,7 +241,10 @@
         while (!ended) {
           try {
             const created = await factoryContract.methods.created(k).call()
-            app.models.push(created)
+            let sign = created.split('__')[0]
+            if(app.account.substr(0, 5) + app.account.substr(-3) === sign) {
+              app.models.push(created)
+            }
             k++
             if (created.length === 0) {
               ended = true

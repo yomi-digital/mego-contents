@@ -16,7 +16,7 @@
               style="width:100px;height:35px;display:inline-block;"></div> <span class="selected_model" v-if="!loading">
               {{(category.indexOf('__') > 0) ? category.slice(category.indexOf('__')+2, 99999).toUpperCase() : category}}
               <div :class="{new_model_select:true, new_model_select_open:selectOpened}">
-                <p v-for="el in Object.keys(datatypes)" :value="el" :key="el"
+                <p v-for="el in Object.keys(datatypes).filter(item => item !== category)" :value="el" :key="el"
                   @click="() => {category = el; selectOpened = false}">
                   {{(el.indexOf('__') > 0) ? el.slice(el.indexOf('__')+2, 99999).toUpperCase() : el }}
                 </p>
@@ -31,6 +31,7 @@
             ADD NOW
           </b-button>
         </div>
+        <router-link :to="{name: 'Pricing'}" v-if="!canMint" style="color:black;text-align: center;">You cannot create any content at the moment <font-awesome-icon icon="fa-solid fa-circle-exclamation" style="font-size:15px;color: #ff850f;margin-bottom: .1rem;" /></router-link>
       </div>
 
       <div v-if="!ipfsNft && content[category]" class="new_model_form">
@@ -79,14 +80,18 @@
           <br />
         </div>
         <b-button type="button" class="button-light is-dark mx-auto mt-5 px-6"
-          style="color:black!important;border:1px solid black!important" v-if="!isWorking && !ipfsNft" @click="prepare">
+          style="color:black!important;border:1px solid black!important" v-if="!isWorking && !ipfsNft && canMint" @click="prepare">
           PREPARE METADATA
+        </b-button>
+        <b-button type="button" class="button-light is-dark mx-auto mt-5 px-6"
+          style="color:black!important;border:1px solid black!important" disabled v-if="!isWorking && !ipfsNft && !canMint">
+          PREAPARE METADATA
         </b-button>
       </div>
       <div v-if="ipfsNft" style="text-align: center; padding: 3rem 0;font-size:20px">
         <span>Metadata are generated, please double check them before mint at</span><br />
         <a target="_blank" style="color:black;text-decoration:underline"
-          :href="'https://ipfs.yomi.digital/ipfs/' + ipfsNft">{{ ipfsNft }}</a><br /><br />
+          :href="'/#/preview/' + ipfsNft">{{ ipfsNft }}</a><br /><br />
         <b-button type="button" class="button-dark is-light mx-3 mt-5" v-if="!isWorking"
           style="background:#111!important;color:white!important" @click="mint">
           MINT CONTENT
@@ -112,7 +117,7 @@
 <script>
   import Web3 from "web3";
   import axios from "axios";
-  import Web3Modal from "web3modal";
+  import Web3Modal, { local } from "web3modal";
   import WalletConnectProvider from "@walletconnect/web3-provider";
   import {
     VueEditor
@@ -150,7 +155,8 @@
         selectOpened: false,
         modals: {
           prepare: false
-        }
+        },
+        canMint: true
       };
     },
     async mounted() {
@@ -161,10 +167,16 @@
       for (const el of Object.keys(app.datatypes)) {
         app.content[el] = app.datatypes[el]
       }
-      console.log(app.content)
       setInterval(function () {
         app.$forceUpdate();
       }, 100);
+      let mintCheckInterval = setInterval(() => {
+        //checking if can mint
+        if(localStorage.getItem('canMint') != null && JSON.parse(localStorage.getItem('canMint')) === false && app.canMint) {
+          app.canMint = false
+          clearInterval(mintCheckInterval)
+        }
+      },500)
     },
     methods: {
       async connect() {

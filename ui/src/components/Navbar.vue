@@ -4,21 +4,27 @@
       <img src="../assets/images/logo.svg" @click="$router.push({name: 'Instances'})" style="cursor:pointer"
         alt="Mego Contents">
       <div class="navbar_links">
-        <router-link :to="{name: 'Instances'}" v-if="$route.name !== 'Instances' && $route.name !== 'Pricing'"
-          :class="{'has-text-weight-bold':true, 'navbar_link_active': $route.name === 'New'}"><span></span>new
-        </router-link>
-        <router-link :to="{name: 'Drafts'}" v-if="$route.name !== 'Instances' && $route.name !== 'Pricing'"
-          :class="{'has-text-weight-bold':true, 'navbar_link_active': $route.name === 'Drafts'}"><span></span>drafts
-        </router-link>
-        <router-link :to="{name: 'Public'}" v-if="$route.name !== 'Instances' && $route.name !== 'Pricing'"
-          :class="{'has-text-weight-bold':true, 'navbar_link_active': $route.name === 'Public'}"><span></span>public
-        </router-link>
-        <router-link :to="{name: 'Instances'}"
+        <router-link :to="{name: 'Instances'}" style="position:relative"
           :class="{'has-text-weight-bold':true, 'navbar_link_active': $route.name === 'Instances'}"><span></span>manage
-          instances</router-link>
+          instances
+          <div v-if="$route.name !== 'Instances' && $route.name !== 'Pricing'" class="instance_submenu">
+            <router-link :to="{name: 'New'}"
+              :class="{'has-text-weight-bold':true, 'navbar_link_active': $route.name === 'New'}"><span></span>new
+            </router-link>
+            <router-link :to="{name: 'Drafts'}"
+              :class="{'has-text-weight-bold':true, 'navbar_link_active': $route.name === 'Drafts'}"><span></span>drafts
+            </router-link>
+            <router-link :to="{name: 'Public'}"
+              :class="{'has-text-weight-bold':true, 'navbar_link_active': $route.name === 'Public'}"><span></span>public
+            </router-link>
+          </div>
+        </router-link>
         <router-link :to="{name: 'Pricing'}"
           :class="{'has-text-weight-bold':true, 'navbar_link_active': $route.name === 'Pricing'}">
-          <span></span>subscription</router-link>
+          <span></span> subscription
+          <font-awesome-icon v-if="subscriptionAlert" icon="fa-solid fa-circle-exclamation"
+            style="font-size:15px;color: #ff850f;" />
+        </router-link>
         <a style="padding: 18.5px 2rem 18.5px 2rem; border-left: 1px solid black;cursor: default;">
           <template v-if="account">{{ account.substr(0, 8) }}...{{ account.substr(-8) }}</template>
           <b-button type="button" class="button-dark is-light is-small" id="connectWalletNavBtn" v-else
@@ -39,7 +45,7 @@
 <script>
 export default {
   name: 'Navbar',
-  props: ['account', 'instances']
+  props: ['account', 'instances', 'subscriptionAlert']
 }
 
 </script>

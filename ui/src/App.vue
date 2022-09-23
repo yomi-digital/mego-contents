@@ -4,9 +4,35 @@
             <font-awesome-icon icon="fa-solid fa-circle-notch" style="font-size:20px;margin-top: .2rem;"
                 class="fa-spin" />
         </div>
+        <div class="modal_container" v-if="modals.cannot_mint">
+            <div class="modal">
+                <img src="./assets/images/close-icon.svg" alt="Close" @click="modals.cannot_mint = false">
+                <font-awesome-icon icon="fa-solid fa-circle-exclamation" style="font-size:30px;color: #ff850f;margin:0 0 .5rem 0" />
+                <h2>Plan suspended</h2>
+                <div v-if="subscription > 0">
+                    <p>Your subscription expired on the 09/24/2022.</p>
+                    <p>Please make a new payment to renew the month</p>
+                    <b-button type="button" class="button-dark is-light mx-3 mt-5"
+                        style="background:#111!important;color:white!important"
+                        @click="$router.push({name: 'Pricing'})">
+                        MANAGE PLAN
+                    </b-button>
+                </div>
+                <div v-if="subscription === 0">
+                    <p>With your Free plan, you could mint max {{free_limit}} times</p>
+                    <p>Upgrade your plan to mint unlimited times!</p>
+                    <b-button type="button" class="button-dark is-light mx-3 mt-5"
+                        style="background:#111!important;color:white!important"
+                        @click="$router.push({name: 'Pricing'})">
+                        MANAGE PLAN
+                    </b-button>
+                </div>
+            </div>
+        </div>
         <div style="width:100vw;min-height:100vh;height: fit-content;"
             v-if="!mobile && ((account && !checking) || $route.name === 'Share')">
-            <Navbar :account="account" :instances="instances" />
+            <Navbar :account="account" :instances="instances"
+                :subscriptionAlert="(subscription===0 && !canMint) || (subscription>0 && !isSubscriptionActive)" />
             <router-view />
         </div>
         <div v-if="mobile || (!account && !checking && $route.name !== 'Share')" class="connect_wallet">
@@ -33,7 +59,7 @@
 <script>
 import Web3 from "web3";
 import axios from "axios";
-import Web3Modal from "web3modal";
+import Web3Modal, { local } from "web3modal";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import Navbar from "./components/Navbar.vue";
 const abi = require("./abis/factory.json");
@@ -59,12 +85,19 @@ export default {
             mobile: window.matchMedia('(max-width:767px)').matches,
             subscription: -1,
             isSubscriptionActive: true,
-            canMint: true
+            canMint: true,
+            free_limit: 0,
+            modals: {
+                cannot_mint: false
+            }
         };
     },
     watch: {
         '$route': {
             handler: function (route) {
+                Object.keys(this.modals).forEach(modal => {
+                    this.modals[modal] = false
+                })
                 this.subscriptionCheck(route)
             },
             deep: true,
@@ -125,7 +158,6 @@ export default {
                         app.instances = instances
                         console.log("Deployed instances:", instances);
                         const instanceAddress = instances[0];
-                        console.log("Instance exists?", instanceAddress);
                         app.account = accounts[0];
                         if (instanceAddress !== undefined) {
                             app.checking = false;
@@ -210,12 +242,26 @@ export default {
                 app.subscription = parseInt(await factoryContract.methods.subscriptions(app.account).call())
                 if (app.subscription === 0) {
                     let free_mints = await factoryContract.methods.free_mints(app.account).call()
-                    let free_limit = await factoryContract.methods.free_limit().call()
-                    app.canMint = (free_limit - free_mints === 0) ? false : true
+                    app.free_limit = await factoryContract.methods.free_limit().call()
+                    app.canMint = (app.free_limit - free_mints === 0) ? false : true
                 }
                 else {
                     app.isSubscriptionActive = (app.subscription === 0) ? true : await factoryContract.methods.isSubscriptionActive(app.account).call()
                     app.registration_timestamp = Number(await factoryContract.methods.registration_timestamps(app.account).call()) * 1000
+                }
+                app.canMint = false
+                if ((app.subscription === 0 && !app.canMint) || (app.subscription > 0 && !app.isSubscriptionActive)) {
+                    if((route.name === 'New' || route.name === 'Instances')) {
+                        app.modals.cannot_mint = true
+                    }
+                    if (localStorage.getItem('canMint') == null) {
+                        localStorage.setItem('canMint', false)
+                    }
+                }
+                else if((app.subscription > 0 && app.isSubscriptionActive) || (app.subscription===0 && app.canMint)) {
+                    if (localStorage.getItem('canMint') != null) {
+                        localStorage.removeItem('canMint')
+                    }
                 }
             }
         }

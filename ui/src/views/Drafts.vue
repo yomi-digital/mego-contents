@@ -6,6 +6,10 @@
       </div>
       <div class="columns">
         <div class="column drafts_filters">
+          <div>
+            <input type="text" placeholder="search" v-model="searcher">
+            <font-awesome-icon icon="fa-solid fa-magnifying-glass"></font-awesome-icon>
+          </div>
           <p style="font-weight: 700;color: #6F706F;margin-bottom: 1.9rem;cursor: inherit;">sort by</p>
           <p @click="(!loading) ? filterActive = 'title' : '' " :style="(filterActive === 'title') ? 'font-weight:600' : ''">title</p>
           <p @click="(!loading) ? filterActive = 'date' : '' " :style="(filterActive === 'date') ? 'font-weight:600' : ''">date</p>
@@ -21,7 +25,7 @@
                 <h3 v-html="draft.name"></h3>
               </div>
               <p v-html="draft.description"></p>
-              <img src="../assets/images/draft_arrow.svg">
+              <img style="width: 25px;height: 25px;" src="../assets/images/pencil.svg">
             </div>
           </div>
           <div class="draft_list" id="draft_list_loading" style="position:relative" v-if="drafts.length === 0 && loading">
@@ -94,12 +98,13 @@
         network: parseInt(process.env.VUE_APP_CHAIN_ID),
         web3: {},
         account: "",
-        drafts: [],
         originalDrafts: [],
+        drafts: [],
         datatypes: [],
         loading: true,
         filterActive: 'title',
-        models: []
+        models: [],
+        searcher: ''
       };
     },
     async mounted() {
@@ -151,6 +156,37 @@
             this.drafts = []
             this.drafts = drafts
           }
+        }
+      },
+      searcher: {
+        handler() {
+          this.drafts = this.originalDrafts
+          this.drafts = this.drafts.filter(el => {
+            let print = false
+            Object.keys(el).forEach(key => {
+              if(!print) {
+                if(typeof(el[key]) === 'string') {
+                  if(el[key].toLowerCase().indexOf(this.searcher.toLowerCase()) !== -1) {
+                    print = true
+                  }
+                }
+                else if(typeof(el[key]) === 'number') {
+                  if(el[key] === this.searcher) {
+                    print = true
+                  }
+                }
+                //tag
+                else if(el[key].length) {
+                  el[key].forEach(tag => {
+                    if(tag.toLowerCase().indexOf(this.searcher.toLowerCase()) !== -1) {
+                      print = true
+                    }
+                  })
+                }
+              }
+            })
+            return print
+          })
         }
       }
     },
@@ -241,7 +277,10 @@
         while (!ended) {
           try {
             const created = await factoryContract.methods.created(k).call()
-            app.models.push(created)
+            let sign = created.split('__')[0]
+            if(app.account.substr(0, 5) + app.account.substr(-3) === sign) {
+              app.models.push(created)
+            }
             k++
             if (created.length === 0) {
               ended = true

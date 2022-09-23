@@ -79,7 +79,8 @@
           <li>{{web3.utils.fromWei(subscriptions[0].deploy, 'ether')}} ether to deploy an instance</li>
         </ul>
         <i class="mt-4" style="display: block;" v-if="subscriptionActive !== 0">Available only once</i>
-        <b-button type="button" class="button-light is-dark mx-3 mt-5 button_success" disabled style="opacity:.8!important" v-if="subscriptionActive === 0">
+        <b-button type="button" class="button-light is-dark mx-3 mt-5 button_success" disabled
+          style="opacity:.8!important" v-if="subscriptionActive === 0">
           ACTIVE
         </b-button>
       </div>
@@ -96,8 +97,16 @@
           style="background:#111!important;color:white!important" @click="buySubscription(2)">
           UPGRADE
         </b-button>
-        <b-button type="button" class="button-light is-dark mx-3 mt-5 button_success" disabled style="opacity:.8!important" v-if="subscriptionActive === 2">
+        <b-button type="button" class="button-light is-dark mx-3 mt-5 button_success" disabled
+          style="opacity:.8!important" v-if="subscriptionActive === 2 && isSubscriptionActive">
           ACTIVE
+        </b-button>
+        <b-button type="button" class="button-light is-dark mx-3 mt-5"
+          style="color:black!important;border:1px solid black!important"
+          v-if="subscriptionActive === 2 && !isSubscriptionActive" @click="payMonthlyFee(2)">
+          PAY MONTH
+          <font-awesome-icon icon="fa-solid fa-circle-exclamation"
+            style="font-size:15px;color: #ff850f;margin:0 0 .1rem .1rem;" />
         </b-button>
       </div>
       <div class="plan" id="right_plan">
@@ -113,23 +122,36 @@
           style="background:#111!important;color:white!important" @click="buySubscription(1)">
           {{subscriptionActive===0 ? 'UPGRADE' : 'SELECT'}}
         </b-button>
-        <b-button type="button" class="button-light is-dark mx-3 mt-5 button_success" disabled style="opacity:.8!important" v-if="subscriptionActive === 1">
+        <b-button type="button" class="button-light is-dark mx-3 mt-5 button_success" disabled
+          style="opacity:.8!important" v-if="subscriptionActive === 1 && isSubscriptionActive">
           ACTIVE
+        </b-button>
+        <b-button type="button" class="button-light is-dark mx-3 mt-5"
+          style="color:black!important;border:1px solid black!important"
+          v-if="subscriptionActive === 1 && !isSubscriptionActive" @click="payMonthlyFee(1)">
+          PAY MONTH
+          <font-awesome-icon icon="fa-solid fa-circle-exclamation"
+            style="font-size:15px;color: #ff850f;margin:0 0 .1rem .1rem;" />
         </b-button>
       </div>
     </div>
     <div class="loading_box" style="width:350px;height:20px;margin:6rem auto auto auto;opacity:.5" v-if="loading"></div>
     <p v-if="subscriptionActive === 0 && !loading" class="free_mints">You have {{free_limit-free_mints}} free mints left
+      <font-awesome-icon v-if="free_limit-free_mints === 0" icon="fa-solid fa-circle-exclamation"
+        style="font-size:15px;color: #ff850f;margin:0 0 .1rem .3rem;" />
       <br /><i>({{free_mints}} used)</i>
     </p>
-    <p v-if="(subscriptionActive === 1 || subscriptionActive === 2) && !loading" class="free_mints">
+    <p v-if="(subscriptionActive === 1 || subscriptionActive === 2) && !loading && isSubscriptionActive" class="free_mints">
       Next payment: <i>{{web3.utils.fromWei(subscriptions[subscriptionActive].monthly, 'ether')}}</i> ether on the
-      <strong>{{new Date(new Date(registration_timestamp).setMonth(new
-      Date(registration_timestamp).getMonth()+1)).toLocaleString('it')}}</strong>
+      <strong>{{new Date(new Date(new Date().setDate(new Date(registration_timestamp).getDate())).setMonth(new Date().getMonth()+1)).toLocaleString()}}</strong>
+    </p>
+    <p v-if="(subscriptionActive === 1 || subscriptionActive === 2) && !loading && !isSubscriptionActive" class="free_mints">
+      Missing payment: <i>{{web3.utils.fromWei(subscriptions[subscriptionActive].monthly, 'ether')}}</i> ether on the
+      <strong>{{new Date(new Date(new Date().setDate(new Date(registration_timestamp).getDate())).setMonth(new Date().getMonth()-1)).toLocaleString()}}</strong>
     </p>
     <p v-if="(subscriptionActive === 1 || subscriptionActive === 2) && !loading" class="subscription_status mt-3">
       Subscription status: <span
-        :style="(isSubscriptionActive) ? 'background:#71ff9e' : 'background:#ffc7c7'">{{(isSubscriptionActive) ?
+        :style="(isSubscriptionActive) ? 'background:#71ff9e' : 'background:#ffdab7'">{{(isSubscriptionActive) ?
         'ACTIVE' : 'SUSPENDED'}}</span>
     </p>
   </div>
@@ -282,6 +304,27 @@ export default {
         const sub = await factoryContract.methods.buySubscription(subscription).send({ from: app.account, value: app.subscriptions[subscription].activation }).on("transactionHash", tx => {
           app.workingMessage =
             "Buying subscription <br />Waiting for confirmations at " + tx;
+        });
+        location.reload()
+      }
+      catch {
+        app.isWorking = false
+        app.modals.working = false
+      }
+    },
+    async payMonthlyFee(subscription) {
+      const app = this
+      app.isWorking = true
+      app.workingMessage = 'Please, confirm the transaction on your wallet'
+      app.modals.working = true
+      const factoryContract = new app.web3.eth.Contract(
+        app.abi_factory,
+        app.factory_contract
+      );
+      try {
+        const sub = await factoryContract.methods.payMonthlyFee().send({ from: app.account, value: app.subscriptions[subscription].monthly }).on("transactionHash", tx => {
+          app.workingMessage =
+            "Paying subscription <br />Waiting for confirmations at " + tx;
         });
         location.reload()
       }

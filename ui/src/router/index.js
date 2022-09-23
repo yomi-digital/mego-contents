@@ -10,6 +10,7 @@ import New from '../views/New.vue'
 import View from '../views/View.vue'
 import Share from '../views/Share.vue'
 import Pricing from '../views/Pricing.vue'
+import Preview from '../views/Preview.vue'
 
 Vue.use(VueRouter)
 
@@ -63,6 +64,11 @@ const routes = [
     path: '/pricing',
     name: 'Pricing',
     component: Pricing
+  },
+  {
+    path: '/preview/:hash',
+    name: 'Preview',
+    component: Preview
   }
 ]
 
