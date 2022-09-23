@@ -65,6 +65,7 @@ export const parseContent = async (instance_address, content_index) => {
           owner: owner,
           metadata: metadata.data,
           timestamp: metadata.data.timestamp,
+          tokenURI: tokenURI,
           freezed: freezed
         }
         console.log('[CONTENTS] --> Inserting new content')
@@ -78,7 +79,7 @@ export const parseContent = async (instance_address, content_index) => {
         } else {
           changed = checkDB.changed + 1
         }
-        await db.update('contents', { index: content_index }, { $set: { freezed: freezed, owner: owner, metadata: metadata.data, last_change: metadata.data.timestamp, changed } })
+        await db.update('contents', { index: content_index, instance: instance_address }, { $set: { freezed: freezed, owner: owner, metadata: metadata.data, last_change: metadata.data.timestamp, changed, tokenURI: tokenURI } })
         response(false)
       }
     } catch (e) {
