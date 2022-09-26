@@ -10,6 +10,7 @@ contract MEGO_Factory is MEGO_Types, Ownable {
     uint256 public instances_counter;
     mapping(address => uint256) public owned_instances;
     mapping(uint256 => address) public instances;
+    mapping(address => mapping(uint8 => bool)) public plans_bought;
     mapping(address => uint8) public subscriptions;
     mapping(address => uint256) public registration_timestamps;
     mapping(address => mapping(uint256 => bool)) public monthly_payments;
@@ -68,25 +69,33 @@ contract MEGO_Factory is MEGO_Types, Ownable {
         return active;
     }
 
-    function buySubscription(uint8 _type) public payable {
-        // Be sure subscription exists and has price > 0
-        require(subscription_prices[_type] > 0, "Subscription not found.");
-        // Be sure value is the same of subscription
+    function chooseSubscription(uint8 _type) public payable {
+        // Be sure subscription exists and has price > 0 or is free one
         require(
-            msg.value == subscription_prices[_type],
-            "Must send exact amount needed to deploy the instance."
+            subscription_prices[_type] > 0 || _type == 0,
+            "Subscription not found."
         );
         // Be sure sender doesn't own same subscription yet
         require(
-            subscriptions[msg.sender] < _type,
+            subscriptions[msg.sender] != _type,
             "You already own this subscription."
         );
+        // Be sure value is the same of subscription
+        if (!plans_bought[msg.sender][_type]) {
+            require(
+                msg.value == subscription_prices[_type],
+                "Must send exact amount needed to deploy the instance."
+            );
+        }
         // Finally upgrade subscription
         subscriptions[msg.sender] = _type;
+        plans_bought[msg.sender][_type] = true;
         registration_timestamps[msg.sender] = block.timestamp;
         // Pay first month of subscription
-        uint256 epoch = getEpoch(msg.sender);
-        monthly_payments[msg.sender][epoch] = true;
+        if (monthly_prices[_type] > 0) {
+            uint256 epoch = getEpoch(msg.sender);
+            monthly_payments[msg.sender][epoch] = true;
+        }
     }
 
     function payMonthlyFee() public payable {
