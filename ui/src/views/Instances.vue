@@ -3,13 +3,16 @@
     <div class="modal_container" v-if="modals.info">
       <div class="modal">
         <img src="../assets/images/close-icon.svg" alt="Close" @click="modals.info = false">
-        <p class="mt-5" style="text-align: center;font-size: 18px;">In order to create contents you must create an new contract (instance) where your
+        <p class="mt-5" style="text-align: center;font-size: 18px;">In order to create contents you must create an new
+          contract (instance) where your
           contents will be stored. This contract will be owned by you of course and
-          you'll be able to see it on OpenSea.<br />Each new deploy will costs you {{web3.utils.fromWei(deployment_price, 'ether')+' ether'}} with your current {{subscriptionActive===0 ? 'Free' : (subscriptionActive===1) ? 'Premium' : (subscriptionActive===2) ? 'Unlimited' : ''}} plan.</p>
-          <b-button type="button" class="button-dark is-light mx-3 mt-5"
-            style="background:#111!important;color:white!important" @click="$router.push({name: 'Pricing'})">
-            MANAGE PLAN
-          </b-button>
+          you'll be able to see it on OpenSea.<br />Each new deploy will costs you
+          {{web3.utils.fromWei(deployment_price, 'ether')+' '+coin}} with your current {{subscriptionActive===0 ? 'Free'
+          : (subscriptionActive===1) ? 'Premium' : (subscriptionActive===2) ? 'Unlimited' : ''}} plan.</p>
+        <b-button type="button" class="button-dark is-light mx-3 mt-5"
+          style="background:#111!important;color:white!important" @click="$router.push({name: 'Pricing'})">
+          MANAGE PLAN
+        </b-button>
       </div>
     </div>
     <div class="instances_loading" v-if="loading && Object.keys(datatypes).length === 0">
@@ -17,11 +20,14 @@
     </div>
     <div class="modal_container" v-if="modals.createInstance">
       <div class="modal">
-        <img src="../assets/images/close-icon.svg" alt="Close" @click="modals.createInstance = false">
+        <img src="../assets/images/close-icon.svg" alt="Close" id="close_createIntanceModal"
+          @click="modals.createInstance = false">
         <h2>Create new instance</h2>
         <p>Define the name and the ticker of the instance.</p>
-        <b-input type="text" class="mt-5" placeholder="New instance name" v-model="newInstanceName"></b-input>
-        <b-input type="text" class="mt-4" placeholder="New instance ticker" v-model="newInstanceTicker"></b-input>
+        <b-input type="text" class="mt-5 instance_name" placeholder="New instance name" v-model="newInstanceName">
+        </b-input>
+        <b-input type="text" class="mt-4 instance_ticker" placeholder="New instance ticker" v-model="newInstanceTicker">
+        </b-input>
         <b-button type="button button-dark is-light mt-5" style="background:#111!important;color:white!important"
           class="button" @click="deployContract" v-if="!isWorking">
           DEPLOY CONTRACT
@@ -38,18 +44,20 @@
         <h2>DEPLOY YOUR INSTANCE</h2>
       </div>
       <div class="instances_header">
-        <h2 class="has-text-weight-semibold" style="position:relative">AVAILABLE INSTANCES<font-awesome-icon icon="fa-solid fa-circle-info" class="instances_info_icon" @click="modals.info = true" />
+        <h2 class="has-text-weight-semibold" style="position:relative">AVAILABLE INSTANCES
+          <font-awesome-icon icon="fa-solid fa-circle-info" class="instances_info_icon" @click="modals.info = true" />
           <!-- <b-button type="button" class="button-dark is-light mr-0 ml-4"
             style="background:#111!important;color:white!important">
             <font-awesome-icon icon="fa-solid fa-plus" style="font-size:24px" />
           </b-button> -->
         </h2>
         <b-button type="button button-dark is-light ml-auto mr-0 mt-1"
-          style="background:#111!important;color:white!important" class="button" @click="modals.createInstance = true">
+          style="background:#111!important;color:white!important" class="button create_instance_btn"
+          @click="modals.createInstance = true">
           CREATE NEW INSTANCE
         </b-button>
       </div>
-      <div class="no_instances" v-if="instances.length === 0 && !loading">
+      <div class="no_instances is-size-5" v-if="instances.length === 0 && !loading">
         You have no instance at the moment
       </div>
       <div class="instances_list" v-if="Object.keys(datatypes).length > 0">
@@ -65,7 +73,8 @@
             <p v-if="Object.keys(datatypes[instance]).length === 0"><i style="color:#444">No datatypes</i></p>
           </div>
           <div class="instance_right">
-            <b-button type="button" class="button button-dark is-light mx-auto mt-0" @click="changeInstance(instance)">
+            <b-button type="button" class="button button-dark is-light mx-auto mt-0 manage_instance_btn"
+              @click="changeInstance(instance)">
               MANAGE INSTANCE</b-button>
           </div>
         </div>
@@ -105,6 +114,7 @@ export default {
   name: 'Instances',
   data() {
     return {
+      coin: process.env.VUE_APP_COIN,
       infuraId: process.env.VUE_APP_INFURA_ID,
       umiUrl: process.env.VUE_APP_UMI_API,
       axios: axios,
@@ -246,56 +256,61 @@ export default {
     },
     async deployContract() {
       const app = this;
-      const web3Modal = new Web3Modal({
-        cacheProvider: true,
-        providerOptions: {
-          walletconnect: {
-            package: WalletConnectProvider,
-            options: {
-              infuraId: app.infuraId,
+      if (app.newInstanceName && app.newInstanceTicker) {
+        const web3Modal = new Web3Modal({
+          cacheProvider: true,
+          providerOptions: {
+            walletconnect: {
+              package: WalletConnectProvider,
+              options: {
+                infuraId: app.infuraId,
+              },
             },
           },
-        },
-      });
-      const provider = await web3Modal.connect();
-      const web3 = await new Web3(provider);
-      try {
-        const network = await web3.eth.net.getId();
-        console.log("Found network:", network);
-        if (network === app.network) {
-          app.isWorking = true;
-          const nftContract = new web3.eth.Contract(
-            app.abi_factory,
-            app.contract
-          );
-          const newInstance = await nftContract.methods
-            .startNewInstance(app.newInstanceName, app.newInstanceTicker)
-            .send({
-              from: app.account,
-              value: app.deployment_price,
-            })
-            .on("transactionHash", (tx) => {
-              app.workingMessage = "Found pending transaction at: " + tx;
-            });
-          console.log("FACTORY_RECEIPT", newInstance);
-          const instanceAddress = await nftContract.methods
-            .instances(app.account)
-            .call();
-          console.log("Instance exists?", instanceAddress);
-          app.instance = instanceAddress;
-          app.newInstanceName = "";
-          app.newInstanceTicker = "";
-          window.location.reload();
-        } else {
-          alert(
-            "Wrong network, please connect to correct one (" +
-            app.network +
-            ")!"
-          );
+        });
+        const provider = await web3Modal.connect();
+        const web3 = await new Web3(provider);
+        try {
+          const network = await web3.eth.net.getId();
+          console.log("Found network:", network);
+          if (network === app.network) {
+            app.isWorking = true;
+            const nftContract = new web3.eth.Contract(
+              app.abi_factory,
+              app.contract
+            );
+            const newInstance = await nftContract.methods
+              .startNewInstance(app.newInstanceName, app.newInstanceTicker)
+              .send({
+                from: app.account,
+                value: app.deployment_price,
+              })
+              .on("transactionHash", (tx) => {
+                app.workingMessage = "Found pending transaction at: " + tx;
+              });
+            console.log("FACTORY_RECEIPT", newInstance);
+            const instanceAddress = await nftContract.methods
+              .instances(app.account)
+              .call();
+            console.log("Instance exists?", instanceAddress);
+            app.instance = instanceAddress;
+            app.newInstanceName = "";
+            app.newInstanceTicker = "";
+            window.location.reload();
+          } else {
+            alert(
+              "Wrong network, please connect to correct one (" +
+              app.network +
+              ")!"
+            );
+          }
+        } catch (e) {
+          app.isWorking = false;
+          alert(e.message);
         }
-      } catch (e) {
-        app.isWorking = false;
-        alert(e.message);
+      }
+      else {
+        app.log('danger', 'Please, fill in the name field')
       }
     },
     changeInstance(instance) {
@@ -306,6 +321,13 @@ export default {
           instance: instance
         }
       })
+    },
+    log(type, content) {
+      this.$buefy.snackbar.open({
+        type: "is-" + type,
+        message: content,
+        pauseOnHover: true,
+      });
     }
   },
   async mounted() {
@@ -313,10 +335,10 @@ export default {
     document.getElementById('navbar_group').children[1].style.background = '#EDEDED'
     const app = this;
     await app.connect();
-    if(localStorage.getItem('instancesInfoModal') == null) {
-      localStorage.setItem('instancesInfoModal',1)
-      app.modals.info = true
-    }
+    // if (localStorage.getItem('instancesInfoModal') == null) {
+    //   localStorage.setItem('instancesInfoModal', 1)
+    //   app.modals.info = true
+    // }
   }
 }
 </script>

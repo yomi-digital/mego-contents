@@ -23,7 +23,8 @@
           </span></h2>
         <h2 v-if="!loading && Object.keys(datatypes).length === 0">NFT NOT FOUND</h2>
         <p v-if="!loading && Object.keys(datatypes).length > 0">
-          <span class="mr-6">Headless endpoint: <a :href="contents_api+'/contents/'+instance+'/'+tokenId" target="_blank">api.mego.cx/c...{{instance.substr(-3)}}</a></span>
+          <span class="mr-6">Headless endpoint: <a :href="contents_api+'/contents/'+instance+'/'+tokenId"
+              target="_blank">api.mego.cx/c...{{instance.substr(-3)}}</a></span>
           <a style="text-decoration: underlined;color: black; font-size: 18px;" class="mr-3"
             @click="copyText('link','/share/'+instance+'/'+tokenId)">
             <font-awesome-icon icon="fa-solid fa-link" style="font-size:16px;margin-top: .2rem;" class="mt-5" />
@@ -50,70 +51,72 @@
           </option>
         </b-select>
       </b-field> -->
-      <div v-for="input in datatypes[category]" v-bind:key="input.name">
-        <b-field v-if="input.input === 'text'" :label="input.name.toUpperCase()">
-          <b-input v-model="content[input.name]"></b-input>
-        </b-field>
-        <b-field v-if="input.input === 'textarea' && input.specs !== 'plain'" :label="input.name.toUpperCase()">
-          <VueEditor v-model="content[input.name]" />
-        </b-field>
-        <b-field v-if="input.input === 'textarea' && input.specs === 'plain'" :label="input.name.toUpperCase()">
-          <b-input v-model="content[input.name]" type="textarea"></b-input>
-        </b-field>
-        <b-field v-if="input.input === 'select'" v-bind:key="input.name" :label="input.name.toUpperCase()">
-          <b-select v-model="content[input.name]" expanded>
-            <option v-for="category in input.specs
-            .replace('[', '')
-            .replace(']', '')
-            .split(',')" :value="category" :key="category">
-              {{ category }}
-            </option>
-          </b-select>
-        </b-field>
-        <div v-if="stored[input.name]" style="width: 100%; display: block">
-          <img :src="
-            stored[input.name].replace(
-              'ipfs://',
-              'https://ipfs.yomi.digital/ipfs/'
-            )
-          " width="100%" /><br /><br />
+      <div v-if="!ipfsNft">
+        <div v-for="input in datatypes[category]" v-bind:key="input.name">
+          <b-field v-if="input.input === 'text'" :label="input.name.toUpperCase()">
+            <b-input v-model="content[input.name]"></b-input>
+          </b-field>
+          <b-field v-if="input.input === 'textarea' && input.specs !== 'plain'" :label="input.name.toUpperCase()">
+            <VueEditor v-model="content[input.name]" />
+          </b-field>
+          <b-field v-if="input.input === 'textarea' && input.specs === 'plain'" :label="input.name.toUpperCase()">
+            <b-input v-model="content[input.name]" type="textarea"></b-input>
+          </b-field>
+          <b-field v-if="input.input === 'select'" v-bind:key="input.name" :label="input.name.toUpperCase()">
+            <b-select v-model="content[input.name]" expanded>
+              <option v-for="category in input.specs
+              .replace('[', '')
+              .replace(']', '')
+              .split(',')" :value="category" :key="category">
+                {{ category }}
+              </option>
+            </b-select>
+          </b-field>
+          <div v-if="stored[input.name]" style="width: 100%; display: block">
+            <img :src="
+              stored[input.name].replace(
+                'ipfs://',
+                'https://ipfs.yomi.digital/ipfs/'
+              )
+            " width="100%" /><br /><br />
+          </div>
+          <b-field v-if="input.input === 'tag'" :label="input.name.toUpperCase()">
+            <b-taginput v-model="content[input.name]" ellipsis icon="label" placeholder="Add a tag"
+              aria-close-label="Delete this tag">
+            </b-taginput>
+          </b-field>
+          <b-field v-if="input.input === 'file' && !freezed" v-bind:key="input.name" :label="input.name.toUpperCase()">
+            <b-upload v-model="content[input.name]" expanded drag-drop>
+              <section class="section">
+                <div class="content has-text-centered">
+                  <p v-if="content[input.name].name === undefined">
+                    Drop your file here or click to upload.<br />Supported files:
+                    jpg, png, gif.
+                  </p>
+                  <p v-if="content[input.name].name !== undefined">
+                    Chosen image is <b>{{ content[input.name].name }}</b>.<br />Click or drop another file to change it.
+                  </p>
+                </div>
+              </section>
+            </b-upload>
+          </b-field>
+          <br />
         </div>
-        <b-field v-if="input.input === 'tag'" :label="input.name.toUpperCase()">
-          <b-taginput v-model="content[input.name]" ellipsis icon="label" placeholder="Add a tag"
-            aria-close-label="Delete this tag">
-          </b-taginput>
-        </b-field>
-        <b-field v-if="input.input === 'file' && !freezed" v-bind:key="input.name" :label="input.name.toUpperCase()">
-          <b-upload v-model="content[input.name]" expanded drag-drop>
-            <section class="section">
-              <div class="content has-text-centered">
-                <p v-if="content[input.name].name === undefined">
-                  Drop your file here or click to upload.<br />Supported files:
-                  jpg, png, gif.
-                </p>
-                <p v-if="content[input.name].name !== undefined">
-                  Chosen image is <b>{{ content[input.name].name }}</b>.<br />Click or drop another file to change it.
-                </p>
-              </div>
-            </section>
-          </b-upload>
-        </b-field>
-        <br />
-      </div>
-      <b-button type="button" class="button-dark is-light mx-3"
-        style="background:#111!important;color:white!important;width:120px;margin-top: -2rem;"
-        v-if="!loading && Object.keys(datatypes).length === 0" @click="$router.push({name:'Drafts'})">
-        GO BACK
-      </b-button>
-      <div style="display:grid;place-items:center">
-        <b-button v-if="!isWorking && !ipfsNft && !freezed && Object.keys(datatypes).length > 0" @click="prepare"
-          class="button-light is-dark mx-3 mt-5"
-          style="color:black!important;border:1px solid black!important;margin: auto; width: 200px;">UPDATE
+        <b-button type="button" class="button-dark is-light mx-3"
+          style="background:#111!important;color:white!important;width:120px;margin-top: -2rem;"
+          v-if="!loading && Object.keys(datatypes).length === 0" @click="$router.push({name:'Drafts'})">
+          GO BACK
         </b-button>
+        <div style="display:grid;place-items:center">
+          <b-button v-if="!isWorking && !ipfsNft && !freezed && Object.keys(datatypes).length > 0" @click="prepare"
+            class="button-light is-dark mx-3 mt-5"
+            style="color:black!important;border:1px solid black!important;margin: auto; width: 200px;">UPDATE
+          </b-button>
+        </div>
       </div>
       <div v-if="ipfsNft" style="text-align: center; padding: 20px 0 20px 0">
-        Metadata are generated, please double check them before mint at<br />
-        <a target="_blank" :href="'https://ipfs.yomi.digital/ipfs/' + ipfsNft">{{ ipfsNft }}</a><br /><br />
+        Updated metadata are generated, please double check them before mint at<br />
+        <a target="_blank" style="color:black;text-decoration:underline" :href="'/#/preview/' + ipfsNft">{{ ipfsNft }}</a><br /><br />
         <b-button v-if="!isWorking" @click="mint" class="button-light is-dark mx-3 mt-5"
           style="color:black!important;border:1px solid black!important;margin: auto; width: 200px;">MINT NFT</b-button>
       </div>

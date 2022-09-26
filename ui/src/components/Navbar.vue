@@ -4,10 +4,19 @@
       <img src="../assets/images/logo.svg" @click="$router.push({name: 'Instances'})" style="cursor:pointer"
         alt="Mego Contents">
       <div class="navbar_links">
+        <a @click="$emit('initTutorial')" v-if="$route.name === 'Instances'">
+          <font-awesome-icon icon="fa-solid fa-circle-play"
+            style="font-size:17px;color: black; margin:0 .3rem" />need help?
+        </a>
         <router-link :to="{name: 'Instances'}" style="position:relative"
           :class="{'has-text-weight-bold':true, 'navbar_link_active': $route.name === 'Instances'}"><span></span>manage
           instances
-          <div v-if="$route.name !== 'Instances' && $route.name !== 'Pricing'" class="instance_submenu">
+          <div v-if="$route.name !== 'Instances' && $route.name !== 'Pricing'" class="instance_submenu"
+            @click="preventdf($event)">
+            <router-link :to="{name: 'Instance', params: {instance: instance}}"
+              :class="{'has-text-weight-bold':true, 'navbar_link_active': $route.name === 'Instance'}">
+              <span></span>instance
+            </router-link>
             <router-link :to="{name: 'New'}"
               :class="{'has-text-weight-bold':true, 'navbar_link_active': $route.name === 'New'}"><span></span>new
             </router-link>
@@ -45,7 +54,13 @@
 <script>
 export default {
   name: 'Navbar',
-  props: ['account', 'instances', 'subscriptionAlert']
+  props: ['account', 'instances', 'subscriptionAlert', 'instance'],
+  methods: {
+    preventdf(event) {
+      //Preventing instances click
+      event.preventDefault()
+    }
+  }
 }
 
 </script>

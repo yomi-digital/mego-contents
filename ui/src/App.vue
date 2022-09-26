@@ -1,5 +1,17 @@
 <template>
     <div id="app">
+        <div class="tutorial_container" v-if="tutorialStep > -1">
+            <div class="close-group">
+                <p>watch later</p>
+                <img src="./assets/images/close-icon.svg" alt="Close" @click="tutorialStep = -1">
+            </div>
+            <div class="tutorial_box" calc_props></div>
+            <p v-html="tutorialMessage"></p>
+            <!-- <img src="./assets/images/home-arrow.svg" class="prev_step" :style="(tutorialStep === 0) ? 'opacity:.5' : ''" alt="Previous step"
+                @click="prevStep">
+            <img src="./assets/images/home-arrow.svg" class="next_step" alt="Next step"
+                @click="nextStep"> -->
+        </div>
         <div class="app_loading" v-if="checking">
             <font-awesome-icon icon="fa-solid fa-circle-notch" style="font-size:20px;margin-top: .2rem;"
                 class="fa-spin" />
@@ -7,7 +19,8 @@
         <div class="modal_container" v-if="modals.cannot_mint">
             <div class="modal">
                 <img src="./assets/images/close-icon.svg" alt="Close" @click="modals.cannot_mint = false">
-                <font-awesome-icon icon="fa-solid fa-circle-exclamation" style="font-size:30px;color: #ff850f;margin:0 0 .5rem 0" />
+                <font-awesome-icon icon="fa-solid fa-circle-exclamation"
+                    style="font-size:30px;color: #ff850f;margin:0 0 .5rem 0" />
                 <h2>Plan suspended</h2>
                 <div v-if="subscription > 0">
                     <p>Your subscription expired on the 09/24/2022.</p>
@@ -31,8 +44,9 @@
         </div>
         <div style="width:100vw;min-height:100vh;height: fit-content;"
             v-if="!mobile && ((account && !checking) || $route.name === 'Share')">
-            <Navbar :account="account" :instances="instances"
-                :subscriptionAlert="(subscription===0 && !canMint) || (subscription>0 && !isSubscriptionActive)" />
+            <Navbar :account="account" :instances="instances" :instance="instance"
+                :subscriptionAlert="(subscription===0 && !canMint) || (subscription>0 && !isSubscriptionActive)"
+                @initTutorial="tutorialStep = 0" />
             <router-view />
         </div>
         <div v-if="mobile || (!account && !checking && $route.name !== 'Share')" class="connect_wallet">
@@ -89,12 +103,17 @@ export default {
             free_limit: 0,
             modals: {
                 cannot_mint: false
-            }
+            },
+            tutorialStep: -1,
+            tutorialLoading: false,
+            tutorialMessage: ''
         };
     },
     watch: {
         '$route': {
             handler: function (route) {
+                //updating instance selected
+                this.instance = localStorage.getItem('instance')
                 Object.keys(this.modals).forEach(modal => {
                     this.modals[modal] = false
                 })
@@ -102,6 +121,20 @@ export default {
             },
             deep: true,
             immediate: true
+        },
+        tutorialStep: {
+            handler() {
+                const app = this
+                if (document.getElementById('close_createIntanceModal') && app.tutorialStep === 0) {
+                    document.getElementById('close_createIntanceModal').click()
+                }
+                if (app.tutorialStep !== -1) {
+                    let rerender = setInterval(() => {
+                        try { app.initTutorial(); clearInterval(rerender) }
+                        catch { console.log('.') }
+                    }, 50)
+                }
+            }
         }
     },
     async mounted() {
@@ -110,8 +143,8 @@ export default {
             if (this.$route.name === 'Home' && this.instances.length > 0) {
                 this.$router.push({ name: 'Instances' })
             }
-            else if (this.instances.length === 0 && this.$route.name !== 'Pricing') {
-                this.$router.push({ name: 'Pricing' })
+            else if (this.instances.length === 0 && this.$route.name !== 'Instances') {
+                this.$router.push({ name: 'Instances' })
             }
             //instance selected check
             if (localStorage.getItem('instance') == null && this.$route.name !== 'Pricing') {
@@ -126,6 +159,10 @@ export default {
             }
         }
         await this.subscriptionCheck(this.$route)
+        if (localStorage.getItem('tutorial') == null) {
+            localStorage.setItem('tutorial', 1)
+            this.tutorialStep = 0
+        }
     },
     methods: {
         async connect() {
@@ -249,22 +286,94 @@ export default {
                     app.isSubscriptionActive = (app.subscription === 0) ? true : await factoryContract.methods.isSubscriptionActive(app.account).call()
                     app.registration_timestamp = Number(await factoryContract.methods.registration_timestamps(app.account).call()) * 1000
                 }
-                app.canMint = false
                 if ((app.subscription === 0 && !app.canMint) || (app.subscription > 0 && !app.isSubscriptionActive)) {
-                    if((route.name === 'New' || route.name === 'Instances')) {
+                    if ((route.name === 'New' || route.name === 'Instances')) {
                         app.modals.cannot_mint = true
                     }
                     if (localStorage.getItem('canMint') == null) {
                         localStorage.setItem('canMint', false)
                     }
                 }
-                else if((app.subscription > 0 && app.isSubscriptionActive) || (app.subscription===0 && app.canMint)) {
+                else if ((app.subscription > 0 && app.isSubscriptionActive) || (app.subscription === 0 && app.canMint)) {
                     if (localStorage.getItem('canMint') != null) {
                         localStorage.removeItem('canMint')
                     }
                 }
             }
-        }
+        },
+        initTutorial() {
+            const app = this
+            if (!app.tutorialLoading) {
+                try {
+                    app.tutorialLoading = true
+                    let paddingSelection = 35 //in pixels
+                    let box = document.querySelectorAll('[calc_props]')[0]
+                    let target
+                    let waitForArrow
+                    if (app.$route.name === 'Instances') {
+                        if (app.tutorialStep === 0) {
+                            target = document.getElementsByClassName('create_instance_btn')[0]
+                            waitForArrow = false
+                            app.tutorialLoading = false
+                            app.tutorialMessage = 'Create a new instance or manage an existing one. It will contain all of your datatypes (product, blog, menu, ...) and contents (blog articles, products, menu links)'
+                        }
+                        else if (app.tutorialStep === 1) {
+                            target = document.getElementsByClassName('instance_name')[0]
+                            waitForArrow = true
+                            app.tutorialLoading = false
+                            app.tutorialMessage = 'Insert the instance name that refers to a website for example.'
+                        }
+                        else if (app.tutorialStep === 2) {
+                            target = document.getElementsByClassName('instance_ticker')[0]
+                            waitForArrow = true
+                            app.tutorialLoading = false
+                            app.tutorialMessage = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur semper gravida lobortis. '
+                        }
+                        else {
+                            app.tutorialStep = -1
+                        }
+                    }
+                    if (target) {
+                        let rect = target.getBoundingClientRect()
+                        box.style.left = rect.left-8 - (paddingSelection / 2) + 'px'
+                        box.style.top = rect.top-4 - (paddingSelection / 2) + 'px'
+                        box.style.width = target.clientWidth + paddingSelection + 'px'
+                        box.style.height = target.clientHeight + paddingSelection + 'px'
+                        box.addEventListener('click', () => {
+                            if (!waitForArrow) {
+                                target.click()
+                                app.tutorialStep++
+                                setTimeout(() => {
+                                    app.tutorialLoading = false
+                                }, 100)
+                            }
+                        })
+                    }
+                }
+                catch (e) {
+                    console.log(e)
+                }
+            }
+        },
+        // prevStep() {
+        //     const app = this
+        //     if (!app.tutorialLoading && app.tutorialStep >= 0) {
+        //         if (app.tutorialStep === 1) {
+        //             document.getElementById('close_createIntanceModal').click()
+        //         }
+        //         app.tutorialStep--
+        //     }
+        // },
+        // nextStep() {
+        //     const app = this
+        //     if (!app.tutorialLoading) {
+        //         if (app.tutorialStep === 0) {
+        //             document.getElementsByClassName('create_instance_btn')[0].click()
+        //             app.initTutorial()
+        //         }
+        //         app.tutorialStep++
+        //     }
+        // }
     },
     components: { Navbar }
 };

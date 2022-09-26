@@ -49,7 +49,7 @@
                 style="margin: .2rem 0 .2rem .1rem!important; width: 30%;height: 8px; float: left; opacity: .5;"></div>
               <div class="loading_box" style="margin: .4rem 0 0 0!important; width: 80%;height: 8px; opacity: .5;">
               </div>
-              <img src="../assets/images/draft_arrow.svg" style="opacity:.7">
+              <img style="width: 25px;height: 25px;opacity: .8;" src="../assets/images/pencil.svg">
             </div>
           </div>
           <div class="mx-auto my-2" style="display:grid;place-items:center" v-if="!loading && drafts.length === 0">

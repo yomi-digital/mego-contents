@@ -69,16 +69,19 @@
       </div>
     </div>
     <div class="plans_container" v-if="!loading">
-      <div :class="{'plan':true, 'unavailable': subscriptionActive !== 0}">
+      <div class="plan">
         <h1>FREE</h1>
-        <h2 v-html="web3.utils.fromWei(subscriptions[0].activation, 'ether')+' ether'"></h2>
+        <h2 v-html="web3.utils.fromWei(subscriptions[0].activation, 'ether')+' '+coin"></h2>
         <i>{{web3.utils.fromWei(subscriptions[0].monthly, 'ether')}} / month</i>
         <p>Lorem, ipsum dolor sit amet consectetur adipisicing elit.</p>
         <ul>
           <li>Mint max {{free_limit}} times</li>
-          <li>{{web3.utils.fromWei(subscriptions[0].deploy, 'ether')}} ether to deploy an instance</li>
+          <li>{{web3.utils.fromWei(subscriptions[0].deploy, 'ether')}} {{coin}} to deploy an instance</li>
         </ul>
-        <i class="mt-4" style="display: block;" v-if="subscriptionActive !== 0">Available only once</i>
+        <b-button type="button" class="button-dark is-light mx-3 mt-5" v-if="subscriptionActive !== 0"
+          style="background:#111!important;color:white!important" @click="chooseSubscription(0)">
+          SELECT
+        </b-button>
         <b-button type="button" class="button-light is-dark mx-3 mt-5 button_success" disabled
           style="opacity:.8!important" v-if="subscriptionActive === 0">
           ACTIVE
@@ -86,16 +89,16 @@
       </div>
       <div class="plan" id="middle_plan">
         <h1>UNLIMITED</h1>
-        <h2 v-html="web3.utils.fromWei(subscriptions[2].activation, 'ether')+' ether'"></h2>
+        <h2 v-html="web3.utils.fromWei(subscriptions[2].activation, 'ether')+' '+coin"></h2>
         <i>{{web3.utils.fromWei(subscriptions[2].monthly, 'ether')}} / month</i>
         <p>Lorem, ipsum dolor sit amet consectetur adipisicing elit. Dolorem dolore corporis quod?</p>
         <ul>
           <li>Mint unlimited times</li>
-          <li>{{web3.utils.fromWei(subscriptions[2].deploy, 'ether')}} ether to deploy an instance</li>
+          <li>{{web3.utils.fromWei(subscriptions[2].deploy, 'ether')}} {{coin}} to deploy an instance</li>
         </ul>
         <b-button type="button" class="button-dark is-light mx-3 mt-5" v-if="subscriptionActive !== 2"
-          style="background:#111!important;color:white!important" @click="buySubscription(2)">
-          UPGRADE
+          style="background:#111!important;color:white!important" @click="chooseSubscription(2)">
+          {{subscriptions[2].already_bought ? 'SELECT' : 'UPGRADE'}}
         </b-button>
         <b-button type="button" class="button-light is-dark mx-3 mt-5 button_success" disabled
           style="opacity:.8!important" v-if="subscriptionActive === 2 && isSubscriptionActive">
@@ -111,16 +114,16 @@
       </div>
       <div class="plan" id="right_plan">
         <h1>PREMIUM</h1>
-        <h2 v-html="web3.utils.fromWei(subscriptions[1].activation, 'ether')+' ether'"></h2>
+        <h2 v-html="web3.utils.fromWei(subscriptions[1].activation, 'ether')+' '+coin"></h2>
         <i>{{web3.utils.fromWei(subscriptions[1].monthly, 'ether')}} / month</i>
         <p>Lorem, ipsum dolor sit amet consectetur adipisicing elit. Dolorem dolore corporis quod?</p>
         <ul>
           <li>Mint unlimited times</li>
-          <li>{{web3.utils.fromWei(subscriptions[1].deploy, 'ether')}} ether to deploy an instance</li>
+          <li>{{web3.utils.fromWei(subscriptions[1].deploy, 'ether')}} {{coin}} to deploy an instance</li>
         </ul>
         <b-button type="button" class="button-dark is-light mx-3 mt-5" v-if="subscriptionActive !== 1"
-          style="background:#111!important;color:white!important" @click="buySubscription(1)">
-          {{subscriptionActive===0 ? 'UPGRADE' : 'SELECT'}}
+          style="background:#111!important;color:white!important" @click="chooseSubscription(1)">
+          {{subscriptions[1].already_bought ? 'SELECT' : (subscriptionActive===0) ? 'UPGRADE' : 'SELECT'}}
         </b-button>
         <b-button type="button" class="button-light is-dark mx-3 mt-5 button_success" disabled
           style="opacity:.8!important" v-if="subscriptionActive === 1 && isSubscriptionActive">
@@ -142,11 +145,11 @@
       <br /><i>({{free_mints}} used)</i>
     </p>
     <p v-if="(subscriptionActive === 1 || subscriptionActive === 2) && !loading && isSubscriptionActive" class="free_mints">
-      Next payment: <i>{{web3.utils.fromWei(subscriptions[subscriptionActive].monthly, 'ether')}}</i> ether on the
+      Next payment: <i>{{web3.utils.fromWei(subscriptions[subscriptionActive].monthly, 'ether')}}</i> {{coin}} on the
       <strong>{{new Date(new Date(new Date().setDate(new Date(registration_timestamp).getDate())).setMonth(new Date().getMonth()+1)).toLocaleString()}}</strong>
     </p>
     <p v-if="(subscriptionActive === 1 || subscriptionActive === 2) && !loading && !isSubscriptionActive" class="free_mints">
-      Missing payment: <i>{{web3.utils.fromWei(subscriptions[subscriptionActive].monthly, 'ether')}}</i> ether on the
+      Missing payment: <i>{{web3.utils.fromWei(subscriptions[subscriptionActive].monthly, 'ether')}}</i> {{coin}} on the
       <strong>{{new Date(new Date(new Date().setDate(new Date(registration_timestamp).getDate())).setMonth(new Date().getMonth()-1)).toLocaleString()}}</strong>
     </p>
     <p v-if="(subscriptionActive === 1 || subscriptionActive === 2) && !loading" class="subscription_status mt-3">
@@ -168,6 +171,7 @@ export default {
   name: 'Pricing',
   data() {
     return {
+      coin: process.env.VUE_APP_COIN,
       infuraId: process.env.VUE_APP_INFURA_ID,
       umiUrl: process.env.VUE_APP_UMI_API,
       axios: axios,
@@ -214,7 +218,6 @@ export default {
     }, 100)
     await this.connect()
     this.loading = false
-    console.log(this.epoch)
   },
   methods: {
     async connect() {
@@ -266,6 +269,7 @@ export default {
           const activationPrice = await factoryContract.methods.subscription_prices(i).call()
           const monthly = await factoryContract.methods.monthly_prices(i).call()
           const deploy = await factoryContract.methods.deployment_prices(i).call()
+          const already_bought = await factoryContract.methods.plans_bought(app.account, i).call()
           if (activationPrice === '0' && i > 1) {
             ended = true
           }
@@ -274,7 +278,8 @@ export default {
               id: i,
               activation: activationPrice,
               monthly: monthly,
-              deploy: deploy
+              deploy: deploy,
+              already_bought: already_bought
             })
           }
           i++
@@ -291,7 +296,7 @@ export default {
         console.log(e)
       }
     },
-    async buySubscription(subscription) {
+    async chooseSubscription(subscription) {
       const app = this
       app.isWorking = true
       app.workingMessage = 'Please, confirm the transaction on your wallet'
@@ -301,9 +306,10 @@ export default {
         app.factory_contract
       );
       try {
-        const sub = await factoryContract.methods.buySubscription(subscription).send({ from: app.account, value: app.subscriptions[subscription].activation }).on("transactionHash", tx => {
-          app.workingMessage =
-            "Buying subscription <br />Waiting for confirmations at " + tx;
+        let actualValue = (app.subscriptions[subscription].already_bought) ? 0 : app.subscriptions[subscription].activation 
+        await factoryContract.methods.chooseSubscription(subscription).send({ from: app.account, value: actualValue }).on("transactionHash", tx => {
+          app.workingMessage = "Buying subscription <br />Waiting for confirmations at " + tx;
+          app.$forceUpdate()
         });
         location.reload()
       }
@@ -322,9 +328,9 @@ export default {
         app.factory_contract
       );
       try {
-        const sub = await factoryContract.methods.payMonthlyFee().send({ from: app.account, value: app.subscriptions[subscription].monthly }).on("transactionHash", tx => {
-          app.workingMessage =
-            "Paying subscription <br />Waiting for confirmations at " + tx;
+          await factoryContract.methods.payMonthlyFee().send({ from: app.account, value: app.subscriptions[subscription].monthly }).on("transactionHash", tx => {
+          app.workingMessage = "Paying subscription <br />Waiting for confirmations at " + tx;
+          app.$forceUpdate()
         });
         location.reload()
       }

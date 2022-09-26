@@ -97,6 +97,7 @@ export default {
     };
   },
   async mounted() {
+    document.getElementsByClassName('home')[0].style.background = 'white'
     document.getElementById('navbar_group').children[1].style.background = 'white'
     const app = this;
     app.tokenId = app.$route.params.tokenId;

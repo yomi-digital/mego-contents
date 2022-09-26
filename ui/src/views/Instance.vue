@@ -78,7 +78,8 @@
         </div>
 
       </div>
-      <div class="no_instances" v-if="!loading && Object.keys(datatypes[instance]).length === 0 && tab == 'list'">
+      <div class="no_instances is-size-5"
+        v-if="!loading && Object.keys(datatypes[instance]).length === 0 && tab == 'list'">
         You have no datatypes in this instance
       </div>
       <div class="instances_list"
@@ -91,7 +92,8 @@
             <p v-for="attr in datatypes[instance][datatype].fields" :key="attr.name" v-html="attr.name"></p>
             <p
               v-if="datatypes[instance][datatype] ? datatypes[instance][datatype].fields ? datatypes[instance][datatype].fields.length === 0 : false : false">
-              <i style="color:#444">No fields</i></p>
+              <i style="color:#444">No fields</i>
+            </p>
           </div>
           <div class="instance_right">
             <b-button type="button" class="button button-dark is-light mx-auto mt-0"
@@ -129,9 +131,12 @@
       <div class="add_instance_container"
         v-if="(!modelsLoading || models.length > 0) && (tab === 'pre-compiled' || tab === 'customized')">
         <div class="add_instance_list instances_list" v-if="tab === 'pre-compiled'">
-          <div style="text-align:center" v-if="!modelsLoading && models.filter(el => { return Object.keys(datatypes[instance]).find(dt => dt===el.name)===undefined}).length===0">
-            <p class="is-size-5 mt-6">You have no pre-compiled or you've already added all of your available pre-compiled</p>
-            <p class="is-size-5 my-3">You can create your custom datatype by clicking on the <a style="color:black;text-decoration: underline;" @click="tab = 'customized'">customized</a> tab</p>
+          <div style="text-align:center"
+            v-if="!modelsLoading && models.filter(el => { return Object.keys(datatypes[instance]).find(dt => dt===el.name)===undefined}).length===0">
+            <p class="is-size-5 mt-6">You have no pre-compiled or you've already added all of your available
+              pre-compiled</p>
+            <p class="is-size-5 my-3">You can create your custom datatype by clicking on the <a
+                style="color:black;text-decoration: underline;" @click="tab = 'customized'">customized</a> tab</p>
           </div>
           <div class="instance"
             v-for="datatype in models.filter(el => { return Object.keys(datatypes[instance]).find(dt => dt===el.name)===undefined})"
@@ -150,7 +155,8 @@
                 <font-awesome-icon icon="fa-solid fa-plus" style="font-size:20px" />
               </b-button>
               <b-button type="button" class="button button-dark is-light mx-auto mt-0"
-                style="margin: 0 .5rem!important; width: 50px;" @click="editCustomDatatype(datatype.name)">
+                style="margin: 0 .5rem!important; width: 50px;"
+                @click="editCustomDatatype(datatype.name, datatype.datatypes);">
                 <img src="../assets/images/pencil.svg" style="transform:scale(1.5) translateY(1px)" alt="">
               </b-button>
             </div>
@@ -167,6 +173,7 @@
               <th style="text-align:center">Required</th>
               <th style="text-align:center">Multiple</th>
               <th>Type</th>
+              <th style="text-align: center;">HTML</th>
               <th>Specs</th>
               <th style="text-align:center">Delete</th>
             </tr>
@@ -207,11 +214,21 @@
                   </b-select>
                 </td>
                 <td>
+                  <div
+                    @click="datatypeAttr.input === 'textarea' ? $event.target.checked ? datatypeAttr.specs = '' : datatypeAttr.specs = 'plain' : ''">
+                    <b-input type="checkbox"
+                      :checked="datatypeAttr.specs !== 'plain' && datatypeAttr.input === 'textarea'"
+                      :disabled="datatypeAttr.input !== 'textarea'">
+                    </b-input>
+                  </div>
+                </td>
+                <td>
                   <b-input type="text" style="width:300px" v-model="datatypeAttr.specs"></b-input>
                 </td>
                 <td style="text-align:center">
-                  <img src="../assets/images/trash-icon.svg" alt="" style="cursor:pointer"
-                    @click="modals.removeDatatypeAttr = index" v-if="customDatatypeAttrs.length > 1">
+                  <img src="../assets/images/trash-icon.svg" alt=""
+                    :style="(customDatatypeAttrs.length > 1) ? 'cursor:pointer' : 'cursor:default;opacity:.5'"
+                    @click="customDatatypeAttrs.length > 1 ? modals.removeDatatypeAttr = index : ''">
                 </td>
               </tr>
             </template>
@@ -252,16 +269,26 @@
                   </b-select>
                 </td>
                 <td>
+                  <div
+                    @click="datatypeAttr.input === 'textarea' ? $event.target.checked ? datatypeAttr.specs = '' : datatypeAttr.specs = 'plain' : ''">
+                    <b-input type="checkbox"
+                      :checked="datatypeAttr.specs !== 'plain' && datatypeAttr.input === 'textarea'"
+                      :disabled="datatypeAttr.input !== 'textarea'">
+                    </b-input>
+                  </div>
+                </td>
+                <td>
                   <b-input type="text" style="width:300px" v-model="datatypeAttr.specs"></b-input>
                 </td>
                 <td style="text-align:center">
-                  <img src="../assets/images/trash-icon.svg" alt="" style="cursor:pointer"
-                    @click="modals.removeDatatypeAttr = index" v-if="datatypeSelected.datatypes.length > 1">
+                  <img src="../assets/images/trash-icon.svg" alt=""
+                    :style="(datatypeSelected.datatypes.length > 1) ? 'cursor:pointer' : 'cursor:default;opacity:.5'"
+                    @click="datatypeSelected.datatypes.length > 1 ? modals.removeDatatypeAttr = index : ''">
                 </td>
               </tr>
             </template>
             <tr>
-              <td colspan="7"></td>
+              <td colspan="8"></td>
               <td style="display:flex;justify-content:center">
                 <b-button type="button" class="button-dark is-light mr-0 ml-4"
                   style="background:#111!important;color:white!important;height: 3rem;text-align: center;margin: auto!important;"
@@ -288,13 +315,15 @@
             </tr>
           </table>
           <div class="mx-auto my-5" v-if="datatypeJustCreated">
-            <h3 class="has-text-centered is-size-5" style="color: black;">You have created {{newDatatypeName}} successfully!</h3>
+            <h3 class="has-text-centered is-size-5" style="color: black;">You have created <b>{{newDatatypeName}}</b>
+              successfully!</h3>
             <p class="has-text-centered is-size-5">Do you want to add to your contract?</p>
           </div>
         </div>
         <div class="pb-6 mx-auto" style="display:flex" v-if="tab === 'customized'">
           <b-button type="button" class="button-light is-dark mx-auto mt-5 px-5"
-            style="color:black!important;border:1px solid black!important" v-if="!datatypeCreated && !datatypeJustCreated"
+            style="color:black!important;border:1px solid black!important"
+            v-if="!datatypeCreated && !datatypeJustCreated"
             @click="() => {modals.addDatatype = true;createModel(newDatatypeName)}">
             CREATE NEW DATATYPE
           </b-button>
@@ -402,7 +431,7 @@ export default {
       datatypeSelected: {},
       modelsLoading: true,
       overlayLoading: true,
-      datatypeJustCreated:''
+      datatypeJustCreated: ''
     }
   },
   methods: {
@@ -439,7 +468,7 @@ export default {
             //Setting fields default active value
             Object.keys(app.datatypes[app.instance]).forEach(datatype => {
               app.datatypes[app.instance][datatype].fields.forEach((field, i) => {
-                if(i !== app.datatypes[app.instance][datatype].fields.length-1)
+                if (i !== app.datatypes[app.instance][datatype].fields.length - 1)
                   field.active = true
               })
             })
@@ -455,7 +484,7 @@ export default {
         );
       }
     },
-    async populateDatatype(datatype, justCreated=false) {
+    async populateDatatype(datatype, justCreated = false) {
       if (datatype.indexOf('0x') !== -1) {
         datatype = datatype.slice(datatype.indexOf('__') + 2, 99999)
       }
@@ -476,22 +505,44 @@ export default {
         else {
           for (let index of Object.keys(attrsArr)) {
             let field = attrsArr[index]
-            app.workingMessage = "Adding " + field.name + " in " + datatype + " <br />Please confirm transaction in your wallet.";
-            console.log("Editing ", datatypeSigned)
-            const receipt = await factoryContract.methods
-              .editDatatypeInModel(datatypeSigned, index, field.active, field.name, field.print, field.required, field.multiple, field.input, field.specs)
-              .send({
-                from: app.account,
-              })
-              .on("transactionHash", (tx) => {
-                app.workingMessage =
-                  "Adding " + field.name + " in " + datatype + " <br />Waiting for confirmations at " + tx;
-              });
-            console.log("ADD_TYPE_RECEIPT", receipt);
+            //edited field check
+            let edited = false
+            if (originalDatatype) {
+              for (const key of Object.keys(field)) {
+                if (field[key] !== originalDatatype.datatypes[index][key]) {
+                  edited = true
+                }
+                if (Object.keys(app.datatypes[app.instance]).find(mdl => mdl === datatypeSigned) == undefined) {
+                  //If is a datatype not added to contract yet
+                  let originalDatatypeFields = JSON.parse(localStorage.getItem('originalDatatypeFields'))
+                  if ((originalDatatypeFields && originalDatatypeFields.find(el => el.name === field.name) && originalDatatypeFields.find(el => el.name === field.name)[key] !== field[key]) || (originalDatatypeFields && !originalDatatypeFields.find(el => el.name === field.name))) {
+                    edited = true
+                  }
+                }
+              }
+            }
+            else {
+              edited = true
+            }
+            if (edited) {
+              app.workingMessage = "Adding <b>" + field.name + "</b> in " + datatype + " <br />Please confirm transaction in your wallet.";
+              console.log("Editing ", datatypeSigned)
+              const receipt = await factoryContract.methods
+                .editDatatypeInModel(datatypeSigned, index, field.active, field.name, field.print, field.required, field.multiple, field.input, field.specs)
+                .send({
+                  from: app.account,
+                })
+                .on("transactionHash", (tx) => {
+                  app.workingMessage =
+                    "Adding <b>" + field.name + "</b> in " + datatype + " <br />Waiting for confirmations at " + tx;
+                });
+              console.log("ADD_TYPE_RECEIPT", receipt);
+            }
           }
           //Reset extra previous fields if present to default values
           if (originalDatatype && Object.keys(attrsArr).length < originalDatatype.datatypes.length) {
             for (let i = Object.keys(attrsArr).length; i < originalDatatype.datatypes.length - 1; i++) {
+              app.workingMessage = "Removing <b>" + originalDatatype.datatypes[i].name + "</b> in " + datatype + " <br />Please confirm transaction in your wallet.";
               const receipt = await factoryContract.methods
                 .editDatatypeInModel(datatypeSigned, i, false, '', false, false, false, '', '')
                 .send({
@@ -499,12 +550,12 @@ export default {
                 })
                 .on("transactionHash", (tx) => {
                   app.workingMessage =
-                    "Removing " + originalDatatype.datatypes[i].name + " in " + datatype + " <br />Waiting for confirmations at " + tx;
+                    "Removing <b>" + originalDatatype.datatypes[i].name + "</b> in " + datatype + " <br />Waiting for confirmations at " + tx;
                 });
               console.log("DELETE_PREVIOUS_TYPE_RECEIPT", receipt);
             }
           }
-          if(justCreated) {
+          if (justCreated) {
             app.datatypeJustCreated = datatypeSigned
             app.modals.addDatatype = false;
             app.isWorking = false
@@ -529,7 +580,7 @@ export default {
       );
       app.isWorking = true;
       try {
-        app.workingMessage = "Adding type " + datatype + " to your instance <br />Please confirm transaction in your wallet.";
+        app.workingMessage = "Adding type <b>" + datatype + "</b> to your instance <br />Please confirm transaction in your wallet.";
         let datatypeSigned = (app.preCompiledDatatypes.find(el => el === datatype)) ? datatype : app.account.substr(0, 5) + app.account.substr(-3) + '__' + datatype
         console.log("Adding type:", datatypeSigned);
         const receipt = await contentsContract.methods
@@ -539,7 +590,7 @@ export default {
           })
           .on("transactionHash", (tx) => {
             app.workingMessage =
-              "Adding type " + datatype + " to your instance<br />Waiting for confirmations at " + tx;
+              "Adding type <b>" + datatype + "</b> to your instance<br />Waiting for confirmations at " + tx;
           });
         console.log("ADD_TYPE_RECEIPT", receipt);
         window.location.reload();
@@ -617,7 +668,7 @@ export default {
       );
       app.isWorking = true;
       try {
-        app.workingMessage = "Removing " + datatype + " <br />Please confirm transaction in your wallet.";
+        app.workingMessage = "Removing <b>" + datatype + "</b> <br />Please confirm transaction in your wallet.";
         let datatypeSigned = (app.preCompiledDatatypes.find(el => el === datatype)) ? datatype : app.account.substr(0, 5) + app.account.substr(-3) + '__' + datatype
         const receipt = await contentsContract.methods
           .removeType(datatypeSigned, app.datatypes[app
@@ -627,7 +678,7 @@ export default {
           })
           .on("transactionHash", (tx) => {
             app.workingMessage =
-              "Removing " + datatype + " <br />Waiting for confirmations at " + tx;
+              "Removing <b>" + datatype + "</b> <br />Waiting for confirmations at " + tx;
           });
         console.log("ADD_TYPE_RECEIPT", receipt);
         app.fetchDatatypes(app.instance);
@@ -673,7 +724,7 @@ export default {
         );
         app.isWorking = true;
         try {
-          app.workingMessage = "Creating " + datatype + " datatype <br />Please confirm transaction in your wallet.";
+          app.workingMessage = "Creating <b>" + datatype + "</b> datatype <br />Please confirm transaction in your wallet.";
           console.log("Creating type:", datatypeSigned);
           const receipt = await factoryContract.methods
             .createModel(datatypeSigned)
@@ -682,7 +733,7 @@ export default {
             })
             .on("transactionHash", (tx) => {
               app.workingMessage =
-                "Creating " + datatype + " datatype <br />Waiting for confirmations at " + tx;
+                "Creating <b>" + datatype + "</b> datatype <br />Waiting for confirmations at " + tx;
             });
           console.log("ADD_TYPE_RECEIPT", receipt);
           app.fetchDatatypes(app.instance);
@@ -707,7 +758,7 @@ export default {
         try {
           const created = await factoryContract.methods.created(k).call()
           let sign = created.split('__')[0]
-          if(app.account.substr(0, 5) + app.account.substr(-3) === sign) {
+          if (app.account.substr(0, 5) + app.account.substr(-3) === sign) {
             let datatypes = []
             let finished = false
             let i = 0
@@ -749,14 +800,15 @@ export default {
         pauseOnHover: true,
       });
     },
-    editCustomDatatype(datatype) {
+    editCustomDatatype(datatype, datatypesToSave) {
       const app = this
+      localStorage.setItem('originalDatatypeFields', JSON.stringify(datatypesToSave))
       app.newDatatypeName = (datatype.indexOf('__') > 0) ? datatype.slice(datatype.indexOf('__') + 2, 99999) : datatype;
       app.datatypeCreated = true;
       app.tab = 'customized';
       let datatypes = app.models.find(el => el.name === datatype).datatypes
-      datatypes.forEach((field,i) => {
-        if(i !== datatypes.length-1)
+      datatypes.forEach((field, i) => {
+        if (i !== datatypes.length - 1)
           field.active = true
       })
       app.datatypeSelected = { name: datatype, datatypes: datatypes }

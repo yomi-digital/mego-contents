@@ -20,6 +20,7 @@
                   @click="() => {category = el; selectOpened = false}">
                   {{(el.indexOf('__') > 0) ? el.slice(el.indexOf('__')+2, 99999).toUpperCase() : el }}
                 </p>
+                <p class="is-size-6" style="color:#9999;width: 150px;" v-if="Object.keys(datatypes).filter(item => item !== category).length === 0">No more datatypes</p>
               </div>
             </span> <img style="margin-bottom:4px;cursor: pointer;" @click="selectOpened = !selectOpened"
               src="../assets/images/arrow.svg" alt=""></h2>
