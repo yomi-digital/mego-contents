@@ -9,6 +9,24 @@
           v-if="isWorking" />
       </div>
     </div>
+    <div class="modal_container" v-if="modals.deleteImage.index">
+      <div class="modal">
+        <img src="../assets/images/close-icon.svg" alt="Close" @click="modals.deleteImage = {}">
+        <h2>Are you sure you want to delete the selected image?</h2>
+        <!-- <p>Define the name and the ticker of the instance.</p> -->
+        <div style="display:flex">
+          <b-button type="button" class="button-light is-dark mx-3 mt-5"
+            style="color:black!important;border:1px solid black!important" @click="modals.deleteImage = {}">
+            NO
+          </b-button>
+          <b-button type="button" class="button-dark is-light mx-3 mt-5"
+            style="background:#111!important;color:white!important"
+            @click="() => {deleteImage(modals.deleteImage.name, modals.deleteImage.index);modals.deleteImage = {}}">
+            YES
+          </b-button>
+        </div>
+      </div>
+    </div>
     <div class="instances_container" style="margin-top:-1rem">
       <div class="instance_info">
         <h2 v-if="loading || (!loading && Object.keys(datatypes).length > 0)" :style="(loading) ? 'opacity:.5' : ''">
@@ -79,19 +97,25 @@
                 'https://ipfs.yomi.digital/ipfs/'
               )
             " width="100%" v-if="input.name === 'image'" />
-            <iframe :src="
-              stored[input.name].replace(
-                'ipfs://',
-                'https://ipfs.yomi.digital/ipfs/'
-              )
-            " width="100%" height="500" v-if="input.name !== 'image'"></iframe><br /><br />
+            <template
+              v-if="input.name !== 'image' && stored[input.name][0] && stored[input.name][0].indexOf('ipfs') !== -1">
+              <div style="position: relative;" v-for="(src,i) in stored[input.name]" :key="i">
+                <div class="iframe_close_btn" :inputName="input.name" :index="i" @click="showDeleteImageModal($event)">
+                </div>
+                <div class="iframe_close_btn_bg"></div>
+                <iframe width="100%" height="400"
+                  :src="src.replace ? src.replace('ipfs://', 'https://ipfs.yomi.digital/ipfs/') : (src != undefined) ? urlClass.createObjectURL(src) : ''"
+                  frameborder="0"></iframe>
+              </div>
+            </template><br /><br />
           </div>
           <b-field v-if="input.input === 'tag'" :label="input.name.toUpperCase()">
             <b-taginput v-model="content[input.name]" ellipsis icon="label" placeholder="Add a tag"
               aria-close-label="Delete this tag">
             </b-taginput>
           </b-field>
-          <b-field v-if="input.input === 'file' && !freezed" v-bind:key="input.name" :label="input.name.toUpperCase()">
+          <b-field v-if="input.input === 'file' && !input.multiple && !freezed" v-bind:key="input.name"
+            :label="input.name.toUpperCase()">
             <b-upload v-model="content[input.name]" expanded drag-drop>
               <section class="section">
                 <div class="content has-text-centered">
@@ -101,6 +125,23 @@
                   </p>
                   <p v-if="content[input.name].name !== undefined">
                     Chosen image is <b>{{ content[input.name].name }}</b>.<br />Click or drop another file to change it.
+                  </p>
+                </div>
+              </section>
+            </b-upload>
+          </b-field>
+          <b-field v-if="input.input === 'file' && input.multiple" v-bind:key="input.name"
+            :label="input.name.toUpperCase()">
+            <b-upload v-model="stored[input.name]" expanded drag-drop multiple>
+              <section class="section">
+                <div class="content has-text-centered">
+                  <p v-if="stored[input.name].length ? stored[input.name].length===0 : true">
+                    Drop your files here or click to upload.<br />Supported
+                    files: jpg, png, gif, mp4.
+                  </p>
+                  <p v-if="stored[input.name].length ? stored[input.name].length>0 : false">
+                    You have uploaded <b>{{ stored[input.name].length }} files</b>.<br />Click or drop another
+                    file to add it to them.
                   </p>
                 </div>
               </section>
@@ -185,8 +226,10 @@ export default {
       tokenId: "",
       freezed: false,
       modals: {
-        working: false
-      }
+        working: false,
+        deleteImage: {}
+      },
+      urlClass: URL
     };
   },
   async mounted() {
@@ -198,7 +241,7 @@ export default {
     }
     setInterval(function () {
       app.$forceUpdate();
-    }, 100);
+    }, 1000);
   },
   methods: {
     async connect() {
@@ -265,7 +308,6 @@ export default {
           if (result.length > 0) {
             app.datatypes[result] = [];
             let datatypes = [];
-            console.log("Model found:", result);
             let finished = false;
             let t = 0;
             while (!finished) {
@@ -348,57 +390,68 @@ export default {
           if (datatype.input !== "file") {
             metadata[datatype.name] = app.content[datatype.name];
           } else {
-            if (app.content[datatype.name].name !== undefined) {
-              const ext =
-                app.content[datatype.name].name.split(".")[
-                app.content[datatype.name].name.split(".").length - 1
-                ];
-              console.log("Extension file is:", ext);
-              const supported = ["gif", "png", "jpg", "jpeg"];
-              if (supported.indexOf(ext) !== -1) {
-                app.log("success", "File is valid, uploading on IPFS..");
-                const formData = new FormData();
-                formData.append("file", app.content[datatype.name]);
-                formData.append("name", app.content[datatype.name].name);
-                try {
-                  let ipfsImageUpload = await axios({
-                    method: "post",
-                    url: app.umiUrl + "/ipfs/upload",
-                    data: formData,
-                    headers: {
-                      "Content-Type": "multipart/form-data",
-                    },
-                  });
-                  if (
-                    ipfsImageUpload.data.error !== undefined &&
-                    ipfsImageUpload.data.error === false
-                  ) {
-                    metadata[datatype.name] =
-                      "ipfs://" + ipfsImageUpload.data.ipfs_hash;
-                  } else {
+            metadata[datatype.name] = []
+            let files = []
+            if (!app.stored[datatype.name].length) {
+              files.push(app.stored[datatype.name])
+            }
+            else if (app.stored[datatype.name].length) {
+              for (const fl of app.stored[datatype.name]) {
+                files.push(fl)
+              }
+            }
+            for (const file of files) {
+              if (file.name !== undefined) {
+                const ext =
+                  file.name.split(".")[
+                  file.name.split(".").length - 1
+                  ];
+                console.log("Extension file is:", ext);
+                const supported = ["gif", "png", "jpg", "jpeg", "mp4"];
+                if (supported.indexOf(ext) !== -1) {
+                  app.log("success", "File is valid, uploading on IPFS..");
+                  const formData = new FormData();
+                  formData.append("file", file);
+                  formData.append("name", file.name);
+                  try {
+                    let ipfsImageUpload = await axios({
+                      method: "post",
+                      url: app.umiUrl + "/ipfs/upload",
+                      data: formData,
+                      headers: {
+                        "Content-Type": "multipart/form-data",
+                      },
+                    });
+                    if (
+                      ipfsImageUpload.data.error !== undefined &&
+                      ipfsImageUpload.data.error === false
+                    ) {
+                      metadata[datatype.name].push("ipfs://" + ipfsImageUpload.data.ipfs_hash)
+                    } else {
+                      app.isWorking = false;
+                      app.modals.working = false
+                      app.log("danger", "Upload on IPFS failed, please retry.");
+                    }
+                  } catch (e) {
                     app.isWorking = false;
                     app.modals.working = false
                     app.log("danger", "Upload on IPFS failed, please retry.");
                   }
-                } catch (e) {
+                } else {
+                  app.log(
+                    "danger",
+                    "Extension is not allowed, please retry with a different file."
+                  );
                   app.isWorking = false;
                   app.modals.working = false
-                  app.log("danger", "Upload on IPFS failed, please retry.");
                 }
               } else {
-                app.log(
-                  "danger",
-                  "Extension is not allowed, please retry with a different file."
-                );
-                app.isWorking = false;
-                app.modals.working = false
+                metadata[datatype.name].push(file)
               }
-            } else {
-              metadata[datatype.name] = app.stored[datatype.name];
             }
           }
         }
-        // Uploading final metadata to IPFS
+        //Uploading final metadata to IPFS
         metadata.name = (metadata.name) ? metadata.name : (metadata.title) ? metadata.title : 'MEGO CONTENT'
         metadata.description = (metadata.description) ? metadata.description :
           'This NFT represents a decentralised content on MEGO'
@@ -540,7 +593,22 @@ export default {
         navigator.clipboard.writeText(text);
       }
       this.log('success', type + ' copied!')
+    },
+    deleteImage(field, imageIndex) {
+      const app = this
+      let tempArr = app.stored[field]
+      tempArr[imageIndex] = undefined
+      app.stored[field] = []
+      tempArr.forEach(el => {
+        if (el) {
+          app.stored[field].push(el)
+        }
+      })
+    },
+    showDeleteImageModal(event) {
+      //Fixing parameters breaking the first list element's event
+      this.modals.deleteImage = {name: event.target.getAttribute('inputname'), index: event.target.getAttribute('index')}
     }
-  },
+  }
 };
 </script>

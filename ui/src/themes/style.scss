@@ -228,6 +228,7 @@ button {background: none!important;border-radius: 8px!important;}
 .project_container {border: 1.2px solid black;border-radius: 11px; padding: 2rem; box-sizing: border-box;display: flex; flex-direction: row;}
 .project_container * {font-family: 'Sk-Modernist';}
 .project_container > .img_container div {border-radius: 7px; background-position: center center; background-size: cover; width: 70px;height: 70px;}
+.project_container > .body_container {width: 100%;}
 .project_container > .body_container > h1 {font-size: 30px;font-weight: 700; color: black;}
 .project_container > .body_container > h2 {font-size: 20px; font-weight: 400; margin-bottom: 2rem; i {cursor: pointer;}i:hover {text-decoration: underline;}}
 .project_container > .body_container {padding: 0 2rem;}
@@ -275,3 +276,6 @@ button {background: none!important;border-radius: 8px!important;}
     transform: scale(1);
   }
 }
+
+.iframe_close_btn {position: absolute; top: 20px; right: 30px; z-index: 5; filter: invert(1); width: 40px; height: 40px; cursor: pointer; background-size: cover; background-position: center center;background-image: url('../assets/images/close-icon.svg')}
+.iframe_close_btn_bg {position: absolute; z-index: 1; top: 12px; right: 20px; content: ''; background: radial-gradient(rgba(0, 0, 0, 0.174) 20%,transparent 80%);width: 60px;height: 60px;}

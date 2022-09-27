@@ -115,7 +115,7 @@
           document.getElementById('draft_extra_loading').remove()
           clearInterval(tempInterval)
         }
-      },50)
+      },500)
     },
     watch: {
       filterActive: {

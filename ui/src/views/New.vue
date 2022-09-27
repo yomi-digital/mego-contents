@@ -61,7 +61,7 @@
               aria-close-label="Delete this tag">
             </b-taginput>
           </b-field>
-          <b-field v-if="input.input === 'file'" v-bind:key="input.name" :label="input.name.toUpperCase()">
+          <b-field v-if="input.input === 'file' && !input.multiple" v-bind:key="input.name" :label="input.name.toUpperCase()">
             <b-upload v-model="content[category][input.name]" expanded drag-drop>
               <section class="section">
                 <div class="content has-text-centered">
@@ -73,6 +73,23 @@
                     v-if="content[category][input.name] ? content[category][input.name].name !== undefined : content[category][input.name]">
                     Chosen image is <b>{{ content[category][input.name].name }}</b>.<br />Click or drop another file to
                     change it.
+                  </p>
+                </div>
+              </section>
+            </b-upload>
+          </b-field>
+          <b-field v-if="input.input === 'file' && input.multiple" v-bind:key="input.name" :label="input.name.toUpperCase()">
+            <b-upload v-model="content[category][input.name]" expanded drag-drop multiple>
+              <section class="section">
+                <div class="content has-text-centered">
+                  <p v-if="content[category][input.name] ? content[category][input.name].length===0 : true">
+                    Drop your files here or click to upload.<br />Supported
+                    files: jpg, png, gif, mp4.
+                  </p>
+                  <p
+                    v-if="content[category][input.name] ? content[category][input.name].length : content[category][input.name]">
+                    You have uploaded <b>{{ content[category][input.name].length }} files</b>.<br />Click or drop other files to
+                    change them.
                   </p>
                 </div>
               </section>
@@ -307,49 +324,60 @@
             if (datatype.input !== "file") {
               metadata[datatype.name] = content[datatype.name];
             } else {
-              const ext =
-                content[datatype.name].name.split(".")[
-                  content[datatype.name].name.split(".").length - 1
-                ];
-              console.log("Extension file is:", ext);
-              const supported = ["gif", "png", "jpg", "jpeg", "mp4"];
-              if (supported.indexOf(ext) !== -1) {
-                app.log("success", "File is valid, uploading on IPFS..");
-                const formData = new FormData();
-                formData.append("file", content[datatype.name]);
-                formData.append("name", content[datatype.name].name);
-                try {
-                  let ipfsImageUpload = await axios({
-                    method: "post",
-                    url: app.umiUrl + "/ipfs/upload",
-                    data: formData,
-                    headers: {
-                      "Content-Type": "multipart/form-data",
-                    },
-                  });
-                  if (
-                    ipfsImageUpload.data.error !== undefined &&
-                    ipfsImageUpload.data.error === false
-                  ) {
-                    metadata[datatype.name] =
-                      "ipfs://" + ipfsImageUpload.data.ipfs_hash;
-                  } else {
+              metadata[datatype.name] = []
+              let files = []
+              if(!content[datatype.name].length) {
+                files.push(content[datatype.name])
+              }
+              else if(content[datatype.name].length) {
+                for(const fl of content[datatype.name]) {
+                  files.push(fl)
+                }
+              }
+              for(const file of files) {
+                const ext =
+                  file.name.split(".")[
+                    file.name.split(".").length - 1
+                  ];
+                console.log("Extension file is:", ext);
+                const supported = ["gif", "png", "jpg", "jpeg", "mp4"];
+                if (supported.indexOf(ext) !== -1) {
+                  app.log("success", "File is valid, uploading on IPFS..");
+                  const formData = new FormData();
+                  formData.append("file", file);
+                  formData.append("name", file.name);
+                  try {
+                    let ipfsImageUpload = await axios({
+                      method: "post",
+                      url: app.umiUrl + "/ipfs/upload",
+                      data: formData,
+                      headers: {
+                        "Content-Type": "multipart/form-data",
+                      },
+                    });
+                    if (
+                      ipfsImageUpload.data.error !== undefined &&
+                      ipfsImageUpload.data.error === false
+                    ) {
+                      metadata[datatype.name].push("ipfs://" + ipfsImageUpload.data.ipfs_hash)
+                    } else {
+                      app.isWorking = false;
+                      app.modals.prepare = false
+                      app.log("danger", "Upload on IPFS failed, please retry.");
+                    }
+                  } catch (e) {
                     app.isWorking = false;
                     app.modals.prepare = false
                     app.log("danger", "Upload on IPFS failed, please retry.");
                   }
-                } catch (e) {
+                } else {
+                  app.log(
+                    "danger",
+                    "Extension is not allowed, please retry with a different file."
+                  );
                   app.isWorking = false;
                   app.modals.prepare = false
-                  app.log("danger", "Upload on IPFS failed, please retry.");
                 }
-              } else {
-                app.log(
-                  "danger",
-                  "Extension is not allowed, please retry with a different file."
-                );
-                app.isWorking = false;
-                app.modals.prepare = false
               }
             }
           }

@@ -17,12 +17,14 @@
           <div v-for="key in Object.keys(content)" :key="key" class="body my-4">
             <template v-if="key !== 'name' && key !== 'title' && key !== 'category' && key !== 'timestamp'">
               <h4 v-html="key"></h4>
-              <p v-html="content[key]" v-if="key !== 'image' && content[key].indexOf('ipfs') === -1"></p>
+              <p v-html="content[key]" v-if="key !== 'image' && content[key][0] && content[key][0].indexOf('ipfs') === -1"></p>
               <img style="width:700px;margin-top: 1rem;"
                 :src="content['image'].replace('ipfs://', 'https://ipfs.yomi.digital/ipfs/')" alt=""
                 v-if="key === 'image'">
-              <iframe v-if="key !== 'image' && content[key].indexOf('ipfs') !== -1"
-                :src="content[key].replace('ipfs://', 'https://ipfs.yomi.digital/ipfs/')" frameborder="0"></iframe>
+              <template v-if="key !== 'image' && content[key][0] && content[key][0].indexOf('ipfs') !== -1">
+                <iframe v-for="src in content[key]" :key="src" width="100%" height="400" style="margin-top:1rem"
+                  :src="src.replace('ipfs://', 'https://ipfs.yomi.digital/ipfs/')" frameborder="0"></iframe>
+              </template>
             </template>
           </div>
         </div>
