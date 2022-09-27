@@ -5,7 +5,8 @@
         <h2 v-if="loading || (!loading && Object.keys(content).length !== 0)">PUBLIC</h2>
         <h2 v-if="!loading && Object.keys(content).length === 0">NFT NOT FOUND</h2>
         <p v-if="!loading && Object.keys(content).length !== 0">
-          <span class="mr-6">Headless endpoint: <a :href="contents_api+'/contents/'+instance+'/'+tokenId" target="_blank">api.mego.cx/c...{{instance.substr(-3)}}</a></span>
+          <span class="mr-6">Headless endpoint: <a :href="contents_api+'/contents/'+instance+'/'+tokenId"
+              target="_blank">api.mego.cx/c...{{instance.substr(-3)}}</a></span>
           <a style="text-decoration: underlined;color: black;font-size: 18px;" class="mr-3"
             @click="copyText('link','/share/'+instance+'/'+tokenId)">
             <font-awesome-icon icon="fa-solid fa-link" style="font-size:16px;margin-top: .2rem;" class="mt-5" />
@@ -32,10 +33,12 @@
             <template
               v-if="key !== 'name' && key !== 'title' && key !== 'author' && key !== 'category' && key !== 'timestamp'">
               <h4 v-html="key"></h4>
-              <p v-html="content[key]" v-if="key != 'image'"></p>
+              <p v-html="content[key]" v-if="key !== 'image' && content[key].indexOf('ipfs') === -1"></p>
               <img style="width:700px;margin-top: 1rem;"
                 :src="content['image'].replace('ipfs://', 'https://ipfs.yomi.digital/ipfs/')" alt=""
-                v-if="key == 'image'">
+                v-if="key === 'image'">
+              <iframe v-if="key !== 'image' && content[key].indexOf('ipfs') !== -1"
+                :src="content[key].replace('ipfs://', 'https://ipfs.yomi.digital/ipfs/')" frameborder="0"></iframe>
             </template>
           </div>
         </div>

@@ -315,19 +315,19 @@ export default {
                             target = document.getElementsByClassName('create_instance_btn')[0]
                             waitForArrow = false
                             app.tutorialLoading = false
-                            app.tutorialMessage = 'Create a new instance or manage an existing one. It will contain all of your datatypes (product, blog, menu, ...) and contents (blog articles, products, menu links)'
+                            app.tutorialMessage = 'Create a new <b>instance</b> or manage an existing one. It will contain all of your datatypes (product, blog, menu, ...) and contents (blog articles, products, menu links)'
                         }
                         else if (app.tutorialStep === 1) {
                             target = document.getElementsByClassName('instance_name')[0]
                             waitForArrow = true
                             app.tutorialLoading = false
-                            app.tutorialMessage = 'Insert the instance name that refers to a website for example.'
+                            app.tutorialMessage = 'Insert the <b>instance name</b> that refers to a website for example.'
                         }
                         else if (app.tutorialStep === 2) {
                             target = document.getElementsByClassName('instance_ticker')[0]
                             waitForArrow = true
                             app.tutorialLoading = false
-                            app.tutorialMessage = 'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Curabitur semper gravida lobortis. '
+                            app.tutorialMessage = 'A <b>ticker</b> symbol is the short combination of letters that is used to represent your instance.'
                         }
                         else {
                             app.tutorialStep = -1

@@ -67,7 +67,7 @@
                 <div class="content has-text-centered">
                   <p v-if="content[category][input.name] ? content[category][input.name].name === undefined : true">
                     Drop your file here or click to upload.<br />Supported
-                    files: jpg, png, gif.
+                    files: jpg, png, gif, mp4.
                   </p>
                   <p
                     v-if="content[category][input.name] ? content[category][input.name].name !== undefined : content[category][input.name]">
@@ -312,7 +312,7 @@
                   content[datatype.name].name.split(".").length - 1
                 ];
               console.log("Extension file is:", ext);
-              const supported = ["gif", "png", "jpg", "jpeg"];
+              const supported = ["gif", "png", "jpg", "jpeg", "mp4"];
               if (supported.indexOf(ext) !== -1) {
                 app.log("success", "File is valid, uploading on IPFS..");
                 const formData = new FormData();

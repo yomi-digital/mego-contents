@@ -78,7 +78,13 @@
                 'ipfs://',
                 'https://ipfs.yomi.digital/ipfs/'
               )
-            " width="100%" /><br /><br />
+            " width="100%" v-if="input.name === 'image'" />
+            <iframe :src="
+              stored[input.name].replace(
+                'ipfs://',
+                'https://ipfs.yomi.digital/ipfs/'
+              )
+            " width="100%" height="500" v-if="input.name !== 'image'"></iframe><br /><br />
           </div>
           <b-field v-if="input.input === 'tag'" :label="input.name.toUpperCase()">
             <b-taginput v-model="content[input.name]" ellipsis icon="label" placeholder="Add a tag"
@@ -116,7 +122,8 @@
       </div>
       <div v-if="ipfsNft" style="text-align: center; padding: 20px 0 20px 0">
         Updated metadata are generated, please double check them before mint at<br />
-        <a target="_blank" style="color:black;text-decoration:underline" :href="'/#/preview/' + ipfsNft">{{ ipfsNft }}</a><br /><br />
+        <a target="_blank" style="color:black;text-decoration:underline" :href="'/#/preview/' + ipfsNft">{{ ipfsNft
+        }}</a><br /><br />
         <b-button v-if="!isWorking" @click="mint" class="button-light is-dark mx-3 mt-5"
           style="color:black!important;border:1px solid black!important;margin: auto; width: 200px;">MINT NFT</b-button>
       </div>
@@ -257,9 +264,6 @@ export default {
             .call();
           if (result.length > 0) {
             app.datatypes[result] = [];
-            if (app.category.length === 0) {
-              app.category = result;
-            }
             let datatypes = [];
             console.log("Model found:", result);
             let finished = false;
@@ -308,6 +312,7 @@ export default {
         content = await app.axios.get(
           tokenURI.replace("ipfs://", "https://ipfs.yomi.digital/ipfs/")
         );
+        app.category = content.data.category
       }
       catch {
         app.datatypes = {}

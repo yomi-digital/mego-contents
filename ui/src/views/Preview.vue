@@ -15,13 +15,14 @@
           <p>name</p>
           <h1 v-html="content.name"></h1>
           <div v-for="key in Object.keys(content)" :key="key" class="body my-4">
-            <template
-              v-if="key !== 'name' && key !== 'title' && key !== 'category' && key !== 'timestamp'">
+            <template v-if="key !== 'name' && key !== 'title' && key !== 'category' && key !== 'timestamp'">
               <h4 v-html="key"></h4>
-              <p v-html="content[key]" v-if="key != 'image'"></p>
+              <p v-html="content[key]" v-if="key !== 'image' && content[key].indexOf('ipfs') === -1"></p>
               <img style="width:700px;margin-top: 1rem;"
                 :src="content['image'].replace('ipfs://', 'https://ipfs.yomi.digital/ipfs/')" alt=""
-                v-if="key == 'image'">
+                v-if="key === 'image'">
+              <iframe v-if="key !== 'image' && content[key].indexOf('ipfs') !== -1"
+                :src="content[key].replace('ipfs://', 'https://ipfs.yomi.digital/ipfs/')" frameborder="0"></iframe>
             </template>
           </div>
         </div>
@@ -72,7 +73,7 @@ export default {
   methods: {
     async fetchNft() {
       try {
-        const nft = await axios.get('https://ipfs.yomi.digital/ipfs/'+this.hash)
+        const nft = await axios.get('https://ipfs.yomi.digital/ipfs/' + this.hash)
         this.content = nft.data
       }
       catch (e) {
