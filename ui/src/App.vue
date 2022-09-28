@@ -7,9 +7,7 @@
             </div>
             <div class="tutorial_box" calc_props></div>
             <p v-html="tutorialMessage"></p>
-            <!-- <img src="./assets/images/home-arrow.svg" class="prev_step" :style="(tutorialStep === 0) ? 'opacity:.5' : ''" alt="Previous step"
-                @click="prevStep">
-            <img src="./assets/images/home-arrow.svg" class="next_step" alt="Next step"
+            <!--<img src="./assets/images/home-arrow.svg" class="next_step" alt="Next step"
                 @click="nextStep"> -->
         </div>
         <div class="app_loading" v-if="checking">
@@ -23,7 +21,9 @@
                     style="font-size:30px;color: #ff850f;margin:0 0 .5rem 0" />
                 <h2>Plan suspended</h2>
                 <div v-if="subscription > 0">
-                    <p>Your subscription expired on the 09/24/2022.</p>
+                    <p>Your subscription expired on the {{new Date(new Date(new Date().setDate(new
+                    Date(registration_timestamp).getDate())).setMonth(new Date().getMonth()-1)).toLocaleString()}}.
+                    </p>
                     <p>Please make a new payment to renew the month</p>
                     <b-button type="button" class="button-dark is-light mx-3 mt-5"
                         style="background:#111!important;color:white!important"
@@ -76,6 +76,7 @@ import axios from "axios";
 import Web3Modal, { local } from "web3modal";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import Navbar from "./components/Navbar.vue";
+import { removeAllListeners } from "process";
 const abi = require("./abis/factory.json");
 export default {
     name: "Home",
@@ -106,7 +107,8 @@ export default {
             },
             tutorialStep: -1,
             tutorialLoading: false,
-            tutorialMessage: ''
+            tutorialMessage: '',
+            tutorialEdit: false
         };
     },
     watch: {
@@ -125,8 +127,12 @@ export default {
         tutorialStep: {
             handler() {
                 const app = this
+                //resetting elements or modals if opened
                 if (document.getElementById('close_createIntanceModal') && app.tutorialStep === 0) {
                     document.getElementById('close_createIntanceModal').click()
+                }
+                if (document.querySelector('.view_datatypes_btn') && app.tutorialStep === 0 && !app.tutorialEdit) {
+                    document.querySelector('.view_datatypes_btn').click()
                 }
                 if (app.tutorialStep !== -1) {
                     let rerender = setInterval(() => {
@@ -163,6 +169,16 @@ export default {
             localStorage.setItem('tutorial', 1)
             this.tutorialStep = 0
         }
+        //assigning click events to trigger initTutorial method
+        let tempInterval = setInterval(() => {
+            if (document.getElementById('initEditTutorialBtn')) {
+                document.getElementById('initEditTutorialBtn').addEventListener('click', () => {
+                    this.tutorialStep = 0
+                    this.tutorialEdit = true
+                    clearInterval(tempInterval)
+                })
+            }
+        },1000)
     },
     methods: {
         async connect() {
@@ -287,11 +303,18 @@ export default {
                     app.registration_timestamp = Number(await factoryContract.methods.registration_timestamps(app.account).call()) * 1000
                 }
                 if ((app.subscription === 0 && !app.canMint) || (app.subscription > 0 && !app.isSubscriptionActive)) {
+                    //Cannot mint
                     if ((route.name === 'New' || route.name === 'Instances')) {
                         app.modals.cannot_mint = true
                     }
                     if (localStorage.getItem('canMint') == null) {
                         localStorage.setItem('canMint', false)
+                    }
+                    //listeners to show plan suspended modal
+                    if(document.querySelector('.create_instance_btn')) {
+                        document.querySelector('.create_instance_btn').addEventListener('click', () => {
+                            app.modals.cannot_mint = true
+                        })
                     }
                 }
                 else if ((app.subscription > 0 && app.isSubscriptionActive) || (app.subscription === 0 && app.canMint)) {
@@ -309,71 +332,107 @@ export default {
                     let paddingSelection = 35 //in pixels
                     let box = document.querySelectorAll('[calc_props]')[0]
                     let target
-                    let waitForArrow
                     if (app.$route.name === 'Instances') {
                         if (app.tutorialStep === 0) {
                             target = document.getElementsByClassName('create_instance_btn')[0]
-                            waitForArrow = false
-                            app.tutorialLoading = false
                             app.tutorialMessage = 'Create a new <b>instance</b> or manage an existing one. It will contain all of your datatypes (product, blog, menu, ...) and contents (blog articles, products, menu links)'
                         }
                         else if (app.tutorialStep === 1) {
                             target = document.getElementsByClassName('instance_name')[0]
-                            waitForArrow = true
-                            app.tutorialLoading = false
                             app.tutorialMessage = 'Insert the <b>instance name</b> that refers to a website for example.'
                         }
                         else if (app.tutorialStep === 2) {
                             target = document.getElementsByClassName('instance_ticker')[0]
-                            waitForArrow = true
-                            app.tutorialLoading = false
                             app.tutorialMessage = 'A <b>ticker</b> symbol is the short combination of letters that is used to represent your instance.'
                         }
                         else {
                             app.tutorialStep = -1
                         }
                     }
+                    else if (app.$route.name === 'Instance' && !app.tutorialEdit) {
+                        if (app.tutorialStep === 0) {
+                            target = document.getElementsByClassName('add_new_datatype_btn')[0]
+                            app.tutorialMessage = 'A <b>datatype</b> is required before the creation of contents in order to tell the system wich properties the nft will have'
+                        }
+                        else if (app.tutorialStep === 1) {
+                            target = document.querySelectorAll('.tab')[0]
+                            app.tutorialMessage = "Take a look at the our pre-compiled datatypes ready to be added! <br /> You can add a datatype by clicking the <b style='font-size:25px'>+</b> icon"
+                        }
+                        else if (app.tutorialStep === 2) {
+                            target = document.querySelectorAll('.tab')[1]
+                            app.tutorialMessage = "Or you could create your <b>customized</b> one!"
+                        }
+                        else {
+                            app.tutorialStep = -1
+                        }
+                    }
+                    else if(app.$route.name === 'Instance' && app.tutorialEdit) {
+                        paddingSelection = 2
+                        if (app.tutorialStep === 0) {
+                            target = document.querySelectorAll('table th')[0]
+                            app.tutorialMessage = 'Tha <b>active</b> column tells the system wich properties of your content should be visible or not during update and publication'
+                        }
+                        else if (app.tutorialStep === 1) {
+                            target = document.querySelectorAll('table th')[1]
+                            app.tutorialMessage = 'The <b>name</b> column decides how name a specific field of your content. <br />For example a product may have a <i>name, description and price</i>'
+                        }
+                        else if (app.tutorialStep === 2) {
+                            target = document.querySelectorAll('table th')[3]
+                            app.tutorialMessage = 'The <b>required</b> column specifics id a field of your content cannot be empty during update'
+                        }
+                        else if (app.tutorialStep === 3) {
+                            target = document.querySelectorAll('table th')[4]
+                            app.tutorialMessage = 'The <b>type</b> column sets the input type for that field content'
+                        }
+                        else if (app.tutorialStep === 4) {
+                            target = document.querySelectorAll('table th')[5]
+                            app.tutorialMessage = "The <b>multiple</b> column establishes if that field input should make you upload more than one file, or select more than one option in a select.<br> It can only be activated for input type <i style='color:red'>select</i> or <i style='color:red'>file</i>"
+                        }
+                        else if (app.tutorialStep === 5) {
+                            target = document.querySelectorAll('table th')[5]
+                            app.tutorialMessage = "The <b>multiple</b> column establishes if that field input should make you upload more than one file, or select more than one option in a select.<br> It can only be activated for input type <i style='color:red'>select</i> or <i style='color:red'>file</i>"
+                        }
+                        else if (app.tutorialStep === 6) {
+                            target = document.querySelectorAll('table th')[6]
+                            app.tutorialMessage = "With the <b>html</b> column enabled, you can write also HTML code inside that field. It can only be activated for input type <i style='color:red'>textarea</i>"
+                        }
+                        else if (app.tutorialStep === 7) {
+                            target = document.querySelectorAll('table th')[7]
+                            app.tutorialMessage = "In the <b>select options</b> input you have to specify at least one option for your select.<br />You can add options writing a <i>comma</i> or pressing <i>enter</i><br /> It can only be used for input type <i style='color:red'>select</i>"
+                        }
+                        else if (app.tutorialStep === 8) {
+                            target = document.querySelectorAll('table th')[8]
+                            app.tutorialMessage = "By clicking the trash icon you will be asked of <b>deleting</b> that field"
+                        }
+                        else {
+                            app.tutorialStep = -1
+                        }
+                    }
+                    app.tutorialLoading = false
                     if (target) {
                         let rect = target.getBoundingClientRect()
-                        box.style.left = rect.left-8 - (paddingSelection / 2) + 'px'
-                        box.style.top = rect.top-4 - (paddingSelection / 2) + 'px'
+                        box.style.left = (rect.left+window.scrollX) - 8 - (paddingSelection / 2) + 'px'
+                        box.style.top = (rect.top+window.scrollY) - 4 - (paddingSelection / 2) + 'px'
                         box.style.width = target.clientWidth + paddingSelection + 'px'
                         box.style.height = target.clientHeight + paddingSelection + 'px'
-                        box.addEventListener('click', () => {
-                            if (!waitForArrow) {
-                                target.click()
-                                app.tutorialStep++
-                                setTimeout(() => {
-                                    app.tutorialLoading = false
-                                }, 100)
-                            }
-                        })
+                        let listenerF = () => {
+                            target.click()
+                            app.tutorialStep++
+                            setTimeout(() => {
+                                app.tutorialLoading = false
+                                //box.removeEventListener('click', listenerF, true)
+                                document.querySelector('.tutorial_container')?.removeEventListener('click', listenerF, true)
+                            }, 200)
+                        }
+                        //box.addEventListener('click', listenerF, true)
+                        document.querySelector('.tutorial_container').addEventListener('click', listenerF, true)
                     }
                 }
                 catch (e) {
                     console.log(e)
                 }
             }
-        },
-        // prevStep() {
-        //     const app = this
-        //     if (!app.tutorialLoading && app.tutorialStep >= 0) {
-        //         if (app.tutorialStep === 1) {
-        //             document.getElementById('close_createIntanceModal').click()
-        //         }
-        //         app.tutorialStep--
-        //     }
-        // },
-        // nextStep() {
-        //     const app = this
-        //     if (!app.tutorialLoading) {
-        //         if (app.tutorialStep === 0) {
-        //             document.getElementsByClassName('create_instance_btn')[0].click()
-        //             app.initTutorial()
-        //         }
-        //         app.tutorialStep++
-        //     }
-        // }
+        }
     },
     components: { Navbar }
 };

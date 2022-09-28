@@ -4,7 +4,7 @@
       <img src="../assets/images/logo.svg" @click="$router.push({name: 'Instances'})" style="cursor:pointer"
         alt="Mego Contents">
       <div class="navbar_links">
-        <a @click="$emit('initTutorial')" v-if="$route.name === 'Instances'">
+        <a @click="$emit('initTutorial')" v-if="$route.name === 'Instances' || $route.name === 'Instance'">
           <font-awesome-icon icon="fa-solid fa-circle-play"
             style="font-size:17px;color: black; margin:0 .3rem" />need help?
         </a>

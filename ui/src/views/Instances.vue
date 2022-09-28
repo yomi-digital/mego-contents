@@ -53,8 +53,13 @@
         </h2>
         <b-button type="button button-dark is-light ml-auto mr-0 mt-1"
           style="background:#111!important;color:white!important" class="button create_instance_btn"
-          @click="modals.createInstance = true">
+          @click="modals.createInstance = true" v-if="canMint">
           CREATE NEW INSTANCE
+        </b-button>
+        <b-button type="button button-dark is-light ml-auto mr-0 mt-1"
+          style="background:#111!important;color:white!important" class="button create_instance_btn" v-if="!canMint">
+          CREATE NEW INSTANCE <font-awesome-icon icon="fa-solid fa-circle-exclamation"
+            style="font-size:15px;color: #ff850f; margin-left:.2rem;" />
         </b-button>
       </div>
       <div class="no_instances is-size-5" v-if="instances.length === 0 && !loading">
@@ -138,7 +143,8 @@ export default {
       newInstanceTicker: '',
       isWorking: false,
       subscriptionActive: -1,
-      deployment_price: ''
+      deployment_price: '',
+      canMint: true
     }
   },
   methods: {
@@ -339,6 +345,13 @@ export default {
     //   localStorage.setItem('instancesInfoModal', 1)
     //   app.modals.info = true
     // }
+    let mintCheckInterval = setInterval(() => {
+      //checking if can mint
+      if (localStorage.getItem('canMint') != null && JSON.parse(localStorage.getItem('canMint')) === false && app.canMint) {
+        app.canMint = false
+        clearInterval(mintCheckInterval)
+      }
+    }, 500)
   }
 }
 </script>

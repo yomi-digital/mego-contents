@@ -49,7 +49,8 @@
             NO
           </b-button>
           <b-button type="button" class="button-dark is-light mx-3 mt-5"
-            style="background:#111!important;color:white!important" @click="() => {tab = 'pre-compiled'; datatypeCreated = false;modals.cancel = -1; resetDatatype(newDatatypeName); newDatatypeName = '';}">
+            style="background:#111!important;color:white!important"
+            @click="() => {tab = 'pre-compiled'; datatypeCreated = false;modals.cancel = -1; resetDatatype(newDatatypeName); newDatatypeName = '';}">
             YES
           </b-button>
         </div>
@@ -71,7 +72,12 @@
       </div>
       <div class="instances_header">
         <h2 class="has-text-weight-semibold">
-          {{(datatypeCreated) ? newDatatypeName.toUpperCase() : (tab!== 'list') ? 'ADD NEW DATATYPE' : 'AVAILABLE DATATYPES'}}
+          <span style="position: relative;" v-if="datatypeCreated">{{newDatatypeName.toUpperCase()}} <span
+              v-if="tab === 'customized' && !loading" id="initEditTutorialBtn">
+              <font-awesome-icon icon="fa-solid fa-circle-play" class="instances_info_icon" />
+            </span></span>
+          <span v-else-if="tab!== 'list'">ADD NEW DATATYPE</span>
+          <span v-else>AVAILABLE DATATYPES</span>
           <!-- <b-button type="button"
             class="button-dark is-light mr-0 ml-4" style="background:#111!important;color:white!important">
             <font-awesome-icon icon="fa-solid fa-plus" style="font-size:24px" />
@@ -85,12 +91,13 @@
             @click="(!modelsLoading || models.length > 0) ? tab = 'customized' : ''" v-if="tab !== 'list'">
             customized</p>
           <b-button type="button button-dark is-light ml-auto mr-0 mt-1"
-            style="background:#111!important;color:white!important" class="button" v-if="tab === 'list'"
-            @click="tab = 'pre-compiled'; newDatatypeName = ''; datatypeCreated = false">
+            style="background:#111!important;color:white!important" class="button add_new_datatype_btn"
+            v-if="tab === 'list'" @click="tab = 'pre-compiled'; newDatatypeName = ''; datatypeCreated = false">
             ADD NEW DATATYPE
           </b-button>
           <b-button type="button button-dark is-light ml-auto mr-0 mt-1"
-            style="background:#111!important;color:white!important" class="button" v-if="tab !== 'list'"
+            style="background:#111!important;color:white!important" class="button view_datatypes_btn"
+            v-if="tab !== 'list'"
             @click="tab = 'list'; datatypeSelected = {}; newDatatypeName = ''; datatypeCreated = false">
             VIEW ALL DATATYPES
           </b-button>
@@ -184,11 +191,11 @@
         <div class="add_instance_form" v-if="tab === 'customized'">
           <b-input type="text" v-model="newDatatypeName" class="my-5" placeholder="DATATYPE_NAME"
             v-if="!datatypeCreated"></b-input>
-          <table class="mx-auto" v-if="datatypeCreated && !datatypeJustCreated">
+          <table class="mx-auto mt-5" v-if="datatypeCreated && !datatypeJustCreated">
             <tr>
               <th style="text-align:center">Active</th>
               <th>Name</th>
-              <th style="text-align:center">Print</th>
+              <th style="text-align:center;display: none;">Print</th>
               <th style="text-align:center">Required</th>
               <th>Type</th>
               <th style="text-align:center">Multiple</th>
@@ -208,14 +215,15 @@
                   <div style="position:relative">
                     <b-input type="text" style="width:100%" placeholder="FIELD NAME" v-model="datatypeAttr.name">
                     </b-input>
-                    <font-awesome-icon class="invalid_field_icon" v-if="unavailableFields.indexOf(datatypeAttr.name) !== -1"
+                    <font-awesome-icon class="invalid_field_icon"
+                      v-if="unavailableFields.indexOf(datatypeAttr.name) !== -1"
                       icon="fa-solid fa-circle-exclamation" />
                     <div class="invalid_field_caption">
                       You cannot name a field using one of the system
                     </div>
                   </div>
                 </td>
-                <td>
+                <td style="display: none;">
                   <div @click="datatypeAttr.print = !datatypeAttr.print">
                     <b-input type="checkbox" :checked="datatypeAttr.print"></b-input>
                   </div>
@@ -275,14 +283,15 @@
                   <div style="position:relative">
                     <b-input type="text" style="width:100%" placeholder="FIELD NAME" v-model="datatypeAttr.name">
                     </b-input>
-                    <font-awesome-icon class="invalid_field_icon" v-if="unavailableFields.indexOf(datatypeAttr.name) !== -1"
+                    <font-awesome-icon class="invalid_field_icon"
+                      v-if="unavailableFields.indexOf(datatypeAttr.name) !== -1"
                       icon="fa-solid fa-circle-exclamation" />
                     <div class="invalid_field_caption">
                       You cannot name a field using one of the default nft property ({{unavailableFields.join(', ')}})
                     </div>
                   </div>
                 </td>
-                <td>
+                <td style="display: none;">
                   <div @click="datatypeAttr.print = !datatypeAttr.print">
                     <b-input type="checkbox" :checked="datatypeAttr.print"></b-input>
                   </div>
@@ -332,7 +341,7 @@
               </tr>
             </template>
             <tr>
-              <td colspan="8"></td>
+              <td colspan="7"></td>
               <td style="display:flex;justify-content:center">
                 <b-button type="button" class="button-dark is-light mr-0 ml-4"
                   style="background:#111!important;color:white!important;height: 3rem;text-align: center;margin: auto!important;"
@@ -524,8 +533,10 @@ export default {
             //Setting fields default active value
             Object.keys(app.datatypes[app.instance]).forEach(datatype => {
               app.datatypes[app.instance][datatype].fields.forEach((field, i) => {
-                if (i !== app.datatypes[app.instance][datatype].fields.length - 1)
+                if (i !== app.datatypes[app.instance][datatype].fields.length - 1) {
                   field.active = true
+                  field.print = true
+                }
               })
             })
           } else {
@@ -874,8 +885,11 @@ export default {
       app.tab = 'customized';
       let datatypes = app.models.find(el => el.name === datatype).datatypes
       datatypes.forEach((field, i) => {
-        if (i !== datatypes.length - 1)
+        if (i !== datatypes.length - 1) {
           field.active = true
+          field.print = true
+        }
+
       })
       app.datatypeSelected = { name: datatype, datatypes: datatypes }
     },
@@ -884,7 +898,7 @@ export default {
       const app = this
       let datatypeSigned = (app.preCompiledDatatypes.find(el => el === datatype)) ? datatype : app.account.substr(0, 5) + app.account.substr(-3) + '__' + datatype
       let originalDatatype = localStorage.getItem('datatypeForReset')
-      if(originalDatatype) {
+      if (originalDatatype) {
         app.datatypes[app.instance][datatypeSigned].fields = JSON.parse(originalDatatype)
       }
       else {
