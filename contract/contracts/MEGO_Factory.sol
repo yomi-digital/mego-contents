@@ -117,6 +117,7 @@ contract MEGO_Factory is MEGO_Types, Ownable {
         payable
         returns (address)
     {
+        require(isSubscriptionActive(msg.sender), "Subscription not active");
         require(
             msg.value == deployment_prices[subscriptions[msg.sender]],
             "Must send exact amount needed to deploy the instance."
