@@ -70,7 +70,7 @@
             <font-awesome-icon icon="fa-solid fa-magnifying-glass"></font-awesome-icon>
           </div>
         </h2>
-        <div style="display:flex;margin-right:0;margin-left:auto">
+        <div style="display:flex;margin-right:0;margin-left:auto" v-if="account === owner">
           <b-button type="button" class="button-dark is-light mx-3" v-if="subscription !== 0"
             style="background:#111!important;color:white!important" @click="modals.add_user = true">
             ADD COLLABORATOR
@@ -80,6 +80,9 @@
             ADD COLLABORATOR<font-awesome-icon icon="fa-solid fa-circle-exclamation" style="margin-left:.5rem">
             </font-awesome-icon>
           </b-button>
+        </div>
+        <div style="display:flex;margin-right:0;margin-left:auto" v-if="account !== owner">
+          <p>You are a collaborator of this instance</p>
         </div>
       </div>
       <div class="no_instances is-size-5" v-if="!loading && users.length === 0 && !searcher">
@@ -91,9 +94,9 @@
       <div class="instances_list mt-5" v-if="users.length > 0">
         <div class="instance" v-for="user in users" :key="user.address">
           <div class="instance_left">
-            <h3 style="text-transform: unset!important;" class="my-2">{{user.address}}</h3>
+            <h3 style="text-transform: unset!important;" class="my-2">{{user.address}} <i v-if="user.address===account" class="ml-5">( you )</i></h3>
           </div>
-          <div class="instance_right">
+          <div class="instance_right" v-if="owner === account">
             <b-button type="button" class="button button-dark is-light mx-auto mt-0"
               style="margin: 0 .5rem!important; width: 50px;" @click="modals.remove_user = user.address"><img
                 src="../assets/images/trash-icon.svg" alt="" style="transform:translateY(2px)">
@@ -133,6 +136,7 @@ import axios from "axios";
 import Web3Modal from "web3modal";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 const abi_factory = require("../abis/factory.json");
+const abi_contents = require("../abis/contents.json");
 
 export default {
   name: "Drafts",
@@ -142,6 +146,7 @@ export default {
       umiUrl: process.env.VUE_APP_UMI_API,
       axios: axios,
       abi_factory: abi_factory,
+      abi_contents: abi_contents,
       contents_api: process.env.VUE_APP_CONTENTS_API,
       contract: process.env.VUE_APP_FACTORY_CONTRACT,
       instance: "",
@@ -216,6 +221,11 @@ export default {
           if (accounts.length > 0) {
             app.account = accounts[0];
             app.instance = localStorage.getItem("instance");
+            const contentsContract = new app.web3.eth.Contract(
+              app.abi_contents,
+              app.instance
+            );
+            app.owner = await contentsContract.methods.owner().call()
           } else {
             alert("No accounts allowed, please retry!");
           }
@@ -252,10 +262,10 @@ export default {
         if (user) {
           //Exists yet check
           let exists = (app.users.find(el => el.address === user) != undefined)
-          if(exists && state) {
+          if (exists && state) {
             app.log('danger', 'That address is already in your collaborators')
           }
-          else if(!exists && !state) {
+          else if (!exists && !state) {
             app.log('danger', 'That address is not in your collaborators')
           }
           else {

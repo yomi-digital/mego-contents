@@ -23,7 +23,7 @@
       <div class="project_container" v-if="!loading && Object.keys(content).length !== 0">
         <div class="img_container">
           <div
-            :style="'background-image: url('+content.image.replace('ipfs://', 'https://ipfs.yomi.digital/ipfs/')+')'">
+            :style="'background-image: url('+content.image[0].replace('ipfs://', 'https://ipfs.yomi.digital/ipfs/')+')'">
           </div>
         </div>
         <div class="body_container">
@@ -33,9 +33,10 @@
             <template
               v-if="key !== 'name' && key !== 'title' && key !== 'author' && key !== 'category' && key !== 'timestamp'">
               <h4 v-html="key"></h4>
-              <p v-html="content[key]" v-if="key !== 'image' && content[key][0] && content[key][0].indexOf('ipfs') === -1"></p>
+              <p v-html="content[key]"
+                v-if="key !== 'image' && content[key][0] && content[key][0].indexOf('ipfs') === -1"></p>
               <img style="width:700px;margin-top: 1rem;"
-                :src="content['image'].replace('ipfs://', 'https://ipfs.yomi.digital/ipfs/')" alt=""
+                :src="content['image'][0].replace('ipfs://', 'https://ipfs.yomi.digital/ipfs/')" alt=""
                 v-if="key === 'image'">
               <template v-if="key !== 'image' && content[key][0] && content[key][0].indexOf('ipfs') !== -1">
                 <iframe v-for="src in content[key]" :key="src" width="100%" height="400" style="margin-top:1rem"
@@ -226,6 +227,11 @@ export default {
           tokenURI.replace("ipfs://", "https://ipfs.yomi.digital/ipfs/")
         );
         app.category = content.data.category
+        if (typeof content.data.image === 'string') {
+          let newArr = []
+          newArr.push(content.data.image)
+          content.data.image = newArr
+        }
         app.content = content.data
       }
       catch {

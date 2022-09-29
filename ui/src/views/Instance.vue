@@ -83,7 +83,7 @@
             <font-awesome-icon icon="fa-solid fa-plus" style="font-size:24px" />
           </b-button> -->
         </h2>
-        <div style="display:flex;margin-right:0;margin-left:auto">
+        <div style="display:flex;margin-right:0;margin-left:auto" v-if="owner === account">
           <p class="tab" :style="(tab === 'pre-compiled') ? 'color: black; font-weight: 800;' : ''"
             @click="tab = 'pre-compiled'; newDatatypeName = ''; datatypeCreated = false" v-if="tab !== 'list'">
             pre-compiled</p>
@@ -101,6 +101,9 @@
             @click="tab = 'list'; datatypeSelected = {}; newDatatypeName = ''; datatypeCreated = false">
             VIEW ALL DATATYPES
           </b-button>
+        </div>
+        <div style="display:flex;margin-right:0;margin-left:auto" v-if="owner !== account">
+          <span sty>You are a collaborator of this instance</span>
         </div>
 
       </div>
@@ -121,7 +124,7 @@
               <i style="color:#444">No fields</i>
             </p>
           </div>
-          <div class="instance_right">
+          <div class="instance_right" v-if="owner === account">
             <b-button type="button" class="button button-dark is-light mx-auto mt-0"
               style="margin: 0 .5rem!important; width: 50px;"
               v-if="preCompiledDatatypes.find(el => el===datatype)==undefined"
@@ -458,6 +461,7 @@ import Web3Modal from "web3modal";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 const abi_factory = require("../abis/factory.json");
 const abi_contents = require("../abis/contents.json");
+import preCompiledDatatypes from '../costants/preCompiledDatatypes'
 export default {
   name: 'Instance',
   data() {
@@ -483,7 +487,7 @@ export default {
       newDatatypeName: '',
       datatypeTypes: ['text', 'textarea', 'file', 'select', 'tag'],
       unavailableFields: ['author', 'category', 'timestamp'],
-      preCompiledDatatypes: ['blog', 'nft'],
+      preCompiledDatatypes: preCompiledDatatypes,
       customDatatypeAttrs: [{
         active: false,
         name: '',
@@ -508,7 +512,8 @@ export default {
       datatypeSelected: {},
       modelsLoading: true,
       overlayLoading: true,
-      datatypeJustCreated: ''
+      datatypeJustCreated: '',
+      owner: ''
     }
   },
   methods: {
@@ -690,6 +695,7 @@ export default {
           app.abi_contents,
           instance
         );
+        app.owner = await contentsContract.methods.owner().call()
         const factoryContract = new app.web3.eth.Contract(
           app.abi_factory,
           app.factory_contract

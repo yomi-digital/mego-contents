@@ -52,7 +52,7 @@ async function main() {
                 print: true,
                 required: false,
                 multiple: false,
-                input: "text",
+                input: "tag",
                 specs: ""
             },
             {

@@ -1,5 +1,5 @@
 <template>
-  <div class="home">
+  <div class="home manage_page">
     <div class="modal_container" v-if="modals.working">
       <div class="modal">
         <img src="../assets/images/close-icon.svg" alt="Close" @click="modals.working = false">
@@ -92,7 +92,7 @@
           </b-field>
           <div v-if="stored[input.name]" style="width: 100%; display: block">
             <img :src="
-              stored[input.name].replace(
+              stored[input.name][0].replace(
                 'ipfs://',
                 'https://ipfs.yomi.digital/ipfs/'
               )

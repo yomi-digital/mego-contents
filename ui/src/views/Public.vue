@@ -16,7 +16,7 @@
             <div class="draft" v-for="(draft,index) in drafts" :key="index"
               @click="$router.push({name: 'View', params: {tokenId: parseInt(draft.tokenId)}})">
               <div>
-                <div :style="{'background': 'url(https://ipfs.yomi.digital/ipfs/'+draft.image.split('//')[1]+')'}">
+                <div :style="{'background': 'url(https://ipfs.yomi.digital/ipfs/'+draft.image[0].split('//')[1]+')'}">
                 </div>
                 <h3 v-html="draft.name"></h3>
               </div>
@@ -68,6 +68,7 @@
   import WalletConnectProvider from "@walletconnect/web3-provider";
   const abi_factory = require("../abis/factory.json");
   const abi_contents = require("../abis/contents.json");
+  import preCompiledDatatypes from '../costants/preCompiledDatatypes'
 
   export default {
     name: "Drafts",
@@ -88,7 +89,9 @@
         datatypes: [],
         loading: true,
         filterActive: 'title',
-        models: []
+        models: [],
+        preCompiledDatatypes: preCompiledDatatypes,
+        owner: ''
       };
     },
     async mounted() {
@@ -168,13 +171,14 @@
             if (accounts.length > 0) {
               app.account = accounts[0];
               app.instance = localStorage.getItem("instance");
-              await app.fetchModels();
-              let loadingEl = document.getElementById('draft_list_loading')?.children[1]?.cloneNode(true)
-              loadingEl?.setAttribute('id', 'draft_extra_loading')
               const contentsContract = new web3.eth.Contract(
                 app.abi_contents,
                 app.instance
               );
+              app.owner = await contentsContract.methods.owner().call()
+              await app.fetchModels();
+              let loadingEl = document.getElementById('draft_list_loading')?.children[1]?.cloneNode(true)
+              loadingEl?.setAttribute('id', 'draft_extra_loading')
               for(const model of app.models) {
                 const owned = await contentsContract.methods
                   .tokensOfModel(app.account, model)
@@ -197,7 +201,11 @@
                         ) 
                       );
                       content.data.tokenId = owned[k];
-                      console.log(owned[k])
+                      if(typeof content.data.image === 'string') {
+                        let newArr = []
+                        newArr.push(content.data.image)
+                        content.data.image = newArr
+                      }
                       app.drafts.push(content.data);
                       //spawn extra loading element to fill empty space
                       setTimeout(() => {document.getElementById('draft_list')?.append(loadingEl)},100)
@@ -231,7 +239,7 @@
           try {
             const created = await factoryContract.methods.created(k).call()
             let sign = created.split('__')[0]
-            if(app.account.substr(0, 5) + app.account.substr(-3) === sign) {
+            if((app.account.substr(0, 5) + app.account.substr(-3) === sign) || (app.owner.substr(0, 5) + app.owner.substr(-3) === sign) || (app.preCompiledDatatypes.find(el => el===sign))) {
               app.models.push(created)
             }
             k++

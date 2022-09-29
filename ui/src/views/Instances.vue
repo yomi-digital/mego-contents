@@ -58,7 +58,8 @@
         </b-button>
         <b-button type="button button-dark is-light ml-auto mr-0 mt-1"
           style="background:#111!important;color:white!important" class="button create_instance_btn" v-if="!canMint">
-          CREATE NEW INSTANCE <font-awesome-icon icon="fa-solid fa-circle-exclamation"
+          CREATE NEW INSTANCE
+          <font-awesome-icon icon="fa-solid fa-circle-exclamation"
             style="font-size:15px;color: #ff850f; margin-left:.2rem;" />
         </b-button>
       </div>
@@ -72,6 +73,9 @@
                 style="font-size:15px; margin:0 1rem">Deployed at: <a :href="explorer_url+'/address/'+instance"
                   target="_blank" style="color:black;text-decoration:underline">{{Object.entries(names).find(el => el[0]
                   === instance)[0]}}</a></i>
+              <i style="font-size:15px; margin:0 1rem" v-if="owners[instance] !== account">Owned by: <a
+                  :href="explorer_url+'/address/'+owners[instance]" target="_blank"
+                  style="color:black;text-decoration:underline">{{owners[instance]}}</a></i>
             </h3>
             <p v-for="datatype in Object.keys(datatypes[instance])" :key="datatype"
               v-html="(datatype.indexOf('__') > 0) ? datatype.slice(datatype.indexOf('__')+2, 99999) : datatype"></p>
@@ -144,7 +148,8 @@ export default {
       isWorking: false,
       subscriptionActive: -1,
       deployment_price: '',
-      canMint: true
+      canMint: true,
+      owners: {}
     }
   },
   methods: {
@@ -186,6 +191,7 @@ export default {
                 app.instances[k]
               );
               const name = await contentsContract.methods.name().call();
+              app.owners[app.instances[k]] = await contentsContract.methods.owner().call();
               app.names[app.instances[k]] = name;
               await app.fetchModels(app.instances[k]);
             }
