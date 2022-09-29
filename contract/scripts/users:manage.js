@@ -14,7 +14,7 @@ async function main() {
     console.log("Deployed instances:", instances)
     const instance = instances[0]
     console.log('Adding user ' + secondary.address + '..')
-    const result = await contract.manageInstanceUsers(instance, secondary.address, true)
+    const result = await contract.manageInstanceUsers(instance, secondary.address, false)
     const receipt = await result.wait()
     console.log(receipt)
     console.log("💸 Gas used:", receipt.gasUsed.toString())

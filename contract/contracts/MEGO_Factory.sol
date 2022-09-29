@@ -32,6 +32,8 @@ contract MEGO_Factory is MEGO_Types, Ownable {
     );
     event ContentFixed(address _instance, uint256 _tokenId, string _metadata);
     event ContentFreezed(address _instance, uint256 _tokenId);
+    event UserAdded(address _instance, address _user);
+    event UserRemoved(address _instance, address _user);
 
     constructor() {
         types = new MEGO_Types();
@@ -219,9 +221,11 @@ contract MEGO_Factory is MEGO_Types, Ownable {
         if (_state == true) {
             // Increment the number of instances owned by the sender
             owned_instances[_user]++;
+            emit UserAdded(_instance, _user);
         } else {
             // Decrement the number of instances owned by the sender
             owned_instances[_user]--;
+            emit UserRemoved(_instance, _user);
         }
     }
 

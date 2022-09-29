@@ -114,6 +114,31 @@ export const parseContents = async () => {
   }
 };
 
+export const updateUser = async (instance_address, user, state) => {
+  return new Promise(async response => {
+    const db = new Database.Mongo();
+    try {
+      // Store or update document
+      const checkDB = await db.find('users', { instance: instance_address, address: user })
+      if (checkDB === null) {
+        let newUser = {
+          instance: instance_address,
+          address: user,
+          state: state
+        }
+        console.log('[CONTENTS] --> Inserting new user ', user)
+        await db.insert('users', newUser)
+        response(true)
+      } else {
+        await db.update('users', { instance: instance_address, address: user }, { $set: { state: state } })
+        response(true)
+      }
+    } catch (e) {
+      response(false)
+    }
+  })
+}
+
 export const listenEvents = async () => {
   const instance = await factoryContract()
   console.log('Setting up on-chain event listeners..')
@@ -131,5 +156,13 @@ export const listenEvents = async () => {
     console.log("[EVENT] Content freezed")
     const content_index = parseInt(index.toString())
     parseContent(instance, content_index)
+  })
+  instance.contract.on("UserAdded", async (instance, user) => {
+    console.log("[EVENT] User Added")
+    updateUser(instance, user, true)
+  })
+  instance.contract.on("UserRemoved", async (instance, user) => {
+    console.log("[EVENT] User Removed")
+    updateUser(instance, user, false)
   })
 };

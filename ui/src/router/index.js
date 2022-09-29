@@ -11,6 +11,7 @@ import View from '../views/View.vue'
 import Share from '../views/Share.vue'
 import Pricing from '../views/Pricing.vue'
 import Preview from '../views/Preview.vue'
+import Users from '../views/Users.vue'
 
 Vue.use(VueRouter)
 
@@ -29,6 +30,11 @@ const routes = [
     path: '/manage-instance/:instance',
     name: 'Instance',
     component: Instance
+  },
+  {
+    path: '/manage-instance/:instance/users',
+    name: 'Users',
+    component: Users
   },
   {
     path: '/new',

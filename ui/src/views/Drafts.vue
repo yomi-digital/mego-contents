@@ -65,17 +65,6 @@
   </div>
 </template>
 
-<style>
-  .cms-content {
-    padding: 20px;
-    border: 1px solid #000;
-    border-radius: 2px;
-    width: 30%;
-    display: inline-block;
-    position: relative;
-  }
-</style>
-
 <script>
   import Web3 from "web3";
   import axios from "axios";

@@ -17,6 +17,9 @@
               :class="{'has-text-weight-bold':true, 'navbar_link_active': $route.name === 'Instance'}">
               <span></span>instance
             </router-link>
+            <router-link :to="{name: 'Users'}"
+              :class="{'has-text-weight-bold':true, 'navbar_link_active': $route.name === 'Users'}"><span></span>collaborators
+            </router-link>
             <router-link :to="{name: 'New'}"
               :class="{'has-text-weight-bold':true, 'navbar_link_active': $route.name === 'New'}"><span></span>new
             </router-link>

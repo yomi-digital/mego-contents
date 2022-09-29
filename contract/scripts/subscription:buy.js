@@ -13,11 +13,11 @@ async function main() {
   console.log("Subscription before buy is:", subscription_before)
   const price = await contract.subscription_prices(subscription)
   console.log("Price for subscription is:", price.toString(), "wei")
-  const result = await contract.buySubscription(subscription, { value: price })
+  const result = await contract.chooseSubscription(subscription, { value: price })
   const receipt = await result.wait()
   console.log("💸 Gas used:", receipt.gasUsed.toString())
   const subscription_after = await contract.subscriptions(wallet.address)
-  console.log("Subscription before after is:", subscription_after)
+  console.log("Subscription after buy is:", subscription_after)
 }
 
 main()
