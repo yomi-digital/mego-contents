@@ -124,7 +124,13 @@
           <div class="instance_right">
             <b-button type="button" class="button button-dark is-light mx-auto mt-0"
               style="margin: 0 .5rem!important; width: 50px;"
+              v-if="preCompiledDatatypes.find(el => el===datatype)==undefined"
               @click="() => {newDatatypeName = (datatype.indexOf('__') > 0) ? datatype.slice(datatype.indexOf('__')+2, 99999) : datatype; datatypeCreated = true; tab = 'customized'; datatypeSelected = {name: datatype, datatypes: datatypes[instance][datatype].fields}; saveDatatypesForReset(datatypes[instance][datatype].fields)}">
+              <img src="../assets/images/pencil.svg" style="transform:scale(1.5) translateY(1px)" alt="">
+            </b-button>
+            <b-button type="button" class="button button-dark is-light mx-auto mt-0"
+              style="margin: 0 .5rem!important; width: 50px;opacity:.5;cursor: not-allowed;"
+              v-if="preCompiledDatatypes.find(el => el===datatype)">
               <img src="../assets/images/pencil.svg" style="transform:scale(1.5) translateY(1px)" alt="">
             </b-button>
             <b-button type="button" class="button button-dark is-light mx-auto mt-0"
@@ -181,8 +187,14 @@
                 <font-awesome-icon icon="fa-solid fa-plus" style="font-size:20px" />
               </b-button>
               <b-button type="button" class="button button-dark is-light mx-auto mt-0"
+                v-if="preCompiledDatatypes.find(el => el===datatype.name)==undefined"
                 style="margin: 0 .5rem!important; width: 50px;"
                 @click="editCustomDatatype(datatype.name, datatype.datatypes);saveDatatypesForReset(datatype.datatypes)">
+                <img src="../assets/images/pencil.svg" style="transform:scale(1.5) translateY(1px)" alt="">
+              </b-button>
+              <b-button type="button" class="button button-dark is-light mx-auto mt-0"
+                style="margin: 0 .5rem!important; width: 50px;opacity:.5;cursor: not-allowed;"
+                v-if="preCompiledDatatypes.find(el => el===datatype.name)">
                 <img src="../assets/images/pencil.svg" style="transform:scale(1.5) translateY(1px)" alt="">
               </b-button>
             </div>
@@ -348,7 +360,7 @@
                   @click="(datatypeSelected.name) ? datatypeSelected.datatypes.push({
                     active: false,
                     name: '',
-                    print: false,
+                    print: true,
                     required: false,
                     multiple: false,
                     input: 'text',
@@ -357,7 +369,7 @@
                   }) : customDatatypeAttrs.push({
                     active: false,
                     name: '',
-                    print: false,
+                    print: true,
                     required: false,
                     multiple: false,
                     input: 'text',
@@ -471,11 +483,11 @@ export default {
       newDatatypeName: '',
       datatypeTypes: ['text', 'textarea', 'file', 'select', 'tag'],
       unavailableFields: ['author', 'category', 'timestamp'],
-      preCompiledDatatypes: [], //ex. 'blog', 'nft'
+      preCompiledDatatypes: ['blog', 'nft'],
       customDatatypeAttrs: [{
         active: false,
         name: '',
-        print: false,
+        print: true,
         required: false,
         multiple: false,
         input: 'text',
@@ -834,7 +846,7 @@ export default {
         try {
           const created = await factoryContract.methods.created(k).call()
           let sign = created.split('__')[0]
-          if (app.account.substr(0, 5) + app.account.substr(-3) === sign) {
+          if ((app.account.substr(0, 5) + app.account.substr(-3) === sign) || (app.preCompiledDatatypes.find(el => el === sign))) {
             let datatypes = []
             let finished = false
             let i = 0

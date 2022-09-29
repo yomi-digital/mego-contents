@@ -73,7 +73,7 @@
         <h1>FREE</h1>
         <h2 v-html="web3.utils.fromWei(subscriptions[0].activation, 'ether')+' '+coin"></h2>
         <i>{{web3.utils.fromWei(subscriptions[0].monthly, 'ether')}} / month</i>
-        <p>Lorem, ipsum dolor sit amet consectetur adipisicing elit.</p>
+        <p></p>
         <ul>
           <li>Mint max {{free_limit}} times</li>
           <li>{{web3.utils.fromWei(subscriptions[0].deploy, 'ether')}} {{coin}} to deploy an instance</li>
@@ -91,9 +91,10 @@
         <h1>UNLIMITED</h1>
         <h2 v-html="web3.utils.fromWei(subscriptions[2].activation, 'ether')+' '+coin"></h2>
         <i>{{web3.utils.fromWei(subscriptions[2].monthly, 'ether')}} / month</i>
-        <p>Lorem, ipsum dolor sit amet consectetur adipisicing elit. Dolorem dolore corporis quod?</p>
+        <p></p>
         <ul>
           <li>Mint unlimited times</li>
+          <li>Instance collaborators management</li>
           <li>{{web3.utils.fromWei(subscriptions[2].deploy, 'ether')}} {{coin}} to deploy an instance</li>
         </ul>
         <b-button type="button" class="button-dark is-light mx-3 mt-5" v-if="subscriptionActive !== 2"
@@ -116,9 +117,10 @@
         <h1>PREMIUM</h1>
         <h2 v-html="web3.utils.fromWei(subscriptions[1].activation, 'ether')+' '+coin"></h2>
         <i>{{web3.utils.fromWei(subscriptions[1].monthly, 'ether')}} / month</i>
-        <p>Lorem, ipsum dolor sit amet consectetur adipisicing elit. Dolorem dolore corporis quod?</p>
+        <p></p>
         <ul>
           <li>Mint unlimited times</li>
+          <li>Instance collaborators management</li>
           <li>{{web3.utils.fromWei(subscriptions[1].deploy, 'ether')}} {{coin}} to deploy an instance</li>
         </ul>
         <b-button type="button" class="button-dark is-light mx-3 mt-5" v-if="subscriptionActive !== 1"

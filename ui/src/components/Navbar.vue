@@ -5,20 +5,17 @@
         alt="Mego Contents">
       <div class="navbar_links">
         <a @click="$emit('initTutorial')" v-if="$route.name === 'Instances' || $route.name === 'Instance'">
-          <font-awesome-icon icon="fa-solid fa-circle-play"
-            style="font-size:17px;color: black; margin:0 .3rem" />need help?
+          <font-awesome-icon icon="fa-solid fa-circle-play" style="font-size:17px;color: black; margin:0 .3rem" />need
+          help?
         </a>
-        <router-link :to="{name: 'Instances'}" style="position:relative"
-          :class="{'has-text-weight-bold':true, 'navbar_link_active': $route.name === 'Instances'}"><span></span>manage
-          instances
+        <router-link :to="{name: 'Instance', params: {instance: instance}}" v-if="$route.name !== 'Instances' && $route.name !== 'Pricing'" id="instance_link"
+          :class="{'has-text-weight-bold':true, 'navbar_link_active': $route.name === 'Instance'}">
+          <span></span>instance<font-awesome-icon icon="fa-solid fa-angle-down" />
           <div v-if="$route.name !== 'Instances' && $route.name !== 'Pricing'" class="instance_submenu"
             @click="preventdf($event)">
-            <router-link :to="{name: 'Instance', params: {instance: instance}}"
-              :class="{'has-text-weight-bold':true, 'navbar_link_active': $route.name === 'Instance'}">
-              <span></span>instance
-            </router-link>
             <router-link :to="{name: 'Users'}"
-              :class="{'has-text-weight-bold':true, 'navbar_link_active': $route.name === 'Users'}"><span></span>collaborators
+              :class="{'has-text-weight-bold':true, 'navbar_link_active': $route.name === 'Users'}">
+              <span></span>collaborators
             </router-link>
             <router-link :to="{name: 'New'}"
               :class="{'has-text-weight-bold':true, 'navbar_link_active': $route.name === 'New'}"><span></span>new
@@ -30,6 +27,10 @@
               :class="{'has-text-weight-bold':true, 'navbar_link_active': $route.name === 'Public'}"><span></span>public
             </router-link>
           </div>
+        </router-link>
+        <router-link :to="{name: 'Instances'}"
+          :class="{'has-text-weight-bold':true, 'navbar_link_active': $route.name === 'Instances'}"><span></span>manage
+          instances
         </router-link>
         <router-link :to="{name: 'Pricing'}"
           :class="{'has-text-weight-bold':true, 'navbar_link_active': $route.name === 'Pricing'}">

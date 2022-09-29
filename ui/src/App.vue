@@ -293,6 +293,7 @@ export default {
                     app.contract
                 );
                 app.subscription = parseInt(await factoryContract.methods.subscriptions(app.account).call())
+                localStorage.setItem('subscription', app.subscription)
                 if (app.subscription === 0) {
                     let free_mints = await factoryContract.methods.free_mints(app.account).call()
                     app.free_limit = await factoryContract.methods.free_limit().call()
