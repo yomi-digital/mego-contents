@@ -22,6 +22,9 @@ let hardhatConfigs = {
     },
     ethereum: {
       url: provider
+    },
+    mumbai: {
+      url: provider
     }
   },
   solidity: {

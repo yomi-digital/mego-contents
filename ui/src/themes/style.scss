@@ -101,13 +101,17 @@ button {background: none!important;border-radius: 8px!important;}
   height: 100vh;
 }
 
-.connect_wallet img {position: absolute; left: 50%;top: 50%;transform: translate(-50%,-50%);}
+.connect_wallet .connect_img {position: absolute; left: 50%;top: 50%;transform: translate(-50%,-50%);}
 .connect_wallet p {font-family: Sk-Modernist;}
-.connect_wallet > div {position: absolute; bottom: 0; right: 0; left: 0; display: flex; flex-direction: column;}
-.connect_wallet > div > div {height: 90px; width: 100%; border-top: 1px solid white; display: flex; align-items: center;} 
-.connect_wallet > div > div > h2 {font-size: 30px; color: white; margin-left: 2.5rem; display: inline-block; flex-basis: 80%;}
-.connect_wallet > div > div > div {flex-basis: 20%; position: relative; border-left: 1px solid white;height: 100%;}
+.connect_wallet .connect_footer {position: absolute; bottom: 0; right: 0; left: 0; display: flex; flex-direction: column;}
+.connect_wallet .connect_footer > div {height: 90px; width: 100%; border-top: 1px solid white; display: flex; align-items: center;} 
+.connect_wallet .connect_footer > div > h2 {font-size: 30px; color: white; margin-left: 2.5rem; display: inline-block; flex-basis: 80%;}
+.connect_wallet .connect_footer > div > div {flex-basis: 20%; position: relative; border-left: 1px solid white;height: 100%;}
 
+.choose_chain_modal {background: white; border-radius: 3rem; padding: 3rem; z-index: 99; position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%);}
+.choose_chain_modal > div {display: flex; margin: 1rem auto 0 auto; justify-content: center;}
+.choose_chain_modal > div .chain {display: flex; flex-direction: column; padding: 2rem; height: 150px;width:150px;text-align: center;box-sizing: border-box; margin: .5rem;transition: all .17s ease-in-out; cursor: pointer; border-radius: 8px;}
+.choose_chain_modal > div .chain:hover {background: rgba(0,0,0,.04);}
 .app_loading {position: absolute;z-index: 999999; background: rgb(237, 237, 237); top: 0;left: 0;bottom: 0;right: 0; display: grid; place-items: center;}
 
 #navbar {
@@ -136,7 +140,7 @@ button {background: none!important;border-radius: 8px!important;}
 #caret_down {font-size:17px;color: black;position: absolute; top: 2px;right: -3px;transition: all .17s ease-in-out;}
 #navbar:hover .instance_submenu {scale: 1 1;opacity: 1;}
 #navbar:hover #caret_down {rotate: 180deg;}
-.account_btn {padding: 18.5px 2rem 18.5px 2rem; border-left: 1px solid black;cursor: pointer; position: relative;}
+.account_btn {padding: 18.5px 2rem 18.5px 2rem; border-left: 1px solid black;cursor: pointer; position: relative;top:-3px}
 .account_btn .chains_list {position: absolute;top: 56px; left:50%; transform: translateX(-50%); background: #f6f6f6; width: 101%; text-align: center; border: 1px solid black; box-shadow: 0 8px 25px rgba(0,0,0,.09); transition: all .17s ease-in-out; opacity: 0; scale: 1 0; transform-origin: top;}
 .account_btn:hover .chains_list {opacity: 1; scale: 1 1;}
 .caret_down {transition: all .17s ease-in-out;rotate: 0deg;}

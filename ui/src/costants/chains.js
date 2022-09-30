@@ -22,7 +22,7 @@ const chains = {
   },
   mumbai: {
     network: 80001,
-    contract: '',
+    contract: '0x604b69edA6AB9778272c5e0C9B34A2acDeae116d',
     explorer: 'https://mumbai.polygonscan.com',
     opensea: 'https://testnets.opensea.io/assets/mumbai',
     coin: 'MATIC'

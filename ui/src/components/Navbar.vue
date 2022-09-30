@@ -42,8 +42,8 @@
         </router-link>
         <a class="account_btn">
           <template v-if="account">
-            <img src="../assets/images/matic-logo.svg" alt="Matic chain" v-if="chain === 'polygon' || chain === 'mumbai'"
-              style="width:25px">
+            <img src="../assets/images/matic-logo.svg" alt="Matic chain"
+              v-if="chain === 'polygon' || chain === 'mumbai'" style="width:25px;translate:0 7px">
             <font-awesome-icon icon="fa-brands fa-ethereum"
               style="font-size: 18px;color: #126cff;translate: 0 1px;margin-right: 4px;"
               v-if="chain === 'goerli' || chain === 'ethereum'" />
@@ -52,9 +52,9 @@
           </template>
           <div class="chains_list" v-if="account">
             <div v-for="(ch, index) in Object.keys(chains)" :key="index"
-              @click="(chain !== ch && ch !== 'ethereum' && ch !== 'polygon' && ch != 'mumbai') ? changeChain(ch) : ''">
+              @click="(chain !== ch && ch !== 'ethereum' && ch !== 'polygon') ? $emit('chooseChain', ch) : ''">
               <div v-if="chain==ch"
-                style="width: 8px;height: 8px;border-radius: 100%;background: lime; position:relative;margin:.6rem .6rem 0 0">
+                style="width: 8px;height: 8px;border-radius: 100%;background: #71ff9e; position:relative;margin:.6rem .6rem 0 0">
               </div>
               <img src="../assets/images/matic-logo.svg" alt="Matic chain" v-if="ch === 'polygon' || ch === 'mumbai'"
                 style="width:25px">
@@ -88,23 +88,27 @@ export default {
       //Preventing instances click
       event.preventDefault()
     },
-    changeChain(chain) {
-      if (this.chain !== chain) {
-        localStorage.removeItem('chain')
-        localStorage.setItem('chain', chain)
-        location.reload()
+    fixMenuHover(routeName) {
+      console.log(routeName)
+      if (routeName !== 'Instances' && routeName !== 'Pricing') {
+        document.querySelector('.account_btn').addEventListener('mouseover', () => {
+          document.querySelector('.instance_submenu')?.classList?.add('fadeOut')
+          document.getElementById('caret_down')?.classList?.add('noRotate')
+        })
+        document.querySelector('.account_btn').addEventListener('mouseout', () => {
+          document.querySelector('.instance_submenu')?.classList?.remove('fadeOut')
+          document.getElementById('caret_down')?.classList?.remove('noRotate')
+        })
       }
     }
   },
+  watch: {
+    '$route'(to, from) {
+      this.fixMenuHover(to.name)
+    }
+  },
   mounted() {
-    document.querySelector('.account_btn').addEventListener('mouseover', () => {
-      document.querySelector('.instance_submenu').classList.add('fadeOut')
-      document.getElementById('caret_down').classList.add('noRotate')
-    })
-    document.querySelector('.account_btn').addEventListener('mouseout', () => {
-      document.querySelector('.instance_submenu').classList.remove('fadeOut')
-      document.getElementById('caret_down').classList.remove('noRotate')
-    })
+    this.fixMenuHover(this.$route.name)
   }
 }
 

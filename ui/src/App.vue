@@ -46,23 +46,39 @@
             v-if="!mobile && ((account && !checking) || $route.name === 'Share')">
             <Navbar :account="account" :instances="instances" :instance="instance"
                 :subscriptionAlert="(subscription===0 && !canMint) || (subscription>0 && !isSubscriptionActive)"
-                @initTutorial="tutorialStep = 0" :chains="chains" :chain="chain" />
+                @initTutorial="tutorialStep = 0" :chains="chains" :chain="chain" @chooseChain="chooseChain($event)" />
             <router-view />
         </div>
         <div v-if="mobile || (!account && !checking && $route.name !== 'Share')" class="connect_wallet">
+            <div class="choose_chain_modal" v-if="modals.choose_chain">
+                <h1 class="is-size-3">Select your preferred chain</h1>
+                <p class="is-size-5 mt-2">You can change it later</p>
+                <div>
+                    <div class="chain" @click="chooseChain('mumbai')">
+                        <img src="./assets/images/matic-logo.svg" style="width:80px;translate: 0 -12px"
+                            alt="Matic chain">
+                        <p style="translate: 0 -25px">Mumbai</p>
+                    </div>
+                    <div class="chain" @click="chooseChain('goerli')">
+                        <font-awesome-icon icon="fa-brands fa-ethereum"
+                            style="font-size: 55px;color: #126cff;translate: 0 0;margin-right: 2px;" />
+                        <p>Goerli</p>
+                    </div>
+                </div>
+            </div>
             <p class="is-size-5 has-text-white has-text-centered" style="padding: 5rem 0" v-if="!mobile">Please connect
                 your wallet:</p>
-            <img src="./assets/images/home-group-logo.svg" alt="Mego Contents">
+            <img src="./assets/images/home-group-logo.svg" class="connect_img" alt="Mego Contents">
             <h1 v-if="mobile"
                 style="color:white;position:absolute;top:70%;left:50%;width:80vw;font-size:20px;text-align:center;transform: translate(-50%,-50%);font-family: 'Sk-Modernist';">
                 Please, access from desktop</h1>
-            <div>
+            <div class="connect_footer">
                 <b-button type="button button-light is-dark mx-auto" class="button" style="margin-bottom:5rem"
                     v-if="!checking && !mobile" @click="connect">CONNECT WALLET</b-button>
                 <div>
                     <h2>YOU, ON THE METAVERSE</h2>
                     <div v-if="!mobile">
-                        <img src="./assets/images/home-arrow.svg" alt="Go to mego">
+                        <img src="./assets/images/home-arrow.svg" class="connect_img" alt="Go to mego">
                     </div>
                 </div>
             </div>
@@ -104,12 +120,14 @@ export default {
             canMint: true,
             free_limit: 0,
             modals: {
-                cannot_mint: false
+                cannot_mint: false,
+                choose_chain: false
             },
             tutorialStep: -1,
             tutorialLoading: false,
             tutorialMessage: '',
-            tutorialEdit: false
+            tutorialEdit: false,
+            chain: ''
         };
     },
     watch: {
@@ -120,6 +138,10 @@ export default {
                 Object.keys(this.modals).forEach(modal => {
                     this.modals[modal] = false
                 })
+                if (route.name === 'Drafts' || route.name === 'Public') {
+                    document.getElementById('navbar_group').children[1].style.background = 'white'
+                    document.getElementById('app').style.background = 'white'
+                }
                 this.subscriptionCheck(route)
             },
             deep: true,
@@ -147,47 +169,51 @@ export default {
     async mounted() {
         //Assignign default or selected chain
         this.chain = localStorage.getItem('chain')
-        this.chain = (this.chain) ? this.chain : 'goerli'
-        localStorage.setItem('chain', this.chain)
-        localStorage.setItem('chains', JSON.stringify(this.chains))
-        this.contract = chains[this.chain].contract
-        this.network = chains[this.chain].network
-        
-        if (this.$route.name !== 'Share') {
-            await this.connect();
-            if (this.$route.name === 'Home' && this.instances.length > 0) {
-                this.$router.push({ name: 'Instances' })
-            }
-            else if (this.instances.length === 0 && this.$route.name !== 'Instances') {
-                this.$router.push({ name: 'Instances' })
-            }
-            //instance selected check
-            if (localStorage.getItem('instance') == null && this.$route.name !== 'Pricing') {
-                if (this.$route.name !== 'Instances') {
-                    this.$router.push({ name: 'Instances' })
-                }
-            }
+        if(!this.chain) {
+            this.modals.choose_chain = true
         }
         else {
-            if (localStorage.getItem('WEB3_CONNECT_CACHED_PROVIDER')) {
-                await this.connect()
+            localStorage.setItem('chain', this.chain)
+            localStorage.setItem('chains', JSON.stringify(this.chains))
+            this.contract = chains[this.chain].contract
+            this.network = chains[this.chain].network
+
+            if (this.$route.name !== 'Share') {
+                await this.connect();
+                if (this.$route.name === 'Home' && this.instances.length > 0) {
+                    this.$router.push({ name: 'Instances' })
+                }
+                else if (this.instances.length === 0 && this.$route.name !== 'Instances') {
+                    this.$router.push({ name: 'Instances' })
+                }
+                //instance selected check
+                if (localStorage.getItem('instance') == null && this.$route.name !== 'Pricing') {
+                    if (this.$route.name !== 'Instances') {
+                        this.$router.push({ name: 'Instances' })
+                    }
+                }
             }
-        }
-        await this.subscriptionCheck(this.$route)
-        if (localStorage.getItem('tutorial') == null) {
-            localStorage.setItem('tutorial', 1)
-            this.tutorialStep = 0
-        }
-        //assigning click events to trigger initTutorial method
-        let tempInterval = setInterval(() => {
-            if (document.getElementById('initEditTutorialBtn')) {
-                document.getElementById('initEditTutorialBtn').addEventListener('click', () => {
-                    this.tutorialStep = 0
-                    this.tutorialEdit = true
-                    clearInterval(tempInterval)
-                })
+            else {
+                if (localStorage.getItem('WEB3_CONNECT_CACHED_PROVIDER')) {
+                    await this.connect()
+                }
             }
-        }, 1000)
+            await this.subscriptionCheck(this.$route)
+            if (localStorage.getItem('tutorial') == null && this.account) {
+                localStorage.setItem('tutorial', 1)
+                this.tutorialStep = 0
+            }
+            //assigning click events to trigger initTutorial method
+            let tempInterval = setInterval(() => {
+                if (document.getElementById('initEditTutorialBtn')) {
+                    document.getElementById('initEditTutorialBtn').addEventListener('click', () => {
+                        this.tutorialStep = 0
+                        this.tutorialEdit = true
+                        clearInterval(tempInterval)
+                    })
+                }
+            }, 1000)
+        }
     },
     methods: {
         async connect() {
@@ -234,9 +260,15 @@ export default {
                     }
                 }
                 else {
-                    alert("Wrong network, please connect to correct one (" +
-                        app.network +
-                        ")!");
+                    try {
+                        await app.web3.currentProvider.request({
+                            method: 'wallet_switchEthereumChain',
+                            params: [{ chainId: Web3.utils.toHex(app.chains[app.chain].network) }],
+                        });
+                        location.reload()
+                    } catch {
+                        alert("Error during switching "+app.chain+" network")
+                    }
                 }
             }
             catch (e) {
@@ -336,7 +368,7 @@ export default {
         },
         initTutorial() {
             const app = this
-            if (!app.tutorialLoading) {
+            if (!app.tutorialLoading && app.account) {
                 try {
                     app.tutorialLoading = true
                     let paddingSelection = 35 //in pixels
@@ -451,6 +483,17 @@ export default {
                 catch (e) {
                     console.log(e)
                 }
+            }
+        },
+        chooseChain(chain) {
+            if (this.chain !== chain && localStorage.getItem('chain')) {
+                localStorage.removeItem('chain')
+                localStorage.setItem('chain', chain)
+                location.reload()
+            }
+            else {
+                localStorage.setItem('chain', chain)
+                location.reload()
             }
         }
     },
