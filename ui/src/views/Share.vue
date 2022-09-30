@@ -18,10 +18,18 @@
               v-if="key !== 'name' && key !== 'title' && key !== 'author' && key !== 'category' && key !== 'timestamp'">
               <h4 v-html="key"></h4>
               <p v-html="content[key]"
-                v-if="key !== 'image' && content[key][0] && content[key][0].indexOf('ipfs') === -1"></p>
+                v-if="key !== 'image' && content[key][0] && content[key][0].indexOf('ipfs') === -1 && !isArray(content[key])">
+              </p>
+              <!--Tag-->
+              <div style="display:flex;margin-top: 1rem;"
+                v-if="isArray(content[key]) && content[key][0].indexOf('ipfs') === -1">
+                <div class="nft_tag p-2 mr-2" v-for="(tag,i) in content[key]" :key="i">{{tag}}</div>
+              </div>
+              <!--Image-->
               <img style="width:700px;margin-top: 1rem;"
                 :src="content['image'][0].replace('ipfs://', 'https://ipfs.yomi.digital/ipfs/')" alt=""
                 v-if="key === 'image'">
+              <!--Multiple files-->
               <template v-if="key !== 'image' && content[key][0] && content[key][0].indexOf('ipfs') !== -1">
                 <iframe v-for="src in content[key]" :key="src" width="100%" height="400" style="margin-top:1rem"
                   :src="src.replace('ipfs://', 'https://ipfs.yomi.digital/ipfs/')" frameborder="0"></iframe>
@@ -97,6 +105,18 @@ export default {
     },
     openTab(link) {
       window.open(link, '_blank')
+    },
+    isArray(entity) {
+      try {
+        let array = (typeof entity !== 'object') ? JSON.parse(entity) : entity
+        if (array.length >= 0 && typeof array === 'object') {
+          return true
+        }
+        else return false
+      }
+      catch {
+        return false
+      }
     }
   },
 };

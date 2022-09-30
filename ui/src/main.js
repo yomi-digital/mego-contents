@@ -14,9 +14,9 @@ import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome'
 
 /* import specific icons */
 import { faCircleNotch,faPlus,faLink, faCircleInfo, faCircleExclamation, faMagnifyingGlass, faCirclePlay, faAngleDown } from '@fortawesome/free-solid-svg-icons'
-
+import { faEthereum } from '@fortawesome/free-brands-svg-icons'
 /* add icons to the library */
-library.add(faCircleNotch,faPlus,faLink, faCircleInfo, faCircleExclamation, faMagnifyingGlass, faCirclePlay, faAngleDown)
+library.add(faCircleNotch,faPlus,faLink, faCircleInfo, faCircleExclamation, faMagnifyingGlass, faCirclePlay, faAngleDown, faEthereum)
 
 /* add font awesome icon component */
 Vue.component('font-awesome-icon', FontAwesomeIcon)

@@ -94,7 +94,8 @@
       <div class="instances_list mt-5" v-if="users.length > 0">
         <div class="instance" v-for="user in users" :key="user.address">
           <div class="instance_left">
-            <h3 style="text-transform: unset!important;" class="my-2">{{user.address}} <i v-if="user.address===account" class="ml-5">( you )</i></h3>
+            <h3 style="text-transform: unset!important;" class="my-2">{{user.address}} <i v-if="user.address===account"
+                class="ml-5">( you )</i></h3>
           </div>
           <div class="instance_right" v-if="owner === account">
             <b-button type="button" class="button button-dark is-light mx-auto mt-0"
@@ -148,9 +149,9 @@ export default {
       abi_factory: abi_factory,
       abi_contents: abi_contents,
       contents_api: process.env.VUE_APP_CONTENTS_API,
-      contract: process.env.VUE_APP_FACTORY_CONTRACT,
+      contract: '',
       instance: "",
-      network: parseInt(process.env.VUE_APP_CHAIN_ID),
+      network: '',
       web3: {},
       account: "",
       users: [],
@@ -165,7 +166,8 @@ export default {
       newUser: '',
       isWorking: false,
       subscription: -1,
-      canMint: true
+      canMint: true,
+      owner: ''
     };
   },
   watch: {
@@ -180,6 +182,13 @@ export default {
   },
   async mounted() {
     const app = this
+    let chain = localStorage.getItem('chain')
+    let chains = localStorage.getItem('chains')
+    if (chain && chains) {
+      chains = JSON.parse(chains)
+      app.contract = chains[chain].contract
+      app.network = chains[chain].network
+    }
     document.getElementById('app').style.background = '#EDEDED'
     document.getElementById('navbar_group').children[1].style.background = '#EDEDED'
     await app.connect();

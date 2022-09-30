@@ -46,7 +46,7 @@
             v-if="!mobile && ((account && !checking) || $route.name === 'Share')">
             <Navbar :account="account" :instances="instances" :instance="instance"
                 :subscriptionAlert="(subscription===0 && !canMint) || (subscription>0 && !isSubscriptionActive)"
-                @initTutorial="tutorialStep = 0" />
+                @initTutorial="tutorialStep = 0" :chains="chains" :chain="chain" />
             <router-view />
         </div>
         <div v-if="mobile || (!account && !checking && $route.name !== 'Share')" class="connect_wallet">
@@ -76,18 +76,19 @@ import axios from "axios";
 import Web3Modal, { local } from "web3modal";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import Navbar from "./components/Navbar.vue";
-import { removeAllListeners } from "process";
 const abi = require("./abis/factory.json");
+import chains from "./costants/chains";
 export default {
     name: "Home",
     data() {
         return {
+            chains: chains,
             infuraId: process.env.VUE_APP_INFURA_ID,
             umiUrl: process.env.VUE_APP_UMI_API,
-            network: parseInt(process.env.VUE_APP_CHAIN_ID),
+            network: -1,
             axios: axios,
             abi: abi,
-            contract: process.env.VUE_APP_FACTORY_CONTRACT,
+            contract: '',
             account: "",
             instance: "",
             web3: {},
@@ -144,6 +145,14 @@ export default {
         }
     },
     async mounted() {
+        //Assignign default or selected chain
+        this.chain = localStorage.getItem('chain')
+        this.chain = (this.chain) ? this.chain : 'goerli'
+        localStorage.setItem('chain', this.chain)
+        localStorage.setItem('chains', JSON.stringify(this.chains))
+        this.contract = chains[this.chain].contract
+        this.network = chains[this.chain].network
+        
         if (this.$route.name !== 'Share') {
             await this.connect();
             if (this.$route.name === 'Home' && this.instances.length > 0) {
@@ -178,7 +187,7 @@ export default {
                     clearInterval(tempInterval)
                 })
             }
-        },1000)
+        }, 1000)
     },
     methods: {
         async connect() {
@@ -232,7 +241,7 @@ export default {
             }
             catch (e) {
                 app.checking = false;
-                alert(e.message);
+                //alert(e.message);
             }
         },
         async deploy() {
@@ -312,7 +321,7 @@ export default {
                         localStorage.setItem('canMint', false)
                     }
                     //listeners to show plan suspended modal
-                    if(document.querySelector('.create_instance_btn')) {
+                    if (document.querySelector('.create_instance_btn')) {
                         document.querySelector('.create_instance_btn').addEventListener('click', () => {
                             app.modals.cannot_mint = true
                         })
@@ -350,7 +359,7 @@ export default {
                             app.tutorialStep = -1
                         }
                     }
-                    else if (app.$route.name === 'Instance' && !app.tutorialEdit) {
+                    else if (app.$route.name === 'Instance' && !app.tutorialEdit && localStorage.getItem('isOwner')) {
                         if (app.tutorialStep === 0) {
                             target = document.getElementsByClassName('add_new_datatype_btn')[0]
                             app.tutorialMessage = 'A <b>datatype</b> is required before the creation of contents in order to tell the system wich properties the nft will have'
@@ -367,7 +376,17 @@ export default {
                             app.tutorialStep = -1
                         }
                     }
-                    else if(app.$route.name === 'Instance' && app.tutorialEdit) {
+                    else if (app.$route.name === 'Instance' && !app.tutorialEdit && !localStorage.getItem('isOwner')) {
+                        if (app.tutorialStep === 0) {
+                            target = document.getElementById('collaborator_notice')
+                            document.querySelector('.tutorial_container > p').style.width = '515px'
+                            app.tutorialMessage = 'This instance is owned by <b>' + localStorage.getItem('owner') + `</b> and you have been added in its collaborators. You cannot edit any contents of the contract but you can create new content at the <a style="color:black;text-decoration:underline;font-weight:700" onclick="location.href = '` + location.href.split('#')[0] + `#/new'` + `; location.reload()">new</a> page!`
+                        }
+                        else {
+                            app.tutorialStep = -1
+                        }
+                    }
+                    else if (app.$route.name === 'Instance' && app.tutorialEdit) {
                         paddingSelection = 2
                         if (app.tutorialStep === 0) {
                             target = document.querySelectorAll('table th')[0]
@@ -412,8 +431,8 @@ export default {
                     app.tutorialLoading = false
                     if (target) {
                         let rect = target.getBoundingClientRect()
-                        box.style.left = (rect.left+window.scrollX) - 8 - (paddingSelection / 2) + 'px'
-                        box.style.top = (rect.top+window.scrollY) - 4 - (paddingSelection / 2) + 'px'
+                        box.style.left = (rect.left + window.scrollX) - 8 - (paddingSelection / 2) + 'px'
+                        box.style.top = (rect.top + window.scrollY) - 4 - (paddingSelection / 2) + 'px'
                         box.style.width = target.clientWidth + paddingSelection + 'px'
                         box.style.height = target.clientHeight + paddingSelection + 'px'
                         let listenerF = () => {

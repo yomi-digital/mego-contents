@@ -3,127 +3,67 @@
     <div v-if="!loading">
       <h1 class="title is-3">
         Manage your instances
-        <b-button
-          style="float: right; font-size: 12px"
-          @click="showCreateInstanceModal = true"
-          >CREATE NEW INSTANCE</b-button
-        >
+        <b-button style="float: right; font-size: 12px" @click="showCreateInstanceModal = true">CREATE NEW INSTANCE
+        </b-button>
       </h1>
       <section>
         <b-tabs v-model="activeTab">
-          <b-tab-item
-            :label="names[instance]"
-            v-for="instance in instances"
-            :key="instance"
-            :animated="false"
-          >
-            <span
-              ><b>Deployed at</b>:
-              <a
-                :href="explorer_url + '/address/' + instance"
-                target="_blank"
-                style="font-weight: normal"
-                >{{ instance }}</a
-              ></span
-            ><br />
+          <b-tab-item :label="names[instance]" v-for="instance in instances" :key="instance" :animated="false">
+            <span><b>Deployed at</b>:
+              <a :href="explorer_url + '/address/' + instance" target="_blank" style="font-weight: normal">{{ instance
+              }}</a></span><br />
             <b>Headless endpoint</b>:
-            <a
-              target="_blank"
-              :href="contents_api + '/contents/' + instance"
-              >{{contents_api + '/contents/' + instance }}</a
-            >
-            <b-button
-              style="float: right"
-              v-if="selected !== instance"
-              @click="selectInstance(instance)"
-              >USE THIS INSTANCE</b-button
-            >
-            <div
-              v-if="
-                datatypes[instance] !== undefined &&
-                Object.keys(datatypes[instance]).length > 0
-              "
-            >
+            <a target="_blank" :href="contents_api + '/contents/' + instance">{{contents_api + '/contents/' + instance
+            }}</a>
+            <b-button style="float: right" v-if="selected !== instance" @click="selectInstance(instance)">USE THIS
+              INSTANCE</b-button>
+            <div v-if="
+              datatypes[instance] !== undefined &&
+              Object.keys(datatypes[instance]).length > 0
+            ">
               <h3 class="title is-5 my-4">Types:</h3>
-              <b-table
-                :data="
-                  Object.keys(datatypes[instance]).map((el) => {
-                    return {
-                      index: datatypes[instance][el].index,
-                      datatype_name: el,
-                      fields: datatypes[instance][el].length,
-                    };
-                  })
-                "
-                ref="table"
-                :opened-detailed="defaultDatatypeOpened"
-                detailed
-                detail-key="datatype_name"
-                detail-transition=""
-                :show-detail-icon="true"
-                aria-next-label="Next page"
-                aria-previous-label="Previous page"
-                aria-page-label="Page"
-                aria-current-label="Current page"
-              >
-                <b-table-column
-                  field="datatype_name"
-                  label="Datatype Name"
-                  sortable
-                  width="300"
-                  v-slot="props"
-                >
+              <b-table :data="
+                Object.keys(datatypes[instance]).map((el) => {
+                  return {
+                    index: datatypes[instance][el].index,
+                    datatype_name: el,
+                    fields: datatypes[instance][el].length,
+                  };
+                })
+              " ref="table" :opened-detailed="defaultDatatypeOpened" detailed detail-key="datatype_name"
+                detail-transition="" :show-detail-icon="true" aria-next-label="Next page"
+                aria-previous-label="Previous page" aria-page-label="Page" aria-current-label="Current page">
+                <b-table-column field="datatype_name" label="Datatype Name" sortable width="300" v-slot="props">
                   {{ props.row.datatype_name }}
                 </b-table-column>
 
-                <b-table-column
-                  field="fields"
-                  label="N. Fields"
-                  sortable
-                  width="90"
-                  v-slot="props"
-                >
+                <b-table-column field="fields" label="N. Fields" sortable width="90" v-slot="props">
                   {{ props.row.fields }}
                 </b-table-column>
 
-                <b-table-column
-                  field="fields"
-                  label="Remove type"
-                  sortable
-                  width="90"
-                  v-slot="props"
-                >
-                  <b-button
-                    style="font-size: 12px"
-                    @click="removeType(instance, props.row.datatype_name)"
-                    >REMOVE TYPE FROM CONTRACT</b-button
-                  >
+                <b-table-column field="fields" label="Remove type" sortable width="90" v-slot="props">
+                  <b-button style="font-size: 12px" @click="removeType(instance, props.row.datatype_name)">REMOVE TYPE
+                    FROM CONTRACT</b-button>
                 </b-table-column>
 
                 <template #detail="props">
                   <article class="media" style="display: block">
-                    <b-table
-                      :data="datatypes[instance][props.row.datatype_name]"
-                      :columns="[
-                        { field: 'name', label: 'Name', width: '280' },
-                        { field: 'print', label: 'Print', width: '40' },
-                        { field: 'required', label: 'Required', width: '40' },
-                        { field: 'multiple', label: 'Multiple', width: '40' },
-                        { field: 'input', label: 'Input', width: '40' },
-                        { field: 'specs', lable: 'Specs', width: '60' },
-                      ]"
-                    ></b-table>
+                    <b-table :data="datatypes[instance][props.row.datatype_name]" :columns="[
+                      { field: 'name', label: 'Name', width: '280' },
+                      { field: 'print', label: 'Print', width: '40' },
+                      { field: 'required', label: 'Required', width: '40' },
+                      { field: 'multiple', label: 'Multiple', width: '40' },
+                      { field: 'input', label: 'Input', width: '40' },
+                      { field: 'specs', lable: 'Specs', width: '60' },
+                    ]"></b-table>
                   </article>
                 </template>
               </b-table>
             </div>
-            <div
-              style="margin-top: 30px"
-              v-if="
-                Object.keys(datatypes[instance]).length <
-                Object.keys(available).length
-              "
-            >
+            <div style="margin-top: 30px" v-if="
+              Object.keys(datatypes[instance]).length <
+              Object.keys(available).length
+            ">
               <hr />
               <h3 class="title is-5">Add types to instance</h3>
               <div v-if="Object.keys(datatypes[instance]).length === 0">
@@ -131,74 +71,40 @@
                 Each type defines the way how the form is structured and the
                 data will be stored in IPFS.<br />You can choose between our
                 predefined models, if you want some other model please
-                <a href="https://discord.gg/3BmJnbD28c" target="_blank"
-                  >ask us via Discord</a
-                >. <br /><br />
+                <a href="https://discord.gg/3BmJnbD28c" target="_blank">ask us via Discord</a>. <br /><br />
               </div>
               <div v-for="(datatype, index) in available" v-bind:key="index">
-                <div
-                  v-if="datatypes[instance][index] === undefined"
-                  style="position: relative; margin-bottom: 20px"
-                >
-                  <b style="font-size: 16px">TYPE: {{ index.toUpperCase() }}</b
-                  ><br />
+                <div v-if="datatypes[instance][index] === undefined" style="position: relative; margin-bottom: 20px">
+                  <b style="font-size: 16px">TYPE: {{ index.toUpperCase() }}</b><br />
                   Contains following fields:
-                  <span
-                    v-for="(type, index) in datatype"
-                    v-bind:key="type.name"
-                  >
-                    <span v-if="index > 0">, </span>{{ type.name }}</span
-                  >. <br /><br />
-                  <b-button
-                    style="
+                  <span v-for="(type, index) in datatype" v-bind:key="type.name">
+                    <span v-if="index > 0">, </span>{{ type.name }}</span>. <br /><br />
+                  <b-button style="
                       float: right;
                       position: absolute;
                       top: 0;
                       right: 0;
                       font-size: 12px;
-                    "
-                    @click="addType(instance, index)"
-                    >ADD TYPE TO CONTRACT</b-button
-                  >
+                    " @click="addType(instance, index)">ADD TYPE TO CONTRACT</b-button>
                 </div>
               </div>
             </div>
           </b-tab-item>
         </b-tabs>
       </section>
-      <b-modal
-        v-model="showCreateInstanceModal"
-        has-modal-card
-        trap-focus
-        :destroy-on-hide="true"
-        aria-role="dialog"
-        aria-label="Create new instance"
-        close-button-aria-label="Close"
-        aria-modal
-      >
+      <b-modal v-model="showCreateInstanceModal" has-modal-card trap-focus :destroy-on-hide="true" aria-role="dialog"
+        aria-label="Create new instance" close-button-aria-label="Close" aria-modal>
         <template>
           <div class="modal-card" style="width: auto">
             <header class="modal-card-head">
               <p class="modal-card-title">Create new instance</p>
-              <button
-                type="button"
-                class="delete"
-                @click="showCreateInstanceModal = false"
-              />
+              <button type="button" class="delete" @click="showCreateInstanceModal = false" />
             </header>
             <section class="modal-card-body">
               Define the name and the ticker of the instance.<br /><br />
-              <b-input
-                v-model="newInstanceName"
-                placeholder="New instance name"
-              /><br />
-              <b-input
-                v-model="newInstanceTicker"
-                placeholder="New instance ticker"
-              /><br />
-              <b-button expanded v-if="!isWorking" @click="deploy"
-                >DEPLOY CONTRACT</b-button
-              >
+              <b-input v-model="newInstanceName" placeholder="New instance name" /><br />
+              <b-input v-model="newInstanceTicker" placeholder="New instance ticker" /><br />
+              <b-button expanded v-if="!isWorking" @click="deploy">DEPLOY CONTRACT</b-button>
             </section>
           </div>
         </template>
@@ -236,10 +142,10 @@ export default {
       axios: axios,
       abi_factory: abi_factory,
       abi_contents: abi_contents,
-      explorer_url: process.env.VUE_APP_EXPLORER_URL,
+      explorer_url: '',
       contents_api: process.env.VUE_APP_CONTENTS_API,
-      contract: process.env.VUE_APP_FACTORY_CONTRACT,
-      network: parseInt(process.env.VUE_APP_CHAIN_ID),
+      contract: '',
+      network: '',
       web3: {},
       selected: "",
       account: "",
@@ -259,8 +165,16 @@ export default {
       defaultDatatypeOpened: [],
     };
   },
-  mounted() {
-    this.connect();
+  async mounted() {
+    let chain = localStorage.getItem('chain')
+    let chains = localStorage.getItem('chains')
+    if (chain && chains) {
+      chains = JSON.parse(chains)
+      this.explorer_url = chains[chain].explorer
+      this.contract = chains[chain].contract
+      this.network = chains[chain].network
+    }
+    await this.connect();
   },
   methods: {
     async connect() {
@@ -560,8 +474,8 @@ export default {
         } else {
           alert(
             "Wrong network, please connect to correct one (" +
-              app.network +
-              ")!"
+            app.network +
+            ")!"
           );
         }
       } catch (e) {

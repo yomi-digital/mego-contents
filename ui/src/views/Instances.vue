@@ -123,15 +123,15 @@ export default {
   name: 'Instances',
   data() {
     return {
-      coin: process.env.VUE_APP_COIN,
+      coin: '',
       infuraId: process.env.VUE_APP_INFURA_ID,
       umiUrl: process.env.VUE_APP_UMI_API,
       axios: axios,
       abi_factory: abi_factory,
       abi_contents: abi_contents,
-      contract: process.env.VUE_APP_FACTORY_CONTRACT,
-      explorer_url: process.env.VUE_APP_EXPLORER_URL,
-      network: parseInt(process.env.VUE_APP_CHAIN_ID),
+      contract: '',
+      explorer_url: '',
+      network: '',
       web3: {},
       account: "",
       content: {},
@@ -346,6 +346,15 @@ export default {
     document.getElementById('app').style.background = '#EDEDED'
     document.getElementById('navbar_group').children[1].style.background = '#EDEDED'
     const app = this;
+    let chain = localStorage.getItem('chain')
+    let chains = localStorage.getItem('chains')
+    if (chain && chains) {
+      chains = JSON.parse(chains)
+      app.explorer_url = chains[chain].explorer
+      app.contract = chains[chain].contract
+      app.network = chains[chain].network
+      app.coin = chains[chain].coin
+    }
     await app.connect();
     // if (localStorage.getItem('instancesInfoModal') == null) {
     //   localStorage.setItem('instancesInfoModal', 1)

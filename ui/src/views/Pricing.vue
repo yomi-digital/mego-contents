@@ -94,7 +94,7 @@
         <p></p>
         <ul>
           <li>Mint unlimited times</li>
-          <li>Instance collaborators management</li>
+          <li>Instance collaborators</li>
           <li>{{web3.utils.fromWei(subscriptions[2].deploy, 'ether')}} {{coin}} to deploy an instance</li>
         </ul>
         <b-button type="button" class="button-dark is-light mx-3 mt-5" v-if="subscriptionActive !== 2"
@@ -120,7 +120,7 @@
         <p></p>
         <ul>
           <li>Mint unlimited times</li>
-          <li>Instance collaborators management</li>
+          <li>Instance collaborators</li>
           <li>{{web3.utils.fromWei(subscriptions[1].deploy, 'ether')}} {{coin}} to deploy an instance</li>
         </ul>
         <b-button type="button" class="button-dark is-light mx-3 mt-5" v-if="subscriptionActive !== 1"
@@ -173,16 +173,16 @@ export default {
   name: 'Pricing',
   data() {
     return {
-      coin: process.env.VUE_APP_COIN,
+      coin: '',
       infuraId: process.env.VUE_APP_INFURA_ID,
       umiUrl: process.env.VUE_APP_UMI_API,
       axios: axios,
       abi_factory: abi_factory,
       abi_contents: abi_contents,
       contents_api: process.env.VUE_APP_CONTENTS_API,
-      factory_contract: process.env.VUE_APP_FACTORY_CONTRACT,
-      explorer_url: process.env.VUE_APP_EXPLORER_URL,
-      network: parseInt(process.env.VUE_APP_CHAIN_ID),
+      factory_contract: '',
+      explorer_url: '',
+      network: '',
       web3: {},
       account: "",
       subscriptions: [], //subscriptions prices
@@ -199,6 +199,15 @@ export default {
     }
   },
   async mounted() {
+    let chain = localStorage.getItem('chain')
+    let chains = localStorage.getItem('chains')
+    if (chain && chains) {
+      chains = JSON.parse(chains)
+      this.explorer_url = chains[chain].explorer
+      this.factory_contract = chains[chain].contract
+      this.network = chains[chain].network
+      this.coin = chains[chain].coin
+    }
     let count = 0
     let intervalTemp = setInterval(() => {
       try {

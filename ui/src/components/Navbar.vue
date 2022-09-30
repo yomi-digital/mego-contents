@@ -8,9 +8,11 @@
           <font-awesome-icon icon="fa-solid fa-circle-play" style="font-size:17px;color: black; margin:0 .3rem" />need
           help?
         </a>
-        <router-link :to="{name: 'Instance', params: {instance: instance}}" v-if="$route.name !== 'Instances' && $route.name !== 'Pricing'" id="instance_link"
+        <router-link :to="{name: 'Instance', params: {instance: instance}}"
+          v-if="$route.name !== 'Instances' && $route.name !== 'Pricing'" id="instance_link"
           :class="{'has-text-weight-bold':true, 'navbar_link_active': $route.name === 'Instance'}">
-          <span></span>instance<font-awesome-icon icon="fa-solid fa-angle-down" />
+          <span></span>instance
+          <font-awesome-icon icon="fa-solid fa-angle-down" id="caret_down" />
           <div v-if="$route.name !== 'Instances' && $route.name !== 'Pricing'" class="instance_submenu"
             @click="preventdf($event)">
             <router-link :to="{name: 'Users'}"
@@ -38,8 +40,30 @@
           <font-awesome-icon v-if="subscriptionAlert" icon="fa-solid fa-circle-exclamation"
             style="font-size:15px;color: #ff850f;" />
         </router-link>
-        <a style="padding: 18.5px 2rem 18.5px 2rem; border-left: 1px solid black;cursor: default;">
-          <template v-if="account">{{ account.substr(0, 8) }}...{{ account.substr(-8) }}</template>
+        <a class="account_btn">
+          <template v-if="account">
+            <img src="../assets/images/matic-logo.svg" alt="Matic chain" v-if="chain === 'polygon' || chain === 'mumbai'"
+              style="width:25px">
+            <font-awesome-icon icon="fa-brands fa-ethereum"
+              style="font-size: 18px;color: #126cff;translate: 0 1px;margin-right: 4px;"
+              v-if="chain === 'goerli' || chain === 'ethereum'" />
+            {{ account.substr(0, 8) }}...{{ account.substr(-8) }}
+            <font-awesome-icon icon="fa-solid fa-angle-down" class="ml-2 caret_down" />
+          </template>
+          <div class="chains_list" v-if="account">
+            <div v-for="(ch, index) in Object.keys(chains)" :key="index"
+              @click="(chain !== ch && ch !== 'ethereum' && ch !== 'polygon' && ch != 'mumbai') ? changeChain(ch) : ''">
+              <div v-if="chain==ch"
+                style="width: 8px;height: 8px;border-radius: 100%;background: lime; position:relative;margin:.6rem .6rem 0 0">
+              </div>
+              <img src="../assets/images/matic-logo.svg" alt="Matic chain" v-if="ch === 'polygon' || ch === 'mumbai'"
+                style="width:25px">
+              <font-awesome-icon icon="fa-brands fa-ethereum"
+                style="font-size: 18px;color: #126cff;translate: 0 5px;margin-right: 2px;"
+                v-if="ch === 'goerli' || ch === 'ethereum'" />
+              <p :style="ch === chain ? 'font-weight:700' : ''">{{ch}}</p>
+            </div>
+          </div>
           <b-button type="button" class="button-dark is-light is-small" id="connectWalletNavBtn" v-else
             style="background:#111!important;color:white!important;display: inline-block;margin: auto!important;"
             @click="$router.push({name: 'Instances'})">
@@ -58,12 +82,29 @@
 <script>
 export default {
   name: 'Navbar',
-  props: ['account', 'instances', 'subscriptionAlert', 'instance'],
+  props: ['account', 'instances', 'subscriptionAlert', 'instance', 'chains', 'chain'],
   methods: {
     preventdf(event) {
       //Preventing instances click
       event.preventDefault()
+    },
+    changeChain(chain) {
+      if (this.chain !== chain) {
+        localStorage.removeItem('chain')
+        localStorage.setItem('chain', chain)
+        location.reload()
+      }
     }
+  },
+  mounted() {
+    document.querySelector('.account_btn').addEventListener('mouseover', () => {
+      document.querySelector('.instance_submenu').classList.add('fadeOut')
+      document.getElementById('caret_down').classList.add('noRotate')
+    })
+    document.querySelector('.account_btn').addEventListener('mouseout', () => {
+      document.querySelector('.instance_submenu').classList.remove('fadeOut')
+      document.getElementById('caret_down').classList.remove('noRotate')
+    })
   }
 }
 

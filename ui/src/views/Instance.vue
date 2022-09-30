@@ -103,7 +103,7 @@
           </b-button>
         </div>
         <div style="display:flex;margin-right:0;margin-left:auto" v-if="owner !== account">
-          <span sty>You are a collaborator of this instance</span>
+          <span id="collaborator_notice">You are a collaborator of this instance</span>
         </div>
 
       </div>
@@ -113,12 +113,13 @@
       </div>
       <div class="instances_list"
         v-if="tab === 'list' && (datatypes[instance] ? Object.keys(datatypes[instance]).length > 0 : false )">
-        <div class="instance" v-for="datatype in Object.keys(datatypes[instance])" :key="datatype">
+        <div class="instance" v-for="(datatype, index) in Object.keys(datatypes[instance])" :key="index">
           <div class="instance_left">
             <h3 class="my-2"><span style="font-weight:bold;color:black;font-size:22px;">{{(datatype.indexOf('__') > 0) ?
             datatype.slice(datatype.indexOf('__')+2, 99999) : datatype}}</span>
             </h3>
-            <p v-for="attr in datatypes[instance][datatype].fields" :key="attr.name" v-html="attr.name"></p>
+            <p v-for="(attr, attrIndex) in datatypes[instance][datatype].fields" :key="attrIndex" v-html="attr.name">
+            </p>
             <p
               v-if="datatypes[instance][datatype] ? datatypes[instance][datatype].fields ? datatypes[instance][datatype].fields.length === 0 : false : false">
               <i style="color:#444">No fields</i>
@@ -142,6 +143,16 @@
                 src="../assets/images/trash-icon.svg" alt="" style="transform:translateY(2px)">
             </b-button>
 
+          </div>
+          <div class="instance_right" v-if="owner !== account">
+            <b-button type="button" class="button button-dark is-light mx-auto mt-0"
+              style="margin: 0 .5rem!important; width: 50px;opacity:.5;cursor: not-allowed;">
+              <img src="../assets/images/pencil.svg" style="transform:scale(1.5) translateY(1px)" alt="">
+            </b-button>
+            <b-button type="button" class="button button-dark is-light mx-auto mt-0"
+              style="margin: 0 .5rem!important; width: 50px;opacity:.5;cursor: not-allowed;">
+              <img src="../assets/images/trash-icon.svg" alt="" style="transform:translateY(2px)">
+            </b-button>
           </div>
         </div>
       </div>
@@ -258,9 +269,10 @@
                 </td>
                 <td>
                   <div
-                    @click="(datatypeAttr.input === 'file' || datatypeAttr.input === 'select') ? datatypeAttr.multiple = !datatypeAttr.multiple : ''">
-                    <b-input type="checkbox" :checked="datatypeAttr.multiple || datatypeAttr.input === 'tag'"
-                      :disabled="datatypeAttr.input !== 'file' && datatypeAttr.input !== 'select'">
+                    @click="((datatypeAttr.input === 'file' || datatypeAttr.input === 'select') && datatypeAttr.name !== 'image') ? datatypeAttr.multiple = !datatypeAttr.multiple : ''">
+                    <b-input type="checkbox"
+                      :checked="(datatypeAttr.name==='image') ? false : (datatypeAttr.multiple || datatypeAttr.input === 'tag')"
+                      :disabled="(datatypeAttr.input !== 'file' && datatypeAttr.input !== 'select') || datatypeAttr.name==='image'">
                     </b-input>
                   </div>
                 </td>
@@ -326,9 +338,10 @@
                 </td>
                 <td>
                   <div
-                    @click="(datatypeAttr.input === 'file' || datatypeAttr.input === 'select') ? datatypeAttr.multiple = !datatypeAttr.multiple : ''">
-                    <b-input type="checkbox" :checked="datatypeAttr.multiple || datatypeAttr.input === 'tag'"
-                      :disabled="datatypeAttr.input !== 'file' && datatypeAttr.input !== 'select'">
+                    @click="((datatypeAttr.input === 'file' || datatypeAttr.input === 'select') && datatypeAttr.name !== 'image') ? datatypeAttr.multiple = !datatypeAttr.multiple : ''">
+                    <b-input type="checkbox"
+                      :checked="(datatypeAttr.name==='image') ? false : (datatypeAttr.multiple || datatypeAttr.input === 'tag')"
+                      :disabled="(datatypeAttr.input !== 'file' && datatypeAttr.input !== 'select') || datatypeAttr.name==='image'">
                     </b-input>
                   </div>
                 </td>
@@ -363,7 +376,7 @@
                   @click="(datatypeSelected.name) ? datatypeSelected.datatypes.push({
                     active: false,
                     name: '',
-                    print: true,
+                    print: false,
                     required: false,
                     multiple: false,
                     input: 'text',
@@ -372,7 +385,7 @@
                   }) : customDatatypeAttrs.push({
                     active: false,
                     name: '',
-                    print: true,
+                    print: false,
                     required: false,
                     multiple: false,
                     input: 'text',
@@ -450,6 +463,9 @@
           </div>
         </div>
       </div>
+      <div class="add_instance_container" v-if="modelsLoading && tab === 'customized'">
+        <font-awesome-icon icon="fa-solid fa-circle-notch" style="font-size:20px;margin-top: 2rem;" class="fa-spin" />
+      </div>
     </div>
   </div>
 </template>
@@ -472,9 +488,9 @@ export default {
       abi_factory: abi_factory,
       abi_contents: abi_contents,
       contents_api: process.env.VUE_APP_CONTENTS_API,
-      factory_contract: process.env.VUE_APP_FACTORY_CONTRACT,
-      explorer_url: process.env.VUE_APP_EXPLORER_URL,
-      network: parseInt(process.env.VUE_APP_CHAIN_ID),
+      factory_contract: '',
+      explorer_url: '',
+      network: '',
       web3: {},
       account: "",
       content: {},
@@ -491,7 +507,7 @@ export default {
       customDatatypeAttrs: [{
         active: false,
         name: '',
-        print: true,
+        print: false,
         required: false,
         multiple: false,
         input: 'text',
@@ -552,7 +568,6 @@ export default {
               app.datatypes[app.instance][datatype].fields.forEach((field, i) => {
                 if (i !== app.datatypes[app.instance][datatype].fields.length - 1) {
                   field.active = true
-                  field.print = true
                 }
               })
             })
@@ -696,6 +711,10 @@ export default {
           instance
         );
         app.owner = await contentsContract.methods.owner().call()
+        if (app.owner === app.account)
+          localStorage.setItem('isOwner', true)
+        else
+          localStorage.setItem('owner', app.owner)
         const factoryContract = new app.web3.eth.Contract(
           app.abi_factory,
           app.factory_contract
@@ -905,7 +924,6 @@ export default {
       datatypes.forEach((field, i) => {
         if (i !== datatypes.length - 1) {
           field.active = true
-          field.print = true
         }
 
       })
@@ -917,7 +935,12 @@ export default {
       let datatypeSigned = (app.preCompiledDatatypes.find(el => el === datatype)) ? datatype : app.account.substr(0, 5) + app.account.substr(-3) + '__' + datatype
       let originalDatatype = localStorage.getItem('datatypeForReset')
       if (originalDatatype) {
-        app.datatypes[app.instance][datatypeSigned].fields = JSON.parse(originalDatatype)
+        if (app.datatypes[app.instance][datatypeSigned]) {
+          app.datatypes[app.instance][datatypeSigned].fields = JSON.parse(originalDatatype)
+        }
+        else if (app.models.find(el => el.name === datatypeSigned)) {
+          app.models[app.models.indexOf(app.models.find(el => el.name === datatypeSigned))].datatypes = JSON.parse(originalDatatype)
+        }
       }
       else {
         location.reload()
@@ -928,6 +951,14 @@ export default {
     }
   },
   async mounted() {
+    let chain = localStorage.getItem('chain')
+    let chains = localStorage.getItem('chains')
+    if (chain && chains) {
+      chains = JSON.parse(chains)
+      this.explorer_url = chains[chain].explorer
+      this.factory_contract = chains[chain].contract
+      this.network = chains[chain].network
+    }
     document.getElementById('app').style.background = '#EDEDED'
     document.getElementById('navbar_group').children[1].style.background = '#EDEDED'
     await this.connect()

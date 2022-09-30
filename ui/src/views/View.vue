@@ -34,10 +34,18 @@
               v-if="key !== 'name' && key !== 'title' && key !== 'author' && key !== 'category' && key !== 'timestamp'">
               <h4 v-html="key"></h4>
               <p v-html="content[key]"
-                v-if="key !== 'image' && content[key][0] && content[key][0].indexOf('ipfs') === -1"></p>
+                v-if="key !== 'image' && content[key][0] && content[key][0].indexOf('ipfs') === -1 && !isArray(content[key])">
+              </p>
+              <!--Tag-->
+              <div style="display:flex;margin-top: 1rem;"
+                v-if="isArray(content[key]) && content[key][0].indexOf('ipfs') === -1">
+                <div class="nft_tag p-2 mr-2" v-for="(tag,i) in content[key]" :key="i">{{tag}}</div>
+              </div>
+              <!--Image-->
               <img style="width:700px;margin-top: 1rem;"
                 :src="content['image'][0].replace('ipfs://', 'https://ipfs.yomi.digital/ipfs/')" alt=""
                 v-if="key === 'image'">
+              <!--Multiple files-->
               <template v-if="key !== 'image' && content[key][0] && content[key][0].indexOf('ipfs') !== -1">
                 <iframe v-for="src in content[key]" :key="src" width="100%" height="400" style="margin-top:1rem"
                   :src="src.replace('ipfs://', 'https://ipfs.yomi.digital/ipfs/')" frameborder="0"></iframe>
@@ -83,12 +91,12 @@ export default {
       axios: axios,
       abi_factory: abi_factory,
       abi_contents: abi_contents,
-      contract: process.env.VUE_APP_FACTORY_CONTRACT,
-      opensea_url: process.env.VUE_APP_OPENSEA_URL,
+      contract: '',
+      opensea_url: '',
       contents_api: process.env.VUE_APP_CONTENTS_API,
-      explorer_url: process.env.VUE_APP_EXPLORER_URL,
+      explorer_url: '',
       instance: "",
-      network: parseInt(process.env.VUE_APP_CHAIN_ID),
+      network: '',
       datatypes: {},
       web3: {},
       account: "",
@@ -106,6 +114,15 @@ export default {
     document.getElementsByClassName('home')[0].style.background = 'white'
     document.getElementById('navbar_group').children[1].style.background = 'white'
     const app = this;
+    let chain = localStorage.getItem('chain')
+    let chains = localStorage.getItem('chains')
+    if (chain && chains) {
+      chains = JSON.parse(chains)
+      app.opensea_url = chains[chain].opensea
+      app.contract = chains[chain].contract
+      app.network = chains[chain].network
+      app.explorer_url = chains[chain].explorer
+    }
     app.tokenId = app.$route.params.tokenId;
     await app.connect();
     if (!app.freezed && Object.keys(app.content).length !== 0) {
@@ -252,6 +269,18 @@ export default {
         navigator.clipboard.writeText(text);
       }
       this.log('success', type + ' copied!')
+    },
+    isArray(entity) {
+      try {
+        let array = (typeof entity !== 'object') ? JSON.parse(entity) : entity
+        if (array.length >= 0 && typeof array === 'object') {
+          return true
+        }
+        else return false
+      }
+      catch {
+        return false
+      }
     }
   },
 };

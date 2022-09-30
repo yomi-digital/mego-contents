@@ -30,7 +30,9 @@
     <div class="instances_container" style="margin-top:-1rem">
       <div class="instance_info">
         <h2 v-if="loading || (!loading && Object.keys(datatypes).length > 0)" :style="(loading) ? 'opacity:.5' : ''">
-          UPDATE YOUR <div v-if="loading" class="loading_box" style="width:100px;height:35px;display:inline-block;">
+          UPDATE YOUR <br
+            v-if="(category.indexOf('__') > 0) ? category.slice(category.indexOf('__')+2, 99999).length>20 : category.length>20" />
+          <div v-if="loading" class="loading_box" style="width:100px;height:35px;display:inline-block;">
           </div> <span class="selected_model" v-if="!loading">
             {{(category.indexOf('__') > 0) ? category.slice(category.indexOf('__')+2, 99999).toUpperCase() : category}}
             <div :class="{new_model_select:true}">
@@ -38,7 +40,8 @@
                 {{(el.indexOf('__') > 0) ? el.slice(el.indexOf('__')+2, 99999).toUpperCase() : el }}
               </p>
             </div>
-          </span></h2>
+          </span>
+        </h2>
         <h2 v-if="!loading && Object.keys(datatypes).length === 0">NFT NOT FOUND</h2>
         <p v-if="!loading && Object.keys(datatypes).length > 0">
           <span class="mr-6">Headless endpoint: <a :href="contents_api+'/contents/'+instance+'/'+tokenId"
@@ -54,7 +57,13 @@
             SEE ON OPENSEA
           </b-button>
           <b-button type="button" class="button-dark is-light mx-3 mt-4"
-            style="background:#111!important;color:white!important" v-if="!freezed" @click="freeze()">
+            style="background:#111!important;color:white!important" v-if="!freezed && account === owner"
+            @click="freeze()">
+            SEND LIVE
+          </b-button>
+          <b-button type="button" class="button-dark is-light mx-3 mt-4"
+            style="background:#111!important;color:white!important;opacity:.5;cursor: not-allowed;"
+            v-if="!freezed && account !== owner">
             SEND LIVE
           </b-button>
         </p>
@@ -154,11 +163,16 @@
           v-if="!loading && Object.keys(datatypes).length === 0" @click="$router.push({name:'Drafts'})">
           GO BACK
         </b-button>
-        <div style="display:grid;place-items:center">
-          <b-button v-if="!isWorking && !ipfsNft && !freezed && Object.keys(datatypes).length > 0" @click="prepare"
-            class="button-light is-dark mx-3 mt-5"
+        <div style="display:grid;place-items:center"
+          v-if="!isWorking && !ipfsNft && !freezed && Object.keys(datatypes).length > 0">
+          <b-button v-if="account===owner" @click="prepare" class="button-light is-dark mx-3 mt-5"
             style="color:black!important;border:1px solid black!important;margin: auto; width: 200px;">UPDATE
           </b-button>
+          <b-button v-if="account !== owner" class="button-light is-dark mx-3 mt-5"
+            style="color:black!important;border:1px solid black!important;margin: auto; width: 200px;opacity: .5;cursor: not-allowed;">
+            UPDATE
+          </b-button>
+          <p class="mt-4" v-if="account !== owner">You are a collaborator in this instance</p>
         </div>
       </div>
       <div v-if="ipfsNft" style="text-align: center; padding: 20px 0 20px 0">
@@ -207,11 +221,11 @@ export default {
       axios: axios,
       abi_factory: abi_factory,
       abi_contents: abi_contents,
-      contract: process.env.VUE_APP_FACTORY_CONTRACT,
-      opensea_url: process.env.VUE_APP_OPENSEA_URL,
+      contract: '',
+      opensea_url: '',
       contents_api: process.env.VUE_APP_CONTENTS_API,
       instance: "",
-      network: parseInt(process.env.VUE_APP_CHAIN_ID),
+      network: -1,
       datatypes: {},
       web3: {},
       account: "",
@@ -229,12 +243,21 @@ export default {
         working: false,
         deleteImage: {}
       },
-      urlClass: URL
+      urlClass: URL,
+      owner: ''
     };
   },
   async mounted() {
     const app = this;
     app.tokenId = app.$route.params.tokenId;
+    let chain = localStorage.getItem('chain')
+    let chains = localStorage.getItem('chains')
+    if (chain && chains) {
+      chains = JSON.parse(chains)
+      app.opensea_url = chains[chain].opensea
+      app.contract = chains[chain].contract
+      app.network = chains[chain].network
+    }
     await app.connect();
     if (app.freezed) {
       app.$router.push({ name: 'View', params: { tokenId: app.tokenId } })
@@ -273,7 +296,7 @@ export default {
             alert("No accounts allowed, please retry!");
           }
         } catch (e) {
-          alert(e.message);
+          //alert(e.message);
         }
       } else {
         alert(
@@ -294,6 +317,7 @@ export default {
         app.abi_contents,
         app.instance
       );
+      app.owner = await contentsContract.methods.owner().call()
       const factoryContract = new app.web3.eth.Contract(
         app.abi_factory,
         app.contract
@@ -607,7 +631,7 @@ export default {
     },
     showDeleteImageModal(event) {
       //Fixing parameters breaking the first list element's event
-      this.modals.deleteImage = {name: event.target.getAttribute('inputname'), index: event.target.getAttribute('index')}
+      this.modals.deleteImage = { name: event.target.getAttribute('inputname'), index: event.target.getAttribute('index') }
     }
   }
 };
