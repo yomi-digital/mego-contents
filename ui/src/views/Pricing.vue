@@ -295,9 +295,9 @@ export default {
           }
           i++
         }
+        app.subscriptionActive = parseInt(await factoryContract.methods.subscriptions(app.account).call())
         if (app.subscriptionActive === 0)
           app.free_mints = await factoryContract.methods.free_mints(app.account).call()
-        app.subscriptionActive = parseInt(await factoryContract.methods.subscriptions(app.account).call())
         app.isSubscriptionActive = await factoryContract.methods.isSubscriptionActive(app.account).call()
         app.free_limit = await factoryContract.methods.free_limit().call()
         app.epoch = await factoryContract.methods.getEpoch(app.account).call()

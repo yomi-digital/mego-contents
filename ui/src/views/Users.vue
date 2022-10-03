@@ -268,7 +268,7 @@ export default {
     async updateUser(user, state) {
       const app = this
       if (!app.isWorking && app.subscription !== 0) {
-        if (user) {
+        if (user && user.indexOf('0x') !== -1) {
           //Exists yet check
           let exists = (app.users.find(el => el.address === user) != undefined)
           if (exists && state) {
@@ -285,7 +285,9 @@ export default {
             );
             try {
               await factoryContract.methods.manageInstanceUsers(app.instance, user, state).send({ from: app.account })
-              location.reload()
+              setTimeout(() => {
+                location.reload()
+              }, 2000)
             }
             catch {
               app.log('danger', 'An error occurred during instance user update')
