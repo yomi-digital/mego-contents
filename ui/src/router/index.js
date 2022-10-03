@@ -57,7 +57,7 @@ const routes = [
     component: View
   },
   {
-    path: '/share/:instance/:index',
+    path: '/share/:chain/:instance/:index',
     name: 'Share',
     component: Share
   },

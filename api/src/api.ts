@@ -23,21 +23,21 @@ async function parsers() {
 parsers()
 
 // Public endpoints
-app.get("/contents/:instance", async function (req, res) {
+app.get("/contents/:chain/:instance", async function (req, res) {
   const db = new Database.Mongo();
-  const contents = await db.find('contents', { instance: req.params.instance }, { timestamp: -1 })
+  const contents = await db.find('contents', { chain: req.params.chain, instance: req.params.instance }, { timestamp: -1 })
   res.send(contents)
 })
 
-app.get("/contents/:instance/:index", async function (req, res) {
+app.get("/contents/:chain/:instance/:index", async function (req, res) {
   const db = new Database.Mongo();
-  const content = await db.find('contents', { instance: req.params.instance, index: parseInt(req.params.index) })
+  const content = await db.find('contents', { chain: req.params.chain, instance: req.params.instance, index: parseInt(req.params.index) })
   res.send(content)
 })
 
-app.get("/users/:instance", async function (req, res) {
+app.get("/users/:chain/:instance", async function (req, res) {
   const db = new Database.Mongo();
-  const users = await db.find('users', { instance: req.params.instance, state: true }, { user: 1 })
+  const users = await db.find('users', { chain: req.params.chain, instance: req.params.instance, state: true }, { user: 1 })
   res.send(users)
 })
 

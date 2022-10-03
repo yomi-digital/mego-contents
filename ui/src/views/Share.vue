@@ -72,12 +72,14 @@ export default {
       isWorking: false,
       loading: true,
       workingMessage: "",
-      content: {}
+      content: {},
+      chain: ''
     };
   },
   async mounted() {
     document.getElementById('navbar_group').children[1].style.background = 'white'
     const app = this;
+    app.chain = app.$route.params.chain;
     app.instance = app.$route.params.instance;
     app.index = app.$route.params.index;
     await app.fetchNft()
@@ -86,7 +88,7 @@ export default {
   methods: {
     async fetchNft() {
       try {
-        const nft = await axios.get(this.contents_api + '/contents/' + this.instance + '/' + this.index)
+        const nft = await axios.get(this.contents_api + '/contents/' + this.chain + '/' + this.instance + '/' + this.index)
         if (nft.data.metadata) {
           if (typeof nft.data.metadata.image === 'string') {
             let newArr = []

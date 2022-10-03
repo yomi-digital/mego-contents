@@ -64,7 +64,7 @@
         <p v-if="!loading">
           Deployed at: <a :href="explorer_url+'/address/'+instance" target="_blank"
             style="margin-right:1rem">{{instance.substr(0, 5) +'...'+ instance.substr(-3)}}</a> Headless endpoint: <a
-            :href="contents_api+'/contents/'+instance" target="_blank">api.mego.cx/c...{{instance.substr(-3)}}</a></p>
+            :href="contents_api+'/contents/'+chain+'/'+instance" target="_blank">api.mego.cx/c...{{instance.substr(-3)}}</a></p>
         <p v-if="loading">
           Deployed at: 0x
           <font-awesome-icon icon="fa-solid fa-circle-notch" style="font-size:25px" class="fa-spin ml-3" />
@@ -529,7 +529,8 @@ export default {
       modelsLoading: true,
       overlayLoading: true,
       datatypeJustCreated: '',
-      owner: ''
+      owner: '',
+      chain: ''
     }
   },
   methods: {
@@ -951,13 +952,13 @@ export default {
     }
   },
   async mounted() {
-    let chain = localStorage.getItem('chain')
+    this.chain = localStorage.getItem('chain')
     let chains = localStorage.getItem('chains')
-    if (chain && chains) {
+    if (this.chain && chains) {
       chains = JSON.parse(chains)
-      this.explorer_url = chains[chain].explorer
-      this.factory_contract = chains[chain].contract
-      this.network = chains[chain].network
+      this.explorer_url = chains[this.chain].explorer
+      this.factory_contract = chains[this.chain].contract
+      this.network = chains[this.chain].network
     }
     document.getElementById('app').style.background = '#EDEDED'
     document.getElementById('navbar_group').children[1].style.background = '#EDEDED'

@@ -44,10 +44,10 @@
         </h2>
         <h2 v-if="!loading && Object.keys(datatypes).length === 0">NFT NOT FOUND</h2>
         <p v-if="!loading && Object.keys(datatypes).length > 0">
-          <span class="mr-6">Headless endpoint: <a :href="contents_api+'/contents/'+instance+'/'+tokenId"
+          <span class="mr-6">Headless endpoint: <a :href="contents_api+'/contents/'+chain+'/'+instance+'/'+tokenId"
               target="_blank">api.mego.cx/c...{{instance.substr(-3)}}</a></span>
           <a style="text-decoration: underlined;color: black; font-size: 18px;" class="mr-3"
-            @click="copyText('link','/share/'+instance+'/'+tokenId)">
+            @click="copyText('link','/share/'+chain+'/'+instance+'/'+tokenId)">
             <font-awesome-icon icon="fa-solid fa-link" style="font-size:16px;margin-top: .2rem;" class="mt-5" />
             share
           </a>
@@ -244,19 +244,20 @@ export default {
         deleteImage: {}
       },
       urlClass: URL,
-      owner: ''
+      owner: '',
+      chain: ''
     };
   },
   async mounted() {
     const app = this;
     app.tokenId = app.$route.params.tokenId;
-    let chain = localStorage.getItem('chain')
+    this.chain = localStorage.getItem('chain')
     let chains = localStorage.getItem('chains')
-    if (chain && chains) {
+    if (this.chain && chains) {
       chains = JSON.parse(chains)
-      app.opensea_url = chains[chain].opensea
-      app.contract = chains[chain].contract
-      app.network = chains[chain].network
+      app.opensea_url = chains[this.chain].opensea
+      app.contract = chains[this.chain].contract
+      app.network = chains[this.chain].network
     }
     await app.connect();
     if (app.freezed) {
