@@ -308,3 +308,4 @@ button {background: none!important;border-radius: 8px!important;}
 .users_searcher svg {position: absolute; opacity: .5;right:1.2rem;top: 50%; transform: translateY(-50%);transition: all .17s ease-in-out;}
 
 .nft_tag {background: #343434; color: white;border-radius: 4px; width: fit-content;}
+.overlay_loading {position: absolute;z-index: 999;top: 50%;left: 50%;translate: -50% -50%;background:rgb(255 255 255 / 50%);width: 100vw; height: 100%;display: grid;place-items: center;}

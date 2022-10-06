@@ -7,16 +7,42 @@
       <div class="modal">
         <img src="../assets/images/close-icon.svg" alt="Close" @click="modals.removeDatatype = false">
         <h2 v-html="workingMessage"></h2>
-        <!-- <p>Define the name and the ticker of the instance.</p> -->
         <font-awesome-icon icon="fa-solid fa-circle-notch" style="font-size:20px;margin-top: .2rem;" class="fa-spin"
           v-if="isWorking" />
       </div>
     </div>
+    <div class="modal_container" v-if="modals.field_blocked">
+      <div class="modal">
+        <font-awesome-icon icon="fa-solid fa-circle-exclamation"
+          style="font-size:24px;margin: -1.2rem auto 1rem auto;" />
+        <img src="../assets/images/close-icon.svg" alt="Close" @click="modals.field_blocked = ''">
+        <p>Every NFT must have the <b>{{modals.field_blocked}}</b> field in order to be published</p>
+        <p v-if="modals.field_blocked === 'name'">The default <b>{{modals.field_blocked}}</b> field will have "MEGO
+          contents" as value for each nft created using this datatype
+          and will be visible on Opensea.<br>
+          <span style="color:#ff850f;font-weight: 700;">If you want to customize it during your content creation or update</span>, please add a new field and name it
+          "{{modals.field_blocked}}". It will
+          automatically overwrite this default field.</p>
+        <p v-if="modals.field_blocked === 'description'">The default <b>{{modals.field_blocked}}</b> field will have
+          "This NFT represents a decentralised content on MEGO" as value for each nft created using this datatype
+          and will be visible on Opensea.<br>
+          <span style="color:#ff850f;font-weight: 700;">If you want to customize it during your content creation or update</span>, please add a new field and name it
+          "{{modals.field_blocked}}". It will
+          automatically overwrite this default field.</p>
+        <p v-if="modals.field_blocked === 'image'">The default <b>{{modals.field_blocked}}</b> field will have this MEGO
+          logo as value.<br>
+          <img src="https://ipfs.yomi.digital/ipfs/bafkreiblyp34mtsvwk2tv4u7cwq6wdj5lkfgpmvkytvkzq4xlhwybebrhe"
+            alt="MEGO logo" width="100"><br>
+            <span style="color:#ff850f;font-weight: 700;">If you want to customize it during your content creation or update</span>, please add a new field and name it
+          "{{modals.field_blocked}}". It will
+          automatically overwrite this default field.
+        </p>
+      </div>
+    </div>
     <div class="modal_container" v-if="modals.addDatatype">
       <div class="modal">
-        <img src="../assets/images/close-icon.svg" alt="Close" @click="modals.addDatatype = false">
+        <img src="../assets/images/close-icon.svg" alt="Close" @click="(!isWorking) ? modals.addDatatype = false : ''">
         <h2 v-html="workingMessage"></h2>
-        <!-- <p>Define the name and the ticker of the instance.</p> -->
         <font-awesome-icon icon="fa-solid fa-circle-notch" style="font-size:20px;margin-top: .2rem;" class="fa-spin"
           v-if="isWorking" />
       </div>
@@ -25,7 +51,6 @@
       <div class="modal">
         <img src="../assets/images/close-icon.svg" alt="Close" @click="modals.removeDatatypeAttr = -1">
         <h2>Are you sure you want to delete the selected datatype field?</h2>
-        <!-- <p>Define the name and the ticker of the instance.</p> -->
         <div style="display:flex">
           <b-button type="button" class="button-light is-dark mx-3 mt-5"
             style="color:black!important;border:1px solid black!important" @click="modals.removeDatatypeAttr = -1">
@@ -42,7 +67,6 @@
       <div class="modal">
         <img src="../assets/images/close-icon.svg" alt="Close" @click="modals.cancel = -1">
         <h2>Are you sure you want to come back? Any unsaved edits will be lost</h2>
-        <!-- <p>Define the name and the ticker of the instance.</p> -->
         <div style="display:flex">
           <b-button type="button" class="button-light is-dark mx-3 mt-5"
             style="color:black!important;border:1px solid black!important" @click="modals.cancel = -1">
@@ -50,7 +74,7 @@
           </b-button>
           <b-button type="button" class="button-dark is-light mx-3 mt-5"
             style="background:#111!important;color:white!important"
-            @click="() => {tab = 'pre-compiled'; datatypeCreated = false;modals.cancel = -1; resetDatatype(newDatatypeName); newDatatypeName = '';}">
+            @click="() => {tab = 'list'; datatypeCreated = false;modals.cancel = -1; resetDatatype(newDatatypeName); newDatatypeName = '';}">
             YES
           </b-button>
         </div>
@@ -64,7 +88,8 @@
         <p v-if="!loading">
           Deployed at: <a :href="explorer_url+'/address/'+instance" target="_blank"
             style="margin-right:1rem">{{instance.substr(0, 5) +'...'+ instance.substr(-3)}}</a> Headless endpoint: <a
-            :href="contents_api+'/contents/'+chain+'/'+instance" target="_blank">api.mego.cx/c...{{instance.substr(-3)}}</a></p>
+            :href="contents_api+'/contents/'+chain+'/'+instance"
+            target="_blank">api.mego.cx/c...{{instance.substr(-3)}}</a></p>
         <p v-if="loading">
           Deployed at: 0x
           <font-awesome-icon icon="fa-solid fa-circle-notch" style="font-size:25px" class="fa-spin ml-3" />
@@ -191,7 +216,7 @@
               <h3 class="my-2"><span style="font-weight:bold;color:black;font-size:22px;">{{(datatype.name.indexOf('__')
               > 0) ? datatype.name.slice(datatype.name.indexOf('__')+2, 99999) : datatype.name}}</span>
               </h3>
-              <p v-for="attr in datatype.datatypes" :key="attr.name" v-html="attr.name"></p>
+              <p v-for="(attr, attrIndex) in datatype.datatypes" :key="attrIndex" v-html="attr.name"></p>
               <p v-if="datatype.datatypes.length === 0"><i style="color:#444">No fields</i></p>
             </div>
             <div class="instance_right">
@@ -229,11 +254,151 @@
               <th>Select Options</th>
               <th style="text-align:center">Delete</th>
             </tr>
+            <tr v-if="(datatypeSelected.name && !datatypeSelected.datatypes.find(el => el.name === 'name')) || (!datatypeSelected.name && !customDatatypeAttrs.find(el => el.name === 'name'))"
+              @click="modals.field_blocked = 'name'">
+              <td>
+                <div>
+                  <b-input type="checkbox" :checked="true" :disabled="true">
+                  </b-input>
+                </div>
+              </td>
+              <td>
+                <div style="position:relative">
+                  <b-input type="text" style="width:100%" value="name" :disabled="true">
+                  </b-input>
+                  <font-awesome-icon class="invalid_field_icon" style="color:black" icon="fa-solid fa-circle-info" />
+                </div>
+              </td>
+              <td style="display: none;">
+              </td>
+              <td>
+                <div>
+                  <b-input type="checkbox" :checked="true" :disabled="true">
+                  </b-input>
+                </div>
+              </td>
+              <td>
+                <b-select style="width:120px" value="default" :disabled="true">
+                  <option value="default">text</option>
+                </b-select>
+              </td>
+              <td>
+                <div>
+                  <b-input type="checkbox" :checked="false" :disabled="true">
+                  </b-input>
+                </div>
+              </td>
+              <td>
+                <div>
+                  <b-input type="checkbox" :checked="false" :disabled="true">
+                  </b-input>
+                </div>
+              </td>
+              <td>
+                <b-input type="text" style="width:300px;" value="" :disabled="true"></b-input>
+              </td>
+              <td style="text-align:center">
+              </td>
+            </tr>
+            <tr v-if="(datatypeSelected.name && !datatypeSelected.datatypes.find(el => el.name === 'description')) || (!datatypeSelected.name && !customDatatypeAttrs.find(el => el.name === 'description'))"
+              @click="modals.field_blocked = 'description'">
+              <td>
+                <div>
+                  <b-input type="checkbox" :checked="true" :disabled="true">
+                  </b-input>
+                </div>
+              </td>
+              <td>
+                <div style="position:relative">
+                  <b-input type="text" style="width:100%" value="description" :disabled="true">
+                  </b-input>
+                  <font-awesome-icon class="invalid_field_icon" style="color:black" icon="fa-solid fa-circle-info" />
+                </div>
+              </td>
+              <td style="display: none;">
+              </td>
+              <td>
+                <div>
+                  <b-input type="checkbox" :checked="true" :disabled="true">
+                  </b-input>
+                </div>
+              </td>
+              <td>
+                <b-select style="width:120px" value="default" :disabled="true">
+                  <option value="default">text</option>
+                </b-select>
+              </td>
+              <td>
+                <div>
+                  <b-input type="checkbox" :checked="false" :disabled="true">
+                  </b-input>
+                </div>
+              </td>
+              <td>
+                <div>
+                  <b-input type="checkbox" :checked="false" :disabled="true">
+                  </b-input>
+                </div>
+              </td>
+              <td>
+                <b-input type="text" style="width:300px;" value="" :disabled="true"></b-input>
+              </td>
+              <td style="text-align:center">
+              </td>
+            </tr>
+            <tr v-if="(datatypeSelected.name && !datatypeSelected.datatypes.find(el => el.name === 'image')) || (!datatypeSelected.name && !customDatatypeAttrs.find(el => el.name === 'image'))"
+              @click="modals.field_blocked = 'image'">
+              <td>
+                <div>
+                  <b-input type="checkbox" :checked="true" :disabled="true">
+                  </b-input>
+                </div>
+              </td>
+              <td>
+                <div style="position:relative">
+                  <b-input type="text" style="width:100%" value="image" :disabled="true">
+                  </b-input>
+                  <font-awesome-icon class="invalid_field_icon" style="color:black" icon="fa-solid fa-circle-info" />
+                </div>
+              </td>
+              <td style="display: none;">
+              </td>
+              <td>
+                <div>
+                  <b-input type="checkbox" :checked="true" :disabled="true">
+                  </b-input>
+                </div>
+              </td>
+              <td>
+                <b-select style="width:120px" value="default" :disabled="true">
+                  <option value="default">file</option>
+                </b-select>
+              </td>
+              <td>
+                <div>
+                  <b-input type="checkbox" :checked="false" :disabled="true">
+                  </b-input>
+                </div>
+              </td>
+              <td>
+                <div>
+                  <b-input type="checkbox" :checked="false" :disabled="true">
+                  </b-input>
+                </div>
+              </td>
+              <td>
+                <b-input type="text" style="width:300px;" value="" :disabled="true"></b-input>
+              </td>
+              <td style="text-align:center">
+              </td>
+            </tr>
             <template v-if="!datatypeSelected.name">
               <tr v-for="(datatypeAttr, index) in customDatatypeAttrs" :key="index">
                 <td>
-                  <div @click="datatypeAttr.active = !datatypeAttr.active">
-                    <b-input type="checkbox" :checked="datatypeAttr.active">
+                  <div
+                    @click="((datatypeAttr.name === 'name' || datatypeAttr.name === 'description' || datatypeAttr.name === 'image') && datatypeAttr.active) ? '' : datatypeAttr.active = !datatypeAttr.active">
+                    <b-input type="checkbox" :checked="datatypeAttr.active"
+                      :disabled="((datatypeAttr.name === 'name' || datatypeAttr.name === 'description' || datatypeAttr.name === 'image') && datatypeAttr.active)  ? true : false">
                     </b-input>
                   </div>
                 </td>
@@ -301,8 +466,10 @@
             <template v-if="datatypeSelected.name">
               <tr v-for="(datatypeAttr, index) in datatypeSelected.datatypes" :key="index">
                 <td>
-                  <div @click="datatypeAttr.active = !datatypeAttr.active">
-                    <b-input type="checkbox" :checked="datatypeAttr.active">
+                  <div
+                    @click="((datatypeAttr.name === 'name' || datatypeAttr.name === 'description' || datatypeAttr.name === 'image') && datatypeAttr.active) ? '' : datatypeAttr.active = !datatypeAttr.active">
+                    <b-input type="checkbox" :checked="datatypeAttr.active"
+                      :disabled="((datatypeAttr.name === 'name' || datatypeAttr.name === 'description' || datatypeAttr.name === 'image') && datatypeAttr.active)  ? true : false">
                     </b-input>
                   </div>
                 </td>
@@ -314,7 +481,7 @@
                       v-if="unavailableFields.indexOf(datatypeAttr.name) !== -1"
                       icon="fa-solid fa-circle-exclamation" />
                     <div class="invalid_field_caption">
-                      You cannot name a field using one of the default nft property ({{unavailableFields.join(', ')}})
+                      You cannot name a field using one of the default nft properties ({{unavailableFields.join(', ')}})
                     </div>
                   </div>
                 </td>
@@ -463,7 +630,8 @@
           </div>
         </div>
       </div>
-      <div class="add_instance_container" v-if="modelsLoading && tab === 'customized'">
+      <div :class="{'add_instance_container':true, 'overlay_loading': modelsLoading && tab === 'customized'}"
+        v-if="modelsLoading && tab === 'customized'">
         <font-awesome-icon icon="fa-solid fa-circle-notch" style="font-size:20px;margin-top: 2rem;" class="fa-spin" />
       </div>
     </div>
@@ -521,7 +689,8 @@ export default {
         removeDatatype: false,
         addDatatype: false,
         removeDatatypeAttr: -1,
-        cancel: -1
+        cancel: -1,
+        field_blocked: ''
       },
       datatypeCreated: false,
       models: [],
@@ -590,7 +759,7 @@ export default {
       }
       const app = this;
       let datatypeSigned = (app.preCompiledDatatypes.find(el => el === datatype)) ? datatype : app.account.substr(0, 5) + app.account.substr(-3) + '__' + datatype
-      let originalDatatype = app.models.find(el => el.name === datatypeSigned)
+      let originalDatatype = JSON.parse(localStorage.getItem('datatypeForReset'))
       const factoryContract = new app.web3.eth.Contract(
         app.abi_factory,
         app.factory_contract
@@ -598,9 +767,15 @@ export default {
       app.isWorking = true;
       try {
         let attrsArr = (app.datatypeSelected.name) ? app.datatypeSelected.datatypes : app.customDatatypeAttrs
-        if (attrsArr.find(el => el.name != '') == undefined) {
+        if (attrsArr.find(el => (el.name == '' || el.input == '')) != undefined) {
           app.modals.addDatatype = false;
-          app.log('danger', 'Please, fill in the name field')
+          app.isWorking = false;
+          app.log('danger', 'Please, fill in all empty name and type fields')
+        }
+        else if (attrsArr.find(el => (el.name === 'name' || el.name === 'description' || el.name === 'image') && el.active === false) != undefined) {
+          app.modals.addDatatype = false;
+          app.isWorking = false;
+          app.log('danger', 'Name, description and image fields must be active')
         }
         else {
           for (let index of Object.keys(attrsArr)) {
@@ -609,26 +784,19 @@ export default {
             if (field.selectOptions.length > 0)
               field.specs = '[' + field.selectOptions.join(',') + ']'
             let edited = false
-            if (originalDatatype) {
-              for (const key of Object.keys(field).filter(ky => ky !== 'selectOptions')) {
-                if (field[key] !== originalDatatype.datatypes[index][key]) {
-                  edited = true
-                }
-                if (Object.keys(app.datatypes[app.instance]).find(mdl => mdl === datatypeSigned) == undefined) {
-                  //If is a datatype not added to contract yet
-                  let originalDatatypeFields = JSON.parse(localStorage.getItem('originalDatatypeFields'))
-                  if ((originalDatatypeFields && originalDatatypeFields.find(el => el.name === field.name) && originalDatatypeFields.find(el => el.name === field.name)[key] !== field[key]) || (originalDatatypeFields && !originalDatatypeFields.find(el => el.name === field.name))) {
-                    edited = true
-                  }
-                }
+            let action = ''
+            for (const key of Object.keys(field).filter(ky => ky !== 'selectOptions')) {
+              if (originalDatatype[index] && field[key] !== originalDatatype[index][key] && originalDatatype.find(fld => fld.name === field.name)) {
+                edited = true
+                action = 'Updating ' + datatype
+              }
+              else if (originalDatatype[index] == undefined || (originalDatatype[index] && field[key] !== originalDatatype[index][key])) {
+                edited = true
+                action = "Adding <b>" + field.name + "</b> in " + datatype
               }
             }
-            else {
-              edited = true
-            }
             if (edited) {
-              app.workingMessage = "Adding <b>" + field.name + "</b> in " + datatype + " <br />Please confirm transaction in your wallet.";
-              console.log("Editing ", datatypeSigned)
+              app.workingMessage = action + " <br />Please confirm transaction in your wallet.";
               const receipt = await factoryContract.methods
                 .editDatatypeInModel(datatypeSigned, index, field.active, field.name, field.print, field.required, field.multiple, field.input, field.specs)
                 .send({
@@ -636,25 +804,28 @@ export default {
                 })
                 .on("transactionHash", (tx) => {
                   app.workingMessage =
-                    "Adding <b>" + field.name + "</b> in " + datatype + " <br />Waiting for confirmations at " + tx;
+                    action + " <br />Waiting for confirmations at " + tx;
                 });
-              console.log("ADD_TYPE_RECEIPT", receipt);
             }
           }
           //Reset extra previous fields if present to default values
-          if (originalDatatype && Object.keys(attrsArr).length < originalDatatype.datatypes.length) {
-            for (let i = Object.keys(attrsArr).length; i < originalDatatype.datatypes.length - 1; i++) {
-              app.workingMessage = "Removing <b>" + originalDatatype.datatypes[i].name + "</b> in " + datatype + " <br />Please confirm transaction in your wallet.";
-              const receipt = await factoryContract.methods
-                .editDatatypeInModel(datatypeSigned, i, false, '', false, false, false, '', '')
-                .send({
-                  from: app.account,
-                })
-                .on("transactionHash", (tx) => {
-                  app.workingMessage =
-                    "Removing <b>" + originalDatatype.datatypes[i].name + "</b> in " + datatype + " <br />Waiting for confirmations at " + tx;
-                });
-              console.log("DELETE_PREVIOUS_TYPE_RECEIPT", receipt);
+          if (attrsArr.length < originalDatatype.length) {
+            let datatypeFieldsRemoved = JSON.parse(localStorage.getItem('datatypeFieldsRemoved'))
+            let i = attrsArr.length
+            for (const fld of datatypeFieldsRemoved) {
+              if (fld.field.name && fld.field.input) {
+                app.workingMessage = "Removing <b>" + fld.field.name + "</b> in " + datatype + " <br />Please confirm transaction in your wallet.";
+                const receipt = await factoryContract.methods
+                  .editDatatypeInModel(datatypeSigned, i, false, '', false, false, false, '', '')
+                  .send({
+                    from: app.account,
+                  })
+                  .on("transactionHash", (tx) => {
+                    app.workingMessage =
+                      "Removing <b>" + fld.field.name + "</b> in " + datatype + " <br />Waiting for confirmations at " + tx;
+                  });
+              }
+              i++
             }
           }
           if (justCreated) {
@@ -667,6 +838,7 @@ export default {
           }
         }
       } catch (e) {
+        console.log(e)
         alert(e.message);
         app.isWorking = false;
       }
@@ -738,6 +910,7 @@ export default {
                   .returnModelType(result, t)
                   .call();
                 datatypes.push({
+                  active: datatype._active,
                   name: datatype._name,
                   print: datatype._print,
                   required: datatype._required,
@@ -798,11 +971,16 @@ export default {
       }
     },
     resetCustomDatatypesAttrs() {
+      //saving deleted fields to print them in transactions modal
+      let deleted_fields = JSON.parse(localStorage.getItem('datatypeFieldsRemoved'))
       let newArr = []
       if (!this.datatypeSelected.name) {
         this.customDatatypeAttrs.forEach((attr, index) => {
           if (index !== this.modals.removeDatatypeAttr) {
             newArr.push(attr)
+          }
+          else {
+            deleted_fields.push({ index: index, field: attr })
           }
         })
         this.customDatatypeAttrs = newArr
@@ -812,9 +990,13 @@ export default {
           if (index !== this.modals.removeDatatypeAttr) {
             newArr.push(attr)
           }
+          else {
+            deleted_fields.push({ index: index, field: attr })
+          }
         })
         this.datatypeSelected.datatypes = newArr
       }
+      localStorage.setItem('datatypeFieldsRemoved', JSON.stringify(deleted_fields))
       this.modals.removeDatatypeAttr = -1
     },
     async createModel(datatype) {
@@ -917,7 +1099,6 @@ export default {
     },
     editCustomDatatype(datatype, datatypesToSave) {
       const app = this
-      localStorage.setItem('originalDatatypeFields', JSON.stringify(datatypesToSave))
       app.newDatatypeName = (datatype.indexOf('__') > 0) ? datatype.slice(datatype.indexOf('__') + 2, 99999) : datatype;
       app.datatypeCreated = true;
       app.tab = 'customized';
@@ -949,6 +1130,7 @@ export default {
     },
     saveDatatypesForReset(datatypes) {
       localStorage.setItem('datatypeForReset', JSON.stringify(datatypes))
+      localStorage.setItem('datatypeFieldsRemoved', JSON.stringify([]))
     }
   },
   async mounted() {
