@@ -167,7 +167,8 @@ export default {
       isWorking: false,
       subscription: -1,
       canMint: true,
-      owner: ''
+      owner: '',
+      chain: ''
     };
   },
   watch: {
@@ -182,12 +183,12 @@ export default {
   },
   async mounted() {
     const app = this
-    let chain = localStorage.getItem('chain')
+    app.chain = localStorage.getItem('chain')
     let chains = localStorage.getItem('chains')
-    if (chain && chains) {
+    if (app.chain && chains) {
       chains = JSON.parse(chains)
-      app.contract = chains[chain].contract
-      app.network = chains[chain].network
+      app.contract = chains[app.chain].contract
+      app.network = chains[app.chain].network
     }
     document.getElementById('app').style.background = '#EDEDED'
     document.getElementById('navbar_group').children[1].style.background = '#EDEDED'
@@ -257,7 +258,7 @@ export default {
     async fetchUsers() {
       const app = this
       try {
-        const users = await app.axios(app.contents_api + '/users/' + app.instance).then(res => res.data)
+        const users = await app.axios(app.contents_api + '/users/' + app.chain + '/' + app.instance).then(res => res.data)
         this.users = users
         this.originalUsers = this.users
       }
