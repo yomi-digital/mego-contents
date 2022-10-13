@@ -50,7 +50,7 @@
             <router-view />
         </div>
         <div v-if="mobile || (!account && !checking && $route.name !== 'Share')" class="connect_wallet">
-            <div class="choose_chain_modal" v-if="modals.choose_chain">
+            <div class="choose_chain_modal" v-if="!mobile && modals.choose_chain">
                 <h1 class="is-size-3">Select your preferred chain</h1>
                 <p class="is-size-5 mt-2">You can change it later</p>
                 <div>
