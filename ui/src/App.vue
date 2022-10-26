@@ -21,22 +21,20 @@
                     style="font-size:30px;color: #ff850f;margin:0 0 .5rem 0" />
                 <h2>Plan suspended</h2>
                 <div v-if="subscription > 0">
-                    <p>Your subscription expired on the {{new Date(new Date(new Date().setDate(new
-                    Date(registration_timestamp).getDate())).setMonth(new Date().getMonth()-1)).toLocaleString()}}.
-                    </p>
+                    <p>Your subscription expired on the {{ new Date(new Date(new Date().setDate(new Date(registration_timestamp).getDate())).setMonth(new Date().getMonth() - 1)).toLocaleString() }}.</p>
                     <p>Please make a new payment to renew the month</p>
                     <b-button type="button" class="button-dark is-light mx-3 mt-5"
                         style="background:#111!important;color:white!important"
-                        @click="$router.push({name: 'Pricing'})">
+                        @click="$router.push({ name: 'Pricing' })">
                         MANAGE PLAN
                     </b-button>
                 </div>
                 <div v-if="subscription === 0">
-                    <p>With your Free plan, you could mint max {{free_limit}} times</p>
+                    <p>With your Free plan, you could mint max {{ free_limit }} times</p>
                     <p>Upgrade your plan to mint unlimited times!</p>
                     <b-button type="button" class="button-dark is-light mx-3 mt-5"
                         style="background:#111!important;color:white!important"
-                        @click="$router.push({name: 'Pricing'})">
+                        @click="$router.push({ name: 'Pricing' })">
                         MANAGE PLAN
                     </b-button>
                 </div>
@@ -45,7 +43,7 @@
         <div style="width:100vw;min-height:100vh;height: fit-content;"
             v-if="!mobile && ((account && !checking) || $route.name === 'Share')">
             <Navbar :account="account" :instances="instances" :instance="instance"
-                :subscriptionAlert="(subscription===0 && !canMint) || (subscription>0 && !isSubscriptionActive)"
+                :subscriptionAlert="(subscription === 0 && !canMint) || (subscription > 0 && !isSubscriptionActive)"
                 @initTutorial="tutorialStep = 0" :chains="chains" :chain="chain" @chooseChain="chooseChain($event)" />
             <router-view />
         </div>
@@ -89,7 +87,7 @@
 <script>
 import Web3 from "web3";
 import axios from "axios";
-import Web3Modal, { local } from "web3modal";
+import Web3Modal from "web3modal";
 import WalletConnectProvider from "@walletconnect/web3-provider";
 import Navbar from "./components/Navbar.vue";
 const abi = require("./abis/factory.json");
@@ -167,9 +165,18 @@ export default {
         }
     },
     async mounted() {
+        if (window.ethereum) {
+            window.ethereum.on('chainChanged', (_chainId) => {
+                let chain = Object.keys(this.chains).find(el => this.chains[el].network === parseInt(_chainId));
+                if(chain) {
+                    localStorage.setItem('chain', chain)
+                    window.location.reload()
+                }
+            });
+        }
         //Assignign default or selected chain
         this.chain = localStorage.getItem('chain')
-        if(!this.chain) {
+        if (!this.chain) {
             this.modals.choose_chain = true
         }
         else {
@@ -267,7 +274,7 @@ export default {
                         });
                         location.reload()
                     } catch {
-                        alert("Error during switching "+app.chain+" network")
+                        alert("Error during switching " + app.chain + " network")
                     }
                 }
             }

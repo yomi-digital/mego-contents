@@ -218,10 +218,6 @@ export default {
           app.abi_contents,
           instance
         );
-        const factoryContract = new app.web3.eth.Contract(
-          app.abi_factory,
-          app.contract
-        );
         let exists = true;
         let i = 0;
         app.datatypes[instance] = {};
@@ -232,34 +228,9 @@ export default {
               .call();
             if (result.length > 0) {
               app.datatypes[instance][result] = [];
-              let datatypes = [];
-              console.log("Model found:", result);
-              // let finished = false;
-              // let t = 0;
-              // while (!finished) {
-              //   const datatype = await factoryContract.methods
-              //     .returnModelType(result, t)
-              //     .call();
-              //   if (datatype._active) {
-              //     datatypes.push({
-              //       name: datatype._name,
-              //       print: datatype._print,
-              //       required: datatype._required,
-              //       multiple: datatype._multiple,
-              //       input: datatype._input,
-              //       specs: datatype._specs,
-              //     });
-              //   }
-              //   t++;
-              //   if (datatype._name.length === 0) {
-              //     finished = true;
-              //   }
-              // }
-              app.datatypes[instance][result] = datatypes;
             }
             i++;
-          } catch (e) {
-            console.log("Model parse finished.");
+          } catch {
             exists = false;
           }
         }
